@@ -2,13 +2,13 @@ use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::Read;
-use lyon_svg::parser::FromSpan;
-use lyon_svg::parser::svg::{Tokenizer, Token};
-use lyon_svg::parser::{ElementId, AttributeId};
-use lyon_svg::parser::svg::Name::Svg;
-use lyon_svg::parser::svg::ElementEnd::Close;
-use lyon_svg::parser::svg::ElementEnd::Empty;
-use lyon_svg::path::default::Path;
+use lyon::svg::parser::FromSpan;
+use lyon::svg::parser::svg::{Tokenizer, Token};
+use lyon::svg::parser::{ElementId, AttributeId};
+use lyon::svg::parser::svg::Name::Svg;
+use lyon::svg::parser::svg::ElementEnd::Close;
+use lyon::svg::parser::svg::ElementEnd::Empty;
+use lyon::svg::path::default::Path;
 use entity::{EntityPosition, EntitySettings};
 
 pub fn load_map(path: PathBuf, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
@@ -93,17 +93,9 @@ pub fn load_map(path: PathBuf, world: &mut ::specs::World) -> Result<(), ::failu
 }
 
 fn load_entity_position(commands: &str) -> Result<EntityPosition, ::failure::Error> {
-    use lyon_svg::path::PathEvent::*;
     let svg_builder = Path::builder().with_svg();
-    let path = ::lyon_svg::path_utils::build_path(svg_builder, commands)
-        .map_err(|e| format_err!("invalid path \"{}\": {:?}", commands, e))?;
-    let mut p = path.iter();
-    if let (Some(MoveTo(_p0)), Some(LineTo(_p1)), None) = (p.next(), p.next(), p.next()) {
-        return Ok(EntityPosition::Isometry2(
-            ()
-        ))
-    };
-    Err(format_err!("the following path does not correspond to a valid entity position \"{}\"", commands))
+    ::lyon::svg::path_utils::build_path(svg_builder, commands)
+        .map_err(|e| format_err!("invalid path \"{}\": {:?}", commands, e))
 }
 
 #[derive(Serialize, Deserialize)]

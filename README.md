@@ -89,6 +89,8 @@ TODO: how much does it cost to use a full generated network
 
 * boid
 
+* avoider
+
 ### Neat
 
 How do we learn:
@@ -143,3 +145,31 @@ Every action create sound that can trigger entities around
 
   allow inconsistency: some entity can be in physic world but not in specs world
   so check with is\_alive
+
+# Components
+
+* body
+* life
+* playercontrol
+* gravitytowardsplayers (Formule avec la distance)
+* blade
+* sniper
+* turret
+* vec<animation>: animation can be oriented by body or aim
+
+# Graphics
+
+# idea
+
+enregistrer un mouvement et pouvoir le refaire:
+on marche en avant et attaque
+on rembobine
+on se déplace
+on rejoue marche en avant et attaque
+
+on place un point
+et on peut se téléporter à la symetrie de ce point
+
+idem s/point/ligne/
+
+transposition avec un monstre

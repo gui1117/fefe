@@ -5,7 +5,7 @@ extern crate ron;
 extern crate serde_derive;
 #[macro_use]
 extern crate failure;
-extern crate lyon_svg;
+extern crate lyon;
 
 mod map;
 mod entity;
