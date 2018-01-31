@@ -19,12 +19,12 @@ use lyon_svg::parser::svg::ElementEnd::Open;
 use lyon_svg::parser::svg::ElementEnd::Close;
 use lyon_svg::path::default::Path;
 
-fn load_map(path: PathBuf) -> Result<(), failure::Error> {
+fn load_map(path: PathBuf, world: &mut ::specs::World) -> Result<(), failure::Error> {
     let mut settings_path = path.clone();
     settings_path.set_extension("ron");
     let settings_file = File::open(&settings_path)
         .map_err(|e| format_err!("\"{}\": {}", settings_path.to_string_lossy(), e))?;
-    let settings: MapSettings = ron::de::from_reader(settings_file)
+    let mut settings: MapSettings = ron::de::from_reader(settings_file)
         .map_err(|e| format_err!("\"{}\": {}", settings_path.to_string_lossy(), e))?;
 
     let mut svg_path = path.clone();
@@ -64,7 +64,7 @@ fn load_map(path: PathBuf) -> Result<(), failure::Error> {
                 Token::Attribute(Svg(AttributeId::D), value) => {
                     d = Some(value);
                 }
-                Token::ElementEnd(Open) => {
+                Token::ElementEnd(Empty) => {
                     if let (Some(style), Some(d)) = (style, d) {
                         for (rule, ref mut rule_entities) in settings.rules.iter().zip(rules_entities.iter_mut()) {
                             if style.to_str().contains(&rule.trigger) {
@@ -91,6 +91,11 @@ fn load_map(path: PathBuf) -> Result<(), failure::Error> {
                 _ => (),
             }
         }
+    }
+
+    // Insert entities to world
+    for (rule, rule_entities) in settings.rules.drain(..).zip(rules_entities.drain(..)) {
+        rule.inserter.insert(rule_entities, world);
     }
     Ok(())
 }
@@ -122,7 +127,7 @@ enum EntitySettings {
 }
 
 impl EntitySettings {
-    fn insert(world: ::specs::World) {
+    fn insert(&self, entity: EntityPosition, world: &mut ::specs::World) {
         unimplemented!();
     }
 }
@@ -158,7 +163,9 @@ impl Inserter {
         use Inserter::*;
         match self {
             InsertEntity(entity_settings) => {
-                entity_setting.insert(world);
+                for entity in entities {
+                    entity_settings.insert(entity, world);
+                }
             },
             TakeNInsertion(n, inserter) => {
                 entities.truncate(n);
@@ -198,7 +205,8 @@ impl Inserter {
 }
 
 fn main() {
-    if let Err(err) = load_map("map".into()) {
+    let mut world = ::specs::World::new();
+    if let Err(err) = load_map("map".into(), &mut world) {
         println!("{}", err);
     }
 }
