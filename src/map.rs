@@ -1,3 +1,7 @@
+// TODO 3 rule
+// filled
+// launched
+// inserted
 use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
 use std::path::PathBuf;
 use std::fs::File;
@@ -9,7 +13,7 @@ use lyon::svg::parser::svg::Name::Svg;
 use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
 use lyon::svg::path::default::Path;
-use entity::{EntityPosition, EntitySettings};
+use entity::{EntityPosition, Insertable};
 
 pub fn load_map(path: PathBuf, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
     let mut settings_path = path.clone();
@@ -112,7 +116,7 @@ struct Rule {
 #[derive(Serialize, Deserialize)]
 /// entities are randomized before being processed
 enum Inserter {
-    InsertEntity(EntitySettings),
+    InsertEntity(Insertable),
     TakeNInsertion(usize, Box<Inserter>),
     RandomInsertionDispatch(Vec<(u32, Box<Inserter>)>),
     OrdonateInsertionDispatch(Vec<Box<Inserter>>),
@@ -122,9 +126,9 @@ impl Inserter {
     fn insert(self, mut entities: Vec<EntityPosition>, world: &mut ::specs::World) {
         use self::Inserter::*;
         match self {
-            InsertEntity(entity_settings) => {
+            InsertEntity(insertable) => {
                 for entity in entities {
-                    entity_settings.insert(entity, world);
+                    insertable.insert(entity, world);
                 }
             },
             TakeNInsertion(n, inserter) => {

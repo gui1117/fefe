@@ -3,11 +3,8 @@ MapSettings(
         (
             trigger: "#ff0000",
             inserter: TakeNInsertion(3, RandomInsertionDispatch([
-                (1, InsertEntity(Monster1( size: 21.0, attack: 31.0 ))),
-                (1, InsertEntity(Monster1( size: 21.0, attack: 31.0 ))),
-                (1, InsertEntity(Monster1( size: 21.0, attack: 31.0 ))),
-                (1, InsertEntity(Monster1( size: 21.0, attack: 31.0 ))),
-                (1, InsertEntity(Monster1( size: 21.0, attack: 31.0 ))),
+                (1, InsertEntity(Monster2( size: 21.0, attack: 31.0 ))),
+                (1, InsertEntity(Turret(launch:Monster2( size: 21.0, attack: 31.0 )))),
             ]))
         )
     ]

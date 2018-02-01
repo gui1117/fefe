@@ -157,6 +157,8 @@ Every action create sound that can trigger entities around
 * turret
 * vec<animation>: animation can be oriented by body or aim
 
+convention ecrire `life_st` pour `life_storage`
+
 # Graphics
 
 # idea
