@@ -175,3 +175,8 @@ et on peut se téléporter à la symetrie de ce point
 idem s/point/ligne/
 
 transposition avec un monstre
+
+# moyen age
+
+arbalete qui tire mais vitesse =/ oo
++ épée

@@ -1,27 +1,102 @@
-pub struct AnimationTableConfig(HashMap<(AnimationSpecie, AnimationState), String>);
-// TODO: put in config
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::fs;
+use std::ffi::OsStr;
 
-pub struct AnimationTable(HashMap<(AnimationSpecie, AnimationState), Animation>);
-// TODO: put in resource
-
-pub struct Animation {
-    framerate: usize,
-    images: (),//TODO with engine
+#[derive(Serialize, Deserialize, Clone, Copy)]
+pub enum Framerate {
+    /// Distance for one loop
+    Walk(f32),
+    /// Image per second
+    Fix(f32),
 }
 
-pub struct AnimationSettings {
-    aim: Vec<AnimationPartSettings>,
-    position: Vec<AnimationPartSettings>,
+#[derive(Serialize, Deserialize)]
+pub struct AnimationsCfg {
+    table: HashMap<(AnimationSpecie, AnimationName), Vec<String>>,
+    parts: HashMap<String, AnimationPartCfg>,
+    directory: PathBuf,
 }
 
-pub struct AnimationPartSettings {
-    file: String,
+#[derive(Serialize, Deserialize)]
+pub struct AnimationPartCfg {
+    filename: String,
     layer: f32,
-    walk: bool
+    framerate: Framerate,
 }
 
-// image, layer, duration
-// and also if anchor to position or aim
+lazy_static! {
+    pub static ref ANIMATIONS: Animations = Animations::load().unwrap();
+}
+
+pub struct Animations {
+    images: Vec<PathBuf>,
+    table: HashMap<(AnimationSpecie, AnimationName), Vec<AnimationPart>>,
+}
+
+impl Animations {
+    fn load() -> Result<Animations, ::failure::Error> {
+        let mut parts_table = HashMap::new();
+        let mut images = vec![];
+
+        let mut dir_entries = vec![];
+        for entry in fs::read_dir(&::CFG.animation.directory)
+            .map_err(|e| format_err!("read dir \"{}\": {}", ::CFG.animation.directory.to_string_lossy(), e))?
+        {
+            let entry = entry
+                .map_err(|e| format_err!("read dir \"{}\": {}", ::CFG.animation.directory.to_string_lossy(), e))?
+                .path();
+
+            if entry.extension().iter().any(|p| *p == OsStr::new("png")) {
+                dir_entries.push(entry);
+            }
+        }
+
+        for (part_name, part) in &::CFG.animation.parts {
+            let mut part_images = dir_entries.iter()
+                .filter(|p| {
+                    if let Some(stem) = p.file_stem() {
+                        let len = stem.len();
+                        let stem_string = stem.to_string_lossy();
+                        let (name, _number) = stem_string.split_at(len-4);
+                        name == part_name
+                    } else {
+                        false
+                    }
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            part_images.sort();
+
+            parts_table.insert(part_name, AnimationPart {
+                framerate: part.framerate,
+                layer: part.layer,
+                images: part_images.iter().enumerate().map(|(i, _)| i+images.len()).collect(),
+            });
+
+            images.append(&mut part_images);
+        }
+
+        let mut table = HashMap::new();
+
+        for (&key, part_names) in &::CFG.animation.table {
+            let mut parts = vec![];
+            for part_name in part_names {
+                let part = parts_table.get(&part_name)
+                    .ok_or(format_err!("invalid animation configuration: \"{}\" does not correspond to any animation part", part_name))?;
+                parts.push(part.clone());
+            }
+            table.insert(key, parts);
+        }
+
+        Ok(Animations {
+            images,
+            table,
+        })
+    }
+}
+
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum AnimationName {
     ShootRifle,
     IdleRifle,
@@ -29,20 +104,24 @@ pub enum AnimationName {
     UntakeRifle,
 }
 
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum AnimationSpecie {
     Character,
     Monster,
 }
 
+#[derive(Clone)]
+pub struct AnimationPart {
+    layer: f32,
+    framerate: Framerate,
+    images: Vec<usize>,
+}
+
 pub struct AnimationState {
     /// 0 is no walk
-    // the idle shoulder animation should use walk distance too
     walk_distance: f32,
     specie: AnimationSpecie,
-    // Store animation instead of name is feasible but not handy
-    // because push animation would require AnimationTable
-    // TODO: or maybe it is OK if graphics store image in hashmap of stringname
-    idle_animation: AnimationName,
-    animations: Vec<AnimationName>,
+    idle_animation: Vec<AnimationPart>,
+    animations: Vec<Vec<AnimationPart>>,
     timer: f32,
 }
