@@ -1,29 +1,7 @@
+use std::collections::HashMap;
+
 pub struct Life(pub usize);
 
-// Animation
-
-pub struct Animations(Vec<(Image, Layer)>);
-
-pub enum AnimationSpecie {
-}
-
-pub type State = usize;
-
-pub struct AnimationState {
-    passive_state: State,
-    state: f32,
-    timer: f32,
-    state_duration: State,
-}
-
-// For legs
-pub struct VelAnimator {
-    walk_timer: f32,
-}
-
-// For head
-pub struct Animator {
-}
 
 // G*ma*mb/d^2
 // to every entities around ?
@@ -31,11 +9,11 @@ pub struct Animator {
 pub struct Gravity;
 
 // Launch an entitiy
-pub struct Launcher {
-    entity: ::entity::EntitySettings,
-    rate: f32,
-    timer: f32,
-}
+// pub struct Launcher {
+//     entity: ::entity::EntitySettings,
+//     rate: f32,
+//     timer: f32,
+// }
 
 pub struct Aim(pub f32);
 

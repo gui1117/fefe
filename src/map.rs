@@ -13,7 +13,7 @@ use lyon::svg::parser::svg::Name::Svg;
 use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
 use lyon::svg::path::default::Path;
-use entity::{EntityPosition, Insertable};
+use entity::InsertableObject;
 
 pub fn load_map(path: PathBuf, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
     let mut settings_path = path.clone();
@@ -64,8 +64,10 @@ pub fn load_map(path: PathBuf, world: &mut ::specs::World) -> Result<(), ::failu
                     if let (Some(style), Some(d)) = (style, d) {
                         for (rule, ref mut rule_entities) in settings.rules.iter().zip(rules_entities.iter_mut()) {
                             if style.to_str().contains(&rule.trigger) {
-                                let path = load_entity_position(d.to_str())
-                                    .map_err(|e| format_err!("\"{}\": {}", svg_path.to_string_lossy(), e))?;
+                                let svg_builder = Path::builder().with_svg();
+                                let commands = d.to_str();
+                                let path = ::lyon::svg::path_utils::build_path(svg_builder, commands)
+                                    .map_err(|e| format_err!("\"{}\": invalid path \"{}\": {:?}", svg_path.to_string_lossy(), commands, e))?;
                                 rule_entities.push(path);
                             }
                         }
@@ -91,15 +93,11 @@ pub fn load_map(path: PathBuf, world: &mut ::specs::World) -> Result<(), ::failu
 
     // Insert entities to world
     for (rule, rule_entities) in settings.rules.drain(..).zip(rules_entities.drain(..)) {
-        rule.inserter.insert(rule_entities, world);
+        let rule_trigger = rule.trigger;
+        rule.processor.build(rule_entities, world)
+            .map_err(|e| format_err!("\"{}\": rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
     }
     Ok(())
-}
-
-fn load_entity_position(commands: &str) -> Result<EntityPosition, ::failure::Error> {
-    let svg_builder = Path::builder().with_svg();
-    ::lyon::svg::path_utils::build_path(svg_builder, commands)
-        .map_err(|e| format_err!("invalid path \"{}\": {:?}", commands, e))
 }
 
 #[derive(Serialize, Deserialize)]
@@ -110,35 +108,55 @@ struct MapSettings {
 #[derive(Serialize, Deserialize)]
 struct Rule {
     trigger: String,
-    inserter: Inserter,
+    processor: Processor<InsertableObject>,
+}
+
+pub trait TryFromPath: Sized {
+    fn try_from_path(value: Path) -> Result<Self, ::failure::Error>;
+}
+
+pub trait Builder {
+    type Position: TryFromPath;
+    fn build(&self, position: Self::Position, world: &mut ::specs::World);
 }
 
 #[derive(Serialize, Deserialize)]
 /// entities are randomized before being processed
-enum Inserter {
-    InsertEntity(Insertable),
-    TakeNInsertion(usize, Box<Inserter>),
-    RandomInsertionDispatch(Vec<(u32, Box<Inserter>)>),
-    OrdonateInsertionDispatch(Vec<Box<Inserter>>),
+enum Processor<B: Builder> {
+    BuildEntity(B),
+    TakeNPositions(usize, Box<Processor<B>>),
+    RandomPositionDispatch(Vec<(u32, Box<Processor<B>>)>),
+    OrdonatePositionDispatch(Vec<Box<Processor<B>>>),
 }
 
-impl Inserter {
-    fn insert(self, mut entities: Vec<EntityPosition>, world: &mut ::specs::World) {
-        use self::Inserter::*;
+impl<B: Builder> Processor<B> {
+    fn build(self, entities: Vec<Path>, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
+        let mut positions = vec![];
+        for entity in entities {
+            let position = B::Position::try_from_path(entity)
+               .map_err(|e| format_err!("path incompatible with builder: {}", e))?;
+            positions.push(position);
+        }
+        self.build_positions(positions, world);
+        Ok(())
+    }
+
+    fn build_positions(self, mut entities: Vec<B::Position>, world: &mut ::specs::World) {
+        use self::Processor::*;
         match self {
-            InsertEntity(insertable) => {
+            BuildEntity(builder) => {
                 for entity in entities {
-                    insertable.insert(entity, world);
+                    builder.build(entity, world);
                 }
             },
-            TakeNInsertion(n, inserter) => {
+            TakeNPositions(n, processor) => {
                 entities.truncate(n);
-                inserter.insert(entities, world);
+                processor.build_positions(entities, world);
             },
-            RandomInsertionDispatch(weighted_inserters) => {
+            RandomPositionDispatch(weighted_processors) => {
                 let mut rng = ::rand::thread_rng();
-                let mut inserters_entities = weighted_inserters.iter().map(|_| vec![]).collect::<Vec<_>>();
-                let mut items = weighted_inserters.iter()
+                let mut processors_entities = weighted_processors.iter().map(|_| vec![]).collect::<Vec<_>>();
+                let mut items = weighted_processors.iter()
                     .enumerate()
                     .map(|(item, &(weight, _))| Weighted { weight, item })
                     .collect::<Vec<_>>();
@@ -146,22 +164,22 @@ impl Inserter {
 
                 for entity in entities {
                     let i = choices.ind_sample(&mut rng);
-                    inserters_entities[i].push(entity);
+                    processors_entities[i].push(entity);
                 }
-                for (_, inserter) in weighted_inserters {
-                    inserter.insert(inserters_entities.remove(0), world)
+                for (_, processor) in weighted_processors {
+                    processor.build_positions(processors_entities.remove(0), world)
                 }
             },
-            OrdonateInsertionDispatch(inserters) => {
-                let mut inserters_entities = inserters.iter().map(|_| vec![]).collect::<Vec<_>>();
+            OrdonatePositionDispatch(inserters) => {
+                let mut processors_entities = inserters.iter().map(|_| vec![]).collect::<Vec<_>>();
                 let mut i = 0;
                 for entity in entities {
-                    inserters_entities[i].push(entity);
+                    processors_entities[i].push(entity);
                     i += 1;
-                    i %= inserters_entities.len();
+                    i %= processors_entities.len();
                 }
-                for inserter in inserters {
-                    inserter.insert(inserters_entities.remove(0), world)
+                for processor in inserters {
+                    processor.build_positions(processors_entities.remove(0), world)
                 }
             },
         }

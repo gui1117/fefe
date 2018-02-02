@@ -143,7 +143,7 @@ Every action create sound that can trigger entities around
   insert: physic body need physic world resource to be created.
   remove: after each maintain consistency is done.
 
-  allow inconsistency: some entity can be in physic world but not in specs world
+  allow one way inconsistency: some entity can be in physic world but not in specs world
   so check with is\_alive
 
 # Components

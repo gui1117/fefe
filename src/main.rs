@@ -8,8 +8,11 @@ extern crate failure;
 extern crate lyon;
 extern crate serde;
 
+mod component;
 mod map;
 mod entity;
+mod resource;
+mod animation;
 
 fn main() {
     let mut world = ::specs::World::new();
