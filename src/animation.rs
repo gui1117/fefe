@@ -30,7 +30,7 @@ lazy_static! {
 }
 
 pub struct Animations {
-    images: Vec<PathBuf>,
+    pub images: Vec<PathBuf>,
     table: HashMap<(AnimationSpecie, AnimationName), Vec<AnimationPart>>,
 }
 

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 pub struct Life(pub usize);
 
-
 // G*ma*mb/d^2
 // to every entities around ?
 // or with filter

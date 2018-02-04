@@ -12,4 +12,5 @@ lazy_static! {
 #[derive(Serialize, Deserialize)]
 pub struct Configuration {
     pub animation: ::animation::AnimationsCfg,
+    pub fps: usize,
 }

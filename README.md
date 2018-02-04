@@ -1,6 +1,7 @@
 # Fefe
 
 A game that mix hotline miami and left 4 dead.
+and shoot em up (esquive de balles lentes)
 
 impl:
 * conrod with own backend
@@ -180,3 +181,8 @@ transposition avec un monstre
 
 arbalete qui tire mais vitesse =/ oo
 + épée
+
+# TODO:
+
+* conrod: y a-t-il des features a enelver mettre...
+* do a real game state that take world
