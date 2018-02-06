@@ -5,19 +5,20 @@ use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode,
 use vulkano::image::{AttachmentImage, Dimensions, ImageUsage, ImmutableImage, SwapchainImage};
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer, CpuBufferPool, DeviceLocalBuffer,
                       ImmutableBuffer};
-use vulkano::framebuffer::{Framebuffer, FramebufferAbstract, RenderPassDesc, Subpass, RenderPass, RenderPassAbstract,
-                           LayoutAttachmentDescription, LayoutPassDependencyDescription,
-                           LayoutPassDescription, LoadOp,
-                           RenderPassDescClearValues, StoreOp};
-use vulkano::pipeline::{ComputePipeline, GraphicsPipelineAbstract, GraphicsPipeline};
+use vulkano::framebuffer::{Framebuffer, FramebufferAbstract, LayoutAttachmentDescription,
+                           LayoutPassDependencyDescription, LayoutPassDescription, LoadOp,
+                           RenderPass, RenderPassAbstract, RenderPassDesc,
+                           RenderPassDescClearValues, StoreOp, Subpass};
+use vulkano::pipeline::{ComputePipeline, GraphicsPipeline, GraphicsPipelineAbstract};
 use vulkano::pipeline::vertex::SingleBufferDefinition;
 use vulkano::descriptor::PipelineLayoutAbstract;
 use vulkano::descriptor::pipeline_layout::PipelineLayout;
-use vulkano::descriptor::descriptor_set::{FixedSizeDescriptorSetsPool, PersistentDescriptorSet, DescriptorSet,
-                                          PersistentDescriptorSetBuf, PersistentDescriptorSetImg,
+use vulkano::descriptor::descriptor_set::{DescriptorSet, FixedSizeDescriptorSetsPool,
+                                          PersistentDescriptorSet, PersistentDescriptorSetBuf,
+                                          PersistentDescriptorSetImg,
                                           PersistentDescriptorSetSampler};
 use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
-use vulkano::command_buffer::{AutoCommandBufferBuilder, AutoCommandBuffer, DynamicState};
+use vulkano::command_buffer::{AutoCommandBuffer, AutoCommandBufferBuilder, DynamicState};
 use vulkano::instance::PhysicalDevice;
 use vulkano::sync::{now, GpuFuture};
 use vulkano::image::ImageLayout;
@@ -48,7 +49,9 @@ pub struct Graphics<'a> {
 }
 
 #[derive(Debug, Clone)]
-struct Vertex { position: [f32; 2] }
+struct Vertex {
+    position: [f32; 2],
+}
 impl_vertex!(Vertex, position);
 
 impl<'a> Graphics<'a> {
@@ -114,44 +117,44 @@ impl<'a> Graphics<'a> {
 
         let render_pass = Arc::new(
             CustomRenderPassDesc {
-                swapchain_image_format: swapchain.format()
-            }
-                .build_render_pass(device.clone())
+                swapchain_image_format: swapchain.format(),
+            }.build_render_pass(device.clone())
                 .unwrap(),
         );
 
         let mut future = Box::new(now(device.clone())) as Box<GpuFuture>;
 
-        let (vertex_buffer, vertex_buffer_fut) =
-            ImmutableBuffer::from_iter(
-                [
-                    [-0.5f32, -0.5],
-                    [-0.5, 0.5],
-                    [0.5, -0.5],
-                    [0.5, 0.5],
-                    [0.5, -0.5],
-                    [-0.5, 0.5],
-                ].iter()
-                    .cloned()
-                    .map(|position| Vertex { position }),
-                BufferUsage::vertex_buffer(),
-                queue.clone(),
-            ).expect("failed to create buffer");
+        let (vertex_buffer, vertex_buffer_fut) = ImmutableBuffer::from_iter(
+            [
+                [-0.5f32, -0.5],
+                [-0.5, 0.5],
+                [0.5, -0.5],
+                [0.5, 0.5],
+                [0.5, -0.5],
+                [-0.5, 0.5],
+            ].iter()
+                .cloned()
+                .map(|position| Vertex { position }),
+            BufferUsage::vertex_buffer(),
+            queue.clone(),
+        ).expect("failed to create buffer");
         future = Box::new(future.join(vertex_buffer_fut)) as Box<_>;
 
         let vs = vs::Shader::load(device.clone()).expect("failed to create shader module");
         let fs = fs::Shader::load(device.clone()).expect("failed to create shader module");
 
-        let pipeline = Arc::new(vulkano::pipeline::GraphicsPipeline::start()
-            .vertex_input_single_buffer::<Vertex>()
-            .vertex_shader(vs.main_entry_point(), ())
-            .triangle_strip()
-            .viewports_dynamic_scissors_irrelevant(1)
-            .fragment_shader(fs.main_entry_point(), ())
-            .blend_alpha_blending()
-            .render_pass(vulkano::framebuffer::Subpass::from(render_pass.clone(), 0).unwrap())
-            .build(device.clone())
-            .unwrap());
+        let pipeline = Arc::new(
+            vulkano::pipeline::GraphicsPipeline::start()
+                .vertex_input_single_buffer::<Vertex>()
+                .vertex_shader(vs.main_entry_point(), ())
+                .triangle_strip()
+                .viewports_dynamic_scissors_irrelevant(1)
+                .fragment_shader(fs.main_entry_point(), ())
+                .blend_alpha_blending()
+                .render_pass(vulkano::framebuffer::Subpass::from(render_pass.clone(), 0).unwrap())
+                .build(device.clone())
+                .unwrap(),
+        );
 
         let mut animation_images = vec![];
 
@@ -190,10 +193,7 @@ impl<'a> Graphics<'a> {
 
             let image_descriptor_set = Arc::new(
                 PersistentDescriptorSet::start(pipeline.clone(), 2)
-                    .add_sampled_image(
-                        image.clone(),
-                        sampler.clone(),
-                    )
+                    .add_sampled_image(image.clone(), sampler.clone())
                     .unwrap()
                     .build()
                     .unwrap(),
@@ -202,15 +202,11 @@ impl<'a> Graphics<'a> {
             animation_images.push(image_descriptor_set);
         }
 
-        let view_buffer_pool = CpuBufferPool::<vs::ty::View>::new(
-            device.clone(),
-            BufferUsage::uniform_buffer(),
-        );
+        let view_buffer_pool =
+            CpuBufferPool::<vs::ty::View>::new(device.clone(), BufferUsage::uniform_buffer());
 
-        let world_buffer_pool = CpuBufferPool::<vs::ty::World>::new(
-            device.clone(),
-            BufferUsage::uniform_buffer(),
-        );
+        let world_buffer_pool =
+            CpuBufferPool::<vs::ty::World>::new(device.clone(), BufferUsage::uniform_buffer());
 
         let depth_buffer_attachment = AttachmentImage::transient(
             device.clone(),
@@ -233,9 +229,7 @@ impl<'a> Graphics<'a> {
             })
             .collect::<Vec<_>>();
 
-        let future = Some(Box::new(future
-            .then_signal_fence_and_flush()
-            .unwrap()) as Box<_>);
+        let future = Some(Box::new(future.then_signal_fence_and_flush().unwrap()) as Box<_>);
 
         Graphics {
             device,
@@ -298,12 +292,21 @@ impl<'a> Graphics<'a> {
             .collect::<Vec<_>>();
     }
 
-    fn build_command_buffer(&mut self, image_num: usize, world: &mut ::specs::World) -> AutoCommandBuffer<StandardCommandPoolAlloc> {
-        let mut command_buffer_builder = AutoCommandBufferBuilder::primary_one_time_submit(self.device.clone(), self.queue.family())
-            .unwrap()
+    fn build_command_buffer(
+        &mut self,
+        image_num: usize,
+        world: &mut ::specs::World,
+    ) -> AutoCommandBuffer<StandardCommandPoolAlloc> {
+        let mut command_buffer_builder = AutoCommandBufferBuilder::primary_one_time_submit(
+            self.device.clone(),
+            self.queue.family(),
+        ).unwrap()
             .begin_render_pass(
-                self.framebuffers[image_num].clone(), false,
-                vec![[0.0, 0.0, 1.0, 1.0].into(), 1.0.into()]).unwrap();
+                self.framebuffers[image_num].clone(),
+                false,
+                vec![[0.0, 0.0, 1.0, 1.0].into(), 1.0.into()],
+            )
+            .unwrap();
 
         // TODO view_set
         let mut images = world.write_resource::<::resource::AnimationImages>();
@@ -314,15 +317,15 @@ impl<'a> Graphics<'a> {
                 DynamicState::none(),
                 self.vertex_buffers.clone(),
                 (view_set.clone(), static_draw.set.clone()),
-                vs::ty::Layer {
-                    layer: image.layer,
-                },
+                vs::ty::Layer { layer: image.layer },
             )
         }
 
         command_buffer_builder
-            .end_render_pass().unwrap()
-            .build().unwrap()
+            .end_render_pass()
+            .unwrap()
+            .build()
+            .unwrap()
     }
 
     pub fn draw(&mut self, world: &mut ::specs::World, window: &::vulkano_win::Window) {
@@ -336,9 +339,10 @@ impl<'a> Graphics<'a> {
                 Err(vulkano::swapchain::AcquireError::OutOfDate)
                 | Err(vulkano::swapchain::AcquireError::Timeout) => {
                     self.recreate(&window);
-                    next_image = swapchain::acquire_next_image(self.swapchain.clone(), Some(timeout));
+                    next_image =
+                        swapchain::acquire_next_image(self.swapchain.clone(), Some(timeout));
                 }
-                _ => break
+                _ => break,
             }
         }
 
@@ -346,15 +350,13 @@ impl<'a> Graphics<'a> {
 
         let command_buffer = self.build_command_buffer(image_num, world);
 
-        let future = self.future.take().unwrap()
+        let future = self.future
+            .take()
+            .unwrap()
             .join(acquire_future)
             .then_execute(self.queue.clone(), command_buffer)
             .unwrap()
-            .then_swapchain_present(
-                self.queue.clone(),
-                self.swapchain.clone(),
-                image_num,
-            )
+            .then_swapchain_present(self.queue.clone(), self.swapchain.clone(), image_num)
             .then_signal_fence_and_flush()
             .unwrap();
 

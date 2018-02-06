@@ -23,8 +23,7 @@ pub struct Aim(pub f32);
 // or an enum
 // with a trait you can store it in an inventory
 
-pub struct Weapon {
-}
+pub struct Weapon {}
 
 #[derive(Clone)]
 pub struct RigidBody(::nphysics::object::BodyHandle);
@@ -51,7 +50,8 @@ impl RigidBody {
         &'a self,
         physic_world: &'a ::resource::PhysicWorld,
     ) -> &'a ::nphysics::object::RigidBody<f32> {
-        physic_world.rigid_body(self.0)
+        physic_world
+            .rigid_body(self.0)
             .expect("Rigid body in specs does not exist in physic world")
     }
 
@@ -60,7 +60,8 @@ impl RigidBody {
         &'a mut self,
         physic_world: &'a mut ::resource::PhysicWorld,
     ) -> &'a mut ::nphysics::object::RigidBody<f32> {
-        physic_world.rigid_body_mut(self.0)
+        physic_world
+            .rigid_body_mut(self.0)
             .expect("Rigid body in specs does not exist in physic world")
     }
 }

@@ -1,27 +1,27 @@
-extern crate specs;
-extern crate rand;
-extern crate ron;
 #[macro_use]
-extern crate serde_derive;
+extern crate derive_deref;
 #[macro_use]
 extern crate failure;
-extern crate lyon;
-extern crate serde;
+extern crate fps_counter;
+extern crate gilrs;
 #[macro_use]
 extern crate lazy_static;
-extern crate gilrs;
-extern crate winit;
+extern crate lyon;
+extern crate nalgebra as na;
+extern crate nphysics2d as nphysics;
+extern crate png;
+extern crate rand;
+extern crate ron;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate specs;
 #[macro_use]
 extern crate vulkano;
 #[macro_use]
 extern crate vulkano_shader_derive;
 extern crate vulkano_win;
-extern crate fps_counter;
-extern crate png;
-extern crate nphysics2d as nphysics;
-extern crate nalgebra as na;
-#[macro_use]
-extern crate derive_deref;
+extern crate winit;
 
 pub use nphysics::math as npm;
 
@@ -66,7 +66,11 @@ fn main() {
         .build_vk_surface(&events_loop, instance.clone())
         .unwrap();
 
-    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab), 100, 10).unwrap();
+    try_multiple_time!(
+        window.window().set_cursor_state(winit::CursorState::Grab),
+        100,
+        10
+    ).unwrap();
     window.window().set_cursor(winit::MouseCursor::NoneCursor);
 
     let mut graphics = graphics::Graphics::new(&window);
@@ -85,10 +89,7 @@ fn main() {
         .add(::system::AnimationSystem, "animation", &[])
         .build();
 
-    let frame_duration = Duration::new(
-        0,
-        (1_000_000_000.0 / ::CFG.fps as f32) as u32,
-    );
+    let frame_duration = Duration::new(0, (1_000_000_000.0 / ::CFG.fps as f32) as u32);
     let mut fps_counter = fps_counter::FPSCounter::new();
     let mut last_frame_instant = Instant::now();
     let mut last_update_instant = Instant::now();
@@ -109,9 +110,17 @@ fn main() {
                     event: winit::WindowEvent::Focused(true),
                     ..
                 } => {
-                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Normal), 100, 10).unwrap();
-                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab), 100, 10).unwrap();
-                },
+                    try_multiple_time!(
+                        window.window().set_cursor_state(winit::CursorState::Normal),
+                        100,
+                        10
+                    ).unwrap();
+                    try_multiple_time!(
+                        window.window().set_cursor_state(winit::CursorState::Grab),
+                        100,
+                        10
+                    ).unwrap();
+                }
                 winit::Event::WindowEvent {
                     event: ::winit::WindowEvent::Closed,
                     ..

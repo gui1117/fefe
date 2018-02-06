@@ -20,7 +20,7 @@ impl<'a> ::specs::System<'a> for AnimationSystem {
             mut physic_world,
             mut animation_images,
         ): Self::SystemData,
-    ) {
+){
         for (state, body) in (&mut animation_states, &rigid_bodies).join() {
             let body = body.get(&physic_world);
 

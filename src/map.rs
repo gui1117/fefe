@@ -7,8 +7,8 @@ use std::path::PathBuf;
 use std::fs::File;
 use std::io::Read;
 use lyon::svg::parser::FromSpan;
-use lyon::svg::parser::svg::{Tokenizer, Token};
-use lyon::svg::parser::{ElementId, AttributeId};
+use lyon::svg::parser::svg::{Token, Tokenizer};
+use lyon::svg::parser::{AttributeId, ElementId};
 use lyon::svg::parser::svg::Name::Svg;
 use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
@@ -19,7 +19,10 @@ pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failur
     let mut path = ::CFG.map_directory.clone();
     path.push(name);
     if !path.is_dir() {
-        return Err(format_err!("\"{}\": does not exist", path.to_string_lossy()));
+        return Err(format_err!(
+            "\"{}\": does not exist",
+            path.to_string_lossy()
+        ));
     }
 
     let mut settings_path = path.clone();
@@ -34,7 +37,8 @@ pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failur
     let mut svg_file = File::open(&svg_path)
         .map_err(|e| format_err!("\"{}\": {}", svg_path.to_string_lossy(), e))?;
     let mut svg_string = String::new();
-    svg_file.read_to_string(&mut svg_string)
+    svg_file
+        .read_to_string(&mut svg_string)
         .map_err(|e| format_err!("\"{}\": {}", svg_path.to_string_lossy(), e))?;
 
     let mut rules_entities = settings.rules.iter().map(|_| vec![]).collect::<Vec<_>>();
@@ -46,8 +50,7 @@ pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failur
     let mut d = None;
     let mut in_path_attribute = false;
     while let Some(token) = tokenizer.next() {
-        let token = token
-            .map_err(|e| format_err!("\"{}\": {}", svg_path.to_string_lossy(), e))?;
+        let token = token.map_err(|e| format_err!("\"{}\": {}", svg_path.to_string_lossy(), e))?;
 
         // Ignore markers
         if in_marker {
@@ -68,12 +71,22 @@ pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failur
                 }
                 Token::ElementEnd(Empty) => {
                     if let (Some(style), Some(d)) = (style, d) {
-                        for (rule, ref mut rule_entities) in settings.rules.iter().zip(rules_entities.iter_mut()) {
+                        for (rule, ref mut rule_entities) in
+                            settings.rules.iter().zip(rules_entities.iter_mut())
+                        {
                             if style.to_str().contains(&rule.trigger) {
                                 let svg_builder = Path::builder().with_svg();
                                 let commands = d.to_str();
-                                let path = ::lyon::svg::path_utils::build_path(svg_builder, commands)
-                                    .map_err(|e| format_err!("\"{}\": invalid path \"{}\": {:?}", svg_path.to_string_lossy(), commands, e))?;
+                                let path =
+                                    ::lyon::svg::path_utils::build_path(svg_builder, commands)
+                                        .map_err(|e| {
+                                            format_err!(
+                                                "\"{}\": invalid path \"{}\": {:?}",
+                                                svg_path.to_string_lossy(),
+                                                commands,
+                                                e
+                                            )
+                                        })?;
                                 rule_entities.push(path);
                             }
                         }
@@ -100,8 +113,14 @@ pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failur
     // Insert entities to world
     for (rule, rule_entities) in settings.rules.drain(..).zip(rules_entities.drain(..)) {
         let rule_trigger = rule.trigger;
-        rule.processor.build(rule_entities, world)
-            .map_err(|e| format_err!("\"{}\": rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
+        rule.processor.build(rule_entities, world).map_err(|e| {
+            format_err!(
+                "\"{}\": rule \"{}\": {}",
+                svg_path.to_string_lossy(),
+                rule_trigger,
+                e
+            )
+        })?;
     }
     Ok(())
 }
@@ -136,11 +155,15 @@ enum Processor<B: Builder> {
 }
 
 impl<B: Builder> Processor<B> {
-    fn build(self, entities: Vec<Path>, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
+    fn build(
+        self,
+        entities: Vec<Path>,
+        world: &mut ::specs::World,
+    ) -> Result<(), ::failure::Error> {
         let mut positions = vec![];
         for entity in entities {
             let position = B::Position::try_from_path(entity)
-               .map_err(|e| format_err!("path incompatible with builder: {}", e))?;
+                .map_err(|e| format_err!("path incompatible with builder: {}", e))?;
             positions.push(position);
         }
         self.build_positions(positions, world);
@@ -150,19 +173,21 @@ impl<B: Builder> Processor<B> {
     fn build_positions(self, mut entities: Vec<B::Position>, world: &mut ::specs::World) {
         use self::Processor::*;
         match self {
-            BuildEntity(builder) => {
-                for entity in entities {
-                    builder.build(entity, world);
-                }
+            BuildEntity(builder) => for entity in entities {
+                builder.build(entity, world);
             },
             TakeNPositions(n, processor) => {
                 entities.truncate(n);
                 processor.build_positions(entities, world);
-            },
+            }
             RandomPositionDispatch(weighted_processors) => {
                 let mut rng = ::rand::thread_rng();
-                let mut processors_entities = weighted_processors.iter().map(|_| vec![]).collect::<Vec<_>>();
-                let mut items = weighted_processors.iter()
+                let mut processors_entities = weighted_processors
+                    .iter()
+                    .map(|_| vec![])
+                    .collect::<Vec<_>>();
+                let mut items = weighted_processors
+                    .iter()
                     .enumerate()
                     .map(|(item, &(weight, _))| Weighted { weight, item })
                     .collect::<Vec<_>>();
@@ -175,7 +200,7 @@ impl<B: Builder> Processor<B> {
                 for (_, processor) in weighted_processors {
                     processor.build_positions(processors_entities.remove(0), world)
                 }
-            },
+            }
             OrdonatePositionDispatch(inserters) => {
                 let mut processors_entities = inserters.iter().map(|_| vec![]).collect::<Vec<_>>();
                 let mut i = 0;
@@ -187,7 +212,7 @@ impl<B: Builder> Processor<B> {
                 for processor in inserters {
                     processor.build_positions(processors_entities.remove(0), world)
                 }
-            },
+            }
         }
     }
 }

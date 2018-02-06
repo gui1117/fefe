@@ -41,11 +41,21 @@ impl Animations {
         let mut images = vec![];
 
         let mut dir_entries = vec![];
-        for entry in fs::read_dir(&::CFG.animation.directory)
-            .map_err(|e| format_err!("read dir \"{}\": {}", ::CFG.animation.directory.to_string_lossy(), e))?
-        {
+        for entry in fs::read_dir(&::CFG.animation.directory).map_err(|e| {
+            format_err!(
+                "read dir \"{}\": {}",
+                ::CFG.animation.directory.to_string_lossy(),
+                e
+            )
+        })? {
             let entry = entry
-                .map_err(|e| format_err!("read dir \"{}\": {}", ::CFG.animation.directory.to_string_lossy(), e))?
+                .map_err(|e| {
+                    format_err!(
+                        "read dir \"{}\": {}",
+                        ::CFG.animation.directory.to_string_lossy(),
+                        e
+                    )
+                })?
                 .path();
 
             if entry.extension().iter().any(|p| *p == OsStr::new("png")) {
@@ -54,12 +64,13 @@ impl Animations {
         }
 
         for (part_name, part) in &::CFG.animation.parts {
-            let mut part_images = dir_entries.iter()
+            let mut part_images = dir_entries
+                .iter()
                 .filter(|p| {
                     if let Some(stem) = p.file_stem() {
                         let len = stem.len();
                         let stem_string = stem.to_string_lossy();
-                        let (name, _number) = stem_string.split_at(len-4);
+                        let (name, _number) = stem_string.split_at(len - 4);
                         name == part_name
                     } else {
                         false
@@ -69,16 +80,27 @@ impl Animations {
                 .collect::<Vec<_>>();
 
             if part_images.len() == 0 {
-                return Err(format_err!("invalid animation configuration: \"{}\" have no images in \"{}\"", part_name, ::CFG.animation.directory.to_string_lossy()));
+                return Err(format_err!(
+                    "invalid animation configuration: \"{}\" have no images in \"{}\"",
+                    part_name,
+                    ::CFG.animation.directory.to_string_lossy()
+                ));
             }
 
             part_images.sort();
 
-            parts_table.insert(part_name, AnimationPart {
-                framerate: part.framerate,
-                layer: part.layer,
-                images: part_images.iter().enumerate().map(|(i, _)| i+images.len()).collect(),
-            });
+            parts_table.insert(
+                part_name,
+                AnimationPart {
+                    framerate: part.framerate,
+                    layer: part.layer,
+                    images: part_images
+                        .iter()
+                        .enumerate()
+                        .map(|(i, _)| i + images.len())
+                        .collect(),
+                },
+            );
 
             images.append(&mut part_images);
         }
@@ -92,15 +114,13 @@ impl Animations {
                     .ok_or(format_err!("invalid animation configuration: \"{}\" does not correspond to any animation part", part_name))?;
                 parts.push(part.clone());
             }
-            let complete_animation = CompleteAnimation::new(parts)
-                .map_err(|e| format_err!("invalid animation configuration: \"{:?}\": {} ", key, e))?;
+            let complete_animation = CompleteAnimation::new(parts).map_err(|e| {
+                format_err!("invalid animation configuration: \"{:?}\": {} ", key, e)
+            })?;
             table.insert(key, complete_animation);
         }
 
-        Ok(Animations {
-            images,
-            table,
-        })
+        Ok(Animations { images, table })
     }
 }
 
@@ -129,20 +149,18 @@ pub struct AnimationPart {
 #[derive(Clone)]
 pub struct CompleteAnimation {
     pub duration: f32,
-    pub parts: Vec<AnimationPart>
+    pub parts: Vec<AnimationPart>,
 }
 
 impl CompleteAnimation {
     fn new(parts: Vec<AnimationPart>) -> Result<Self, ::failure::Error> {
-        let duration = parts.iter()
+        let duration = parts
+            .iter()
             .filter_map(|a| a.duration())
             .max_by(|i, j| i.partial_cmp(j).unwrap())
             .ok_or(format_err!("Animation contains no sized parts"))?;
 
-        Ok(CompleteAnimation {
-            parts,
-            duration,
-        })
+        Ok(CompleteAnimation { parts, duration })
     }
 }
 
@@ -153,9 +171,9 @@ impl AnimationPart {
             Framerate::Walk(r) => {
                 let i = ((distance / r) * len as f32).floor() as usize;
                 self.images[i % len]
-            },
+            }
             Framerate::Fix(r) => {
-                let i = (timer*r).floor() as usize;
+                let i = (timer * r).floor() as usize;
                 self.images[i % len]
             }
         }
@@ -163,12 +181,8 @@ impl AnimationPart {
 
     fn duration(&self) -> Option<f32> {
         match self.framerate {
-            Framerate::Walk(r) => {
-                None
-            },
-            Framerate::Fix(r) => {
-                Some(self.images.len() as f32 * r)
-            },
+            Framerate::Walk(r) => None,
+            Framerate::Fix(r) => Some(self.images.len() as f32 * r),
         }
     }
 }
@@ -197,7 +211,6 @@ impl AnimationState {
 impl ::specs::Component for AnimationState {
     type Storage = ::specs::VecStorage<Self>;
 }
-
 
 #[derive(Deref, DerefMut)]
 pub struct AnimationImages(pub Vec<AnimationImage>);
