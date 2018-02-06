@@ -29,9 +29,10 @@ lazy_static! {
     pub static ref ANIMATIONS: Animations = Animations::load().unwrap();
 }
 
+/// Animation parts must not be empty
 pub struct Animations {
     pub images: Vec<PathBuf>,
-    table: HashMap<(AnimationSpecie, AnimationName), Vec<AnimationPart>>,
+    table: HashMap<(AnimationSpecie, AnimationName), CompleteAnimation>,
 }
 
 impl Animations {
@@ -66,6 +67,11 @@ impl Animations {
                 })
                 .cloned()
                 .collect::<Vec<_>>();
+
+            if part_images.len() == 0 {
+                return Err(format_err!("invalid animation configuration: \"{}\" have no images in \"{}\"", part_name, ::CFG.animation.directory.to_string_lossy()));
+            }
+
             part_images.sort();
 
             parts_table.insert(part_name, AnimationPart {
@@ -86,7 +92,9 @@ impl Animations {
                     .ok_or(format_err!("invalid animation configuration: \"{}\" does not correspond to any animation part", part_name))?;
                 parts.push(part.clone());
             }
-            table.insert(key, parts);
+            let complete_animation = CompleteAnimation::new(parts)
+                .map_err(|e| format_err!("invalid animation configuration: \"{:?}\": {} ", key, e))?;
+            table.insert(key, complete_animation);
         }
 
         Ok(Animations {
@@ -96,7 +104,7 @@ impl Animations {
     }
 }
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum AnimationName {
     ShootRifle,
     IdleRifle,
@@ -104,24 +112,103 @@ pub enum AnimationName {
     UntakeRifle,
 }
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum AnimationSpecie {
     Character,
     Monster,
 }
 
 #[derive(Clone)]
+/// images must not be empty
 pub struct AnimationPart {
-    layer: f32,
+    pub layer: f32,
     framerate: Framerate,
     images: Vec<usize>,
 }
 
+#[derive(Clone)]
+pub struct CompleteAnimation {
+    pub duration: f32,
+    pub parts: Vec<AnimationPart>
+}
+
+impl CompleteAnimation {
+    fn new(parts: Vec<AnimationPart>) -> Result<Self, ::failure::Error> {
+        let duration = parts.iter()
+            .filter_map(|a| a.duration())
+            .max_by(|i, j| i.partial_cmp(j).unwrap())
+            .ok_or(format_err!("Animation contains no sized parts"))?;
+
+        Ok(CompleteAnimation {
+            parts,
+            duration,
+        })
+    }
+}
+
+impl AnimationPart {
+    pub fn image_at(&self, timer: f32, distance: f32) -> usize {
+        let len = self.images.len();
+        match self.framerate {
+            Framerate::Walk(r) => {
+                let i = ((distance / r) * len as f32).floor() as usize;
+                self.images[i % len]
+            },
+            Framerate::Fix(r) => {
+                let i = (timer*r).floor() as usize;
+                self.images[i % len]
+            }
+        }
+    }
+
+    fn duration(&self) -> Option<f32> {
+        match self.framerate {
+            Framerate::Walk(r) => {
+                None
+            },
+            Framerate::Fix(r) => {
+                Some(self.images.len() as f32 * r)
+            },
+        }
+    }
+}
+
 pub struct AnimationState {
     /// 0 is no walk
-    walk_distance: f32,
-    specie: AnimationSpecie,
-    idle_animation: Vec<AnimationPart>,
-    animations: Vec<Vec<AnimationPart>>,
-    timer: f32,
+    pub distance: f32,
+    pub specie: AnimationSpecie,
+    pub idle_animation: CompleteAnimation,
+    pub animations: Vec<CompleteAnimation>,
+    pub timer: f32,
+}
+
+impl AnimationState {
+    pub fn new(specie: AnimationSpecie, idle_animation: AnimationName) -> Self {
+        AnimationState {
+            distance: 0.0,
+            specie,
+            idle_animation: ANIMATIONS.table[&(specie, idle_animation)].clone(),
+            animations: vec![],
+            timer: 0.0,
+        }
+    }
+}
+
+impl ::specs::Component for AnimationState {
+    type Storage = ::specs::VecStorage<Self>;
+}
+
+
+#[derive(Deref, DerefMut)]
+// TODO: this could be a resource
+pub struct AnimationImages(Vec<AnimationImage>);
+
+impl ::specs::Component for AnimationImages {
+    type Storage = ::specs::VecStorage<Self>;
+}
+
+pub struct AnimationImage {
+    pub image: usize,
+    pub position: ::na::Isometry2<f32>,
+    pub layer: f32,
 }

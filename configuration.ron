@@ -1,0 +1,19 @@
+Configuration(
+    animation: (
+        table: {
+            (Character, IdleRifle): ["character_idle_rifle"],
+        },
+        parts: {
+            "character_idle_rifle": (
+                filename: "character_idle_rifle",
+                layer: 0.5,
+                framerate: Fix(1.0),
+            ),
+        },
+        directory: "assets/animations",
+    ),
+    fps: 60,
+    physic_max_timestep: 1000.0,
+    physic_min_timestep: 0.0,
+    map_directory: "assets/maps",
+)

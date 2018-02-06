@@ -17,9 +17,9 @@ vulkano = "0.7"
 vulkano-shader-derive = "0.7"
 vulkano-win = "0.7"
 winit = "0.7"
-nalgebra = "0.13"
-ncollide = { git = "https://github.com/thiolliere/ncollide/", branch = "send_sync_master" }
-# nphysics2d = { git = "https://github.com/thiolliere/nphysics/", branch = "send_sync_master" }
+ncollide = { git = "https://github.com/sebcrozet/ncollide/" }
+nphysics2d = { path = "../nphysics/build/nphysics2d" }
+nalgebra = "0.14"
 alga = "0.5"
 pathfinding = "0.6"
 png = "0.11"
@@ -29,3 +29,4 @@ fps_counter = "1"
 app_dirs = "1"
 rodio = "0.5"
 conrod = "0.57"
+derive_deref = "1"

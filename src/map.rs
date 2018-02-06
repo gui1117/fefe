@@ -15,16 +15,22 @@ use lyon::svg::parser::svg::ElementEnd::Empty;
 use lyon::svg::path::default::Path;
 use entity::InsertableObject;
 
-pub fn load_map(path: PathBuf, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
+pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
+    let mut path = ::CFG.map_directory.clone();
+    path.push(name);
+    if !path.is_dir() {
+        return Err(format_err!("\"{}\": does not exist", path.to_string_lossy()));
+    }
+
     let mut settings_path = path.clone();
-    settings_path.set_extension("ron");
+    settings_path.push("settings.ron");
     let settings_file = File::open(&settings_path)
         .map_err(|e| format_err!("\"{}\": {}", settings_path.to_string_lossy(), e))?;
     let mut settings: MapSettings = ::ron::de::from_reader(settings_file)
         .map_err(|e| format_err!("\"{}\": {}", settings_path.to_string_lossy(), e))?;
 
     let mut svg_path = path.clone();
-    svg_path.set_extension("svg");
+    svg_path.push("map.svg");
     let mut svg_file = File::open(&svg_path)
         .map_err(|e| format_err!("\"{}\": {}", svg_path.to_string_lossy(), e))?;
     let mut svg_string = String::new();

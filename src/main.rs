@@ -18,11 +18,18 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate fps_counter;
 extern crate png;
+extern crate nphysics2d as nphysics;
+extern crate nalgebra as na;
+#[macro_use]
+extern crate derive_deref;
+
+pub use nphysics::math as npm;
 
 mod component;
 mod map;
 mod entity;
 mod animation;
+mod system;
 mod configuration;
 mod resource;
 #[macro_use]
@@ -60,12 +67,23 @@ fn main() {
         .unwrap();
 
     try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab), 100, 10).unwrap();
+    window.window().set_cursor(winit::MouseCursor::NoneCursor);
 
     let mut graphics = graphics::Graphics::new(&window);
 
     let mut world = specs::World::new();
-    world.add_resource(::resource::Drawer::new());
+    world.register::<::component::RigidBody>();
+    world.register::<::component::AnimationState>();
+    world.register::<::component::AnimationImages>();
+    world.add_resource(::resource::UpdateTime(0.0));
+    world.add_resource(::resource::PhysicWorld::new());
     world.maintain();
+
+    let mut update_dispatcher = ::specs::DispatcherBuilder::new()
+        .add(::system::PhysicSystem, "physic", &[])
+        .add_barrier() // Draw barrier
+        .add(::system::AnimationSystem, "animation", &[])
+        .build();
 
     let frame_duration = Duration::new(
         0,
@@ -75,16 +93,33 @@ fn main() {
     let mut last_frame_instant = Instant::now();
     let mut last_update_instant = Instant::now();
 
-    let mut game_state = Box::new(game_state::Menu) as Box<GameState>;
+    let mut game_state = Box::new(game_state::Game) as Box<GameState>;
 
-    loop {
+    ::map::load_map("one".into(), &mut world).unwrap();
+
+    'main_loop: loop {
         // Parse events
         let mut evs = vec![];
         events_loop.poll_events(|ev| {
-            // TODO regrab on focus(on) ?
             evs.push(ev);
         });
         for ev in evs {
+            match ev {
+                winit::Event::WindowEvent {
+                    event: winit::WindowEvent::Focused(true),
+                    ..
+                } => {
+                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Normal), 100, 10).unwrap();
+                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab), 100, 10).unwrap();
+                },
+                winit::Event::WindowEvent {
+                    event: ::winit::WindowEvent::Closed,
+                    ..
+                } => {
+                    break 'main_loop;
+                }
+                _ => (),
+            }
             game_state = game_state.winit_event(ev, &mut world);
         }
         while let Some(gilrs::Event { event, .. }) = gilrs.next_event() {
@@ -93,19 +128,25 @@ fn main() {
 
         // Quit
         if game_state.quit() {
-            break;
+            break 'main_loop;
         }
 
         // Update
-        let delta_time = last_update_instant.elapsed();
-        last_update_instant = Instant::now();
-
-        // UPDATE WORLD delta_time
+        // TODO: UPDATE WORLD delta_time
         // with delta modified by gamestate (0.0 for pause)
         // or maybe different dispatch depending on gamestate::state {
         // Pause,
         // Play,
-        // }
+
+        let delta_time = last_update_instant.elapsed();
+        last_update_instant = Instant::now();
+        world.write_resource::<::resource::UpdateTime>().0 = delta_time
+            .as_secs()
+            .saturating_mul(1_000_000_000)
+            .saturating_add(delta_time.subsec_nanos() as u64)
+            as f32 / 1_000_000_000.0;
+
+        update_dispatcher.dispatch(&mut world.res);
 
         // Draw
         graphics.draw(&mut world, &window);

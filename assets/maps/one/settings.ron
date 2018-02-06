@@ -1,0 +1,8 @@
+MapSettings(
+    rules: [
+        (
+            trigger: "#ff0000",
+            processor: TakeNPositions(1, BuildEntity(Player(()))),
+        )
+    ]
+)

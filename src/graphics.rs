@@ -49,6 +49,7 @@ use std::time::Duration;
 //so put window in graphics
 //and add a resource for cursor grab
 // only add refresh
+// NO: only a bool for whereas draw the cursor or not
 
 pub struct Graphics<'a> {
     physical: PhysicalDevice<'a>,
@@ -60,7 +61,6 @@ pub struct Graphics<'a> {
     vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
     animation_images: Vec<Arc<DescriptorSet>>,
     framebuffers: Vec<Arc<FramebufferAbstract + Sync + Send>>,
-    sampler: Arc<Sampler>,
     view_buffer_pool: CpuBufferPool<vs::ty::View>,
     world_buffer_pool: CpuBufferPool<vs::ty::World>,
     future: Option<Box<GpuFuture>>,
@@ -174,6 +174,21 @@ impl<'a> Graphics<'a> {
 
         let mut animation_images = vec![];
 
+        let sampler = Sampler::new(
+            device.clone(),
+            Filter::Linear,
+            Filter::Linear,
+            MipmapMode::Nearest,
+            SamplerAddressMode::ClampToEdge,
+            SamplerAddressMode::ClampToEdge,
+            SamplerAddressMode::ClampToEdge,
+            // TODO: What values here
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+        ).unwrap();
+
         for image_path in &::animation::ANIMATIONS.images {
             let file = File::open(image_path).unwrap();
             let (info, mut reader) = ::png::Decoder::new(file).read_info().unwrap();
@@ -193,8 +208,11 @@ impl<'a> Graphics<'a> {
             future = Box::new(future.join(image_fut)) as Box<_>;
 
             let image_descriptor_set = Arc::new(
-                PersistentDescriptorSet::start(pipeline.clone(), 0)
-                    .add_image(image.clone())
+                PersistentDescriptorSet::start(pipeline.clone(), 2)
+                    .add_sampled_image(
+                        image.clone(),
+                        sampler.clone(),
+                    )
                     .unwrap()
                     .build()
                     .unwrap(),
@@ -212,21 +230,6 @@ impl<'a> Graphics<'a> {
             device.clone(),
             BufferUsage::uniform_buffer(),
         );
-
-        let sampler = Sampler::new(
-            device.clone(),
-            Filter::Linear,
-            Filter::Linear,
-            MipmapMode::Nearest,
-            SamplerAddressMode::ClampToEdge,
-            SamplerAddressMode::ClampToEdge,
-            SamplerAddressMode::ClampToEdge,
-            // TODO: What values here
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-        ).unwrap();
 
         let depth_buffer_attachment = AttachmentImage::transient(
             device.clone(),
@@ -263,7 +266,6 @@ impl<'a> Graphics<'a> {
             vertex_buffer,
             animation_images,
             framebuffers,
-            sampler,
             view_buffer_pool,
             world_buffer_pool,
             physical,
