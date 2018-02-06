@@ -6,9 +6,9 @@ impl<'a> ::specs::System<'a> for AnimationSystem {
     type SystemData = (
         ::specs::ReadStorage<'a, ::component::RigidBody>,
         ::specs::WriteStorage<'a, ::component::AnimationState>,
-        ::specs::WriteStorage<'a, ::component::AnimationImages>,
         ::specs::Fetch<'a, ::resource::UpdateTime>,
         ::specs::FetchMut<'a, ::resource::PhysicWorld>,
+        ::specs::FetchMut<'a, ::resource::AnimationImages>,
     );
 
     fn run(
@@ -16,12 +16,12 @@ impl<'a> ::specs::System<'a> for AnimationSystem {
         (
             rigid_bodies,
             mut animation_states,
-            mut animation_imagess,
             update_time,
             mut physic_world,
+            mut animation_images,
         ): Self::SystemData,
     ) {
-        for (state, body, images) in (&mut animation_states, &rigid_bodies, &mut animation_imagess).join() {
+        for (state, body) in (&mut animation_states, &rigid_bodies).join() {
             let body = body.get(&physic_world);
 
             let velocity = body.velocity().linear.norm();
@@ -52,7 +52,7 @@ impl<'a> ::specs::System<'a> for AnimationSystem {
             let animation = state.animations.first().unwrap_or(&state.idle_animation);
 
             for part in &animation.parts {
-                images.push(::animation::AnimationImage {
+                animation_images.push(::animation::AnimationImage {
                     position: body.position(),
                     layer: part.layer,
                     image: part.image_at(state.timer, state.distance),

@@ -74,9 +74,9 @@ fn main() {
     let mut world = specs::World::new();
     world.register::<::component::RigidBody>();
     world.register::<::component::AnimationState>();
-    world.register::<::component::AnimationImages>();
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::PhysicWorld::new());
+    world.add_resource(::resource::AnimationImages(vec![]));
     world.maintain();
 
     let mut update_dispatcher = ::specs::DispatcherBuilder::new()
@@ -132,12 +132,6 @@ fn main() {
         }
 
         // Update
-        // TODO: UPDATE WORLD delta_time
-        // with delta modified by gamestate (0.0 for pause)
-        // or maybe different dispatch depending on gamestate::state {
-        // Pause,
-        // Play,
-
         let delta_time = last_update_instant.elapsed();
         last_update_instant = Instant::now();
         world.write_resource::<::resource::UpdateTime>().0 = delta_time

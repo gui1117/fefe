@@ -200,12 +200,7 @@ impl ::specs::Component for AnimationState {
 
 
 #[derive(Deref, DerefMut)]
-// TODO: this could be a resource
-pub struct AnimationImages(Vec<AnimationImage>);
-
-impl ::specs::Component for AnimationImages {
-    type Storage = ::specs::VecStorage<Self>;
-}
+pub struct AnimationImages(pub Vec<AnimationImage>);
 
 pub struct AnimationImage {
     pub image: usize,

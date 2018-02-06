@@ -16,7 +16,8 @@ use vulkano::descriptor::pipeline_layout::PipelineLayout;
 use vulkano::descriptor::descriptor_set::{FixedSizeDescriptorSetsPool, PersistentDescriptorSet, DescriptorSet,
                                           PersistentDescriptorSetBuf, PersistentDescriptorSetImg,
                                           PersistentDescriptorSetSampler};
-use vulkano::command_buffer::AutoCommandBufferBuilder;
+use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
+use vulkano::command_buffer::{AutoCommandBufferBuilder, AutoCommandBuffer, DynamicState};
 use vulkano::instance::PhysicalDevice;
 use vulkano::sync::{now, GpuFuture};
 use vulkano::image::ImageLayout;
@@ -29,27 +30,7 @@ use std::sync::Arc;
 use std::fs::File;
 use std::time::Duration;
 
-//TODO not drawer anymore just a draw resource with vec of draw:
-//animation {
-//image: usize,
-//position: isometry2
-//layer: f32,
-//}
-//
-//and graphics is responsible to draw all animation function of camera resource and also conrod
-//things
-//it impls it in a system but it is executed outside a dispatch
-//
-//so its easy to impl all backend
-//
-//maybe also we should add window inside graphics
-//then how set_cursorstate will be called
-//
-//currently there is an issue because gamestate doesn't have access to window
-//so put window in graphics
-//and add a resource for cursor grab
-// only add refresh
-// NO: only a bool for whereas draw the cursor or not
+// TODO: only a bool for whereas draw the cursor or not
 
 pub struct Graphics<'a> {
     physical: PhysicalDevice<'a>,
@@ -317,6 +298,33 @@ impl<'a> Graphics<'a> {
             .collect::<Vec<_>>();
     }
 
+    fn build_command_buffer(&mut self, image_num: usize, world: &mut ::specs::World) -> AutoCommandBuffer<StandardCommandPoolAlloc> {
+        let mut command_buffer_builder = AutoCommandBufferBuilder::primary_one_time_submit(self.device.clone(), self.queue.family())
+            .unwrap()
+            .begin_render_pass(
+                self.framebuffers[image_num].clone(), false,
+                vec![[0.0, 0.0, 1.0, 1.0].into(), 1.0.into()]).unwrap();
+
+        // TODO view_set
+        let mut images = world.write_resource::<::resource::AnimationImages>();
+        for image in images.drain(..) {
+            // TODO world_set
+            command_buffer_build = command_buffer_builder.draw(
+                self.pipeline.clone(),
+                DynamicState::none(),
+                self.vertex_buffers.clone(),
+                (view_set.clone(), static_draw.set.clone()),
+                vs::ty::Layer {
+                    layer: image.layer,
+                },
+            )
+        }
+
+        command_buffer_builder
+            .end_render_pass().unwrap()
+            .build().unwrap()
+    }
+
     pub fn draw(&mut self, world: &mut ::specs::World, window: &::vulkano_win::Window) {
         self.future.as_mut().unwrap().cleanup_finished();
 
@@ -336,13 +344,7 @@ impl<'a> Graphics<'a> {
 
         let (image_num, acquire_future) = next_image.unwrap();
 
-        let command_buffer = AutoCommandBufferBuilder::primary_one_time_submit(self.device.clone(), self.queue.family())
-            .unwrap()
-            .begin_render_pass(
-                self.framebuffers[image_num].clone(), false,
-                vec![[0.0, 0.0, 1.0, 1.0].into(), 1.0.into()]).unwrap()
-            .end_render_pass().unwrap()
-            .build().unwrap();
+        let command_buffer = self.build_command_buffer(image_num, world);
 
         let future = self.future.take().unwrap()
             .join(acquire_future)

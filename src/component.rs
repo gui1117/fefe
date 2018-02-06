@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 pub use animation::AnimationState;
-pub use animation::AnimationImages;
 
 pub struct Life(pub usize);
 

@@ -185,4 +185,5 @@ arbalete qui tire mais vitesse =/ oo
 # TODO:
 
 * conrod: y a-t-il des features a enelver mettre...
-* do a real game state that take world
+* faire rendu du monde dans graphics
+* faire rendu de conrod
