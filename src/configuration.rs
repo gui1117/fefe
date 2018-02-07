@@ -19,6 +19,7 @@ pub struct Configuration {
     pub physic_max_timestep: f32,
     pub physic_min_timestep: f32,
     pub map_directory: PathBuf,
+    pub zoom: f32,
 }
 
 impl Configuration {

@@ -114,9 +114,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.175"
-     inkscape:cx="689.51822"
-     inkscape:cy="526.41685"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="-545.28572"
+     inkscape:cy="416.39746"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -142,29 +142,9 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;marker-end:url(#TriangleOutL);fill-opacity:1"
-       d="m -182.18452,55.851189 63.5,-43.089284"
-       id="path812"
-       inkscape:connector-curvature="0" />
-    <path
        style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#TriangleOutL-3)"
-       d="m -231.98734,97.844098 63.5,-43.089285"
+       d="m 0.0,0.0 1.0,1.0"
        id="path812-7"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#TriangleOutL-5)"
-       d="m -231.98734,97.844098 63.5,-43.089285"
-       id="path812-5"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#TriangleOutL-6)"
-       d="m -231.98734,97.844098 63.5,-43.089285"
-       id="path812-9"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#TriangleOutL-1)"
-       d="m -326.85936,60.802432 63.5,-43.089285"
-       id="path812-0"
        inkscape:connector-curvature="0" />
   </g>
 </svg>

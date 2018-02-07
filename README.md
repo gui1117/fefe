@@ -187,3 +187,5 @@ arbalete qui tire mais vitesse =/ oo
 * conrod: y a-t-il des features a enelver mettre...
 * faire rendu du monde dans graphics avec camera
 * faire rendu de conrod
+
+* niveau qui fait changer la caméra lorsqu'on peut pas voir comment

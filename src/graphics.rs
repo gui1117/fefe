@@ -18,12 +18,59 @@ use vulkano::sync::{now, GpuFuture};
 use vulkano::image::ImageLayout;
 use vulkano::format::{self, ClearValue, Format};
 use vulkano;
+use alga::general::SubsetOf;
 
 use std::sync::Arc;
 use std::fs::File;
 use std::time::Duration;
 
 // TODO: only a bool for whereas draw the cursor or not
+
+pub struct Camera {
+    position: ::na::Isometry2<f32>,
+}
+
+impl Camera {
+    pub fn new(position: ::na::Isometry2<f32>) -> Self {
+        Camera {
+            position,
+        }
+    }
+}
+
+impl Camera {
+    fn matrix(&self, dimensions: [u32; 2]) -> [[f32;4];4] {
+        let rescale_trans = {
+            let ratio = dimensions[0] as f32/ dimensions[1] as f32;
+
+            let (kx, ky) = if ratio > 1. {
+                (1.0 / (::CFG.zoom * ratio),
+                 1.0 / ::CFG.zoom)
+            } else {
+                (1.0 / ::CFG.zoom,
+                 ratio / ::CFG.zoom)
+            };
+
+            let mut trans: ::na::Transform3<f32> = ::na::one();
+            trans[(0,0)] = kx;
+            trans[(1,1)] = ky;
+            trans
+        };
+
+        let world_trans: ::na::Transform3<f32> = ::na::Isometry3::<f32>::new(
+            ::na::Vector3::new(self.position.translation.vector[0], -self.position.translation.vector[1], 0.0),
+            ::na::Vector3::new(0.0, 0.0, -self.position.rotation.angle()),
+        ).inverse().to_superset();
+
+        (rescale_trans * world_trans).unwrap().into()
+    }
+}
+
+struct Image {
+    descriptor_set: Arc<DescriptorSet + Sync + Send>,
+    width: u32,
+    height: u32,
+}
 
 pub struct Graphics<'a> {
     physical: PhysicalDevice<'a>,
@@ -33,7 +80,7 @@ pub struct Graphics<'a> {
     render_pass: Arc<RenderPassAbstract + Sync + Send>,
     pipeline: Arc<GraphicsPipelineAbstract + Sync + Send>,
     vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
-    animation_images: Vec<Arc<DescriptorSet + Sync + Send>>,
+    animation_images: Vec<Image>,
     framebuffers: Vec<Arc<FramebufferAbstract + Sync + Send>>,
     view_buffer_pool: CpuBufferPool<vs::ty::View>,
     world_buffer_pool: CpuBufferPool<vs::ty::World>,
@@ -119,11 +166,11 @@ impl<'a> Graphics<'a> {
         let (vertex_buffer, vertex_buffer_fut) = ImmutableBuffer::from_iter(
             [
                 [-0.5f32, -0.5],
-                [0.5, -0.5],
                 [-0.5, 0.5],
+                [0.5, -0.5],
                 [0.5, 0.5],
-                [0.5, -0.5],
                 [-0.5, 0.5],
+                [0.5, -0.5],
             ].iter()
                 .cloned()
                 .map(|position| Vertex { position }),
@@ -186,7 +233,7 @@ impl<'a> Graphics<'a> {
             ).unwrap();
             future = Box::new(future.join(image_fut)) as Box<_>;
 
-            let image_descriptor_set = Arc::new(
+            let descriptor_set = Arc::new(
                 PersistentDescriptorSet::start(pipeline.clone(), 1)
                     .add_sampled_image(image.clone(), sampler.clone())
                     .unwrap()
@@ -194,7 +241,11 @@ impl<'a> Graphics<'a> {
                     .unwrap(),
             ) as Arc<_>;
 
-            animation_images.push(image_descriptor_set);
+            animation_images.push(Image {
+                descriptor_set,
+                width: info.width,
+                height: info.height,
+            })
         }
 
         let view_buffer_pool =
@@ -327,16 +378,19 @@ impl<'a> Graphics<'a> {
             )
             .unwrap();
 
-        let view_matrix= ::na::Transform3::<f32>::identity();
         let view = vs::ty::View {
-            view: view_matrix.unwrap().into()
+            view: world.read_resource::<::resource::Camera>().matrix(dimensions),
         };
         let view_buffer = self.view_buffer_pool.next(view).unwrap();
 
         let mut images = world.write_resource::<::resource::AnimationImages>();
         for image in images.drain(..) {
 
-            let world_matrix= ::na::Transform3::<f32>::identity();
+            let world_matrix: ::na::Transform3<f32> = ::na::Isometry3::<f32>::new(
+                ::na::Vector3::new(image.position.translation.vector[0], -image.position.translation.vector[1], 0.0),
+                ::na::Vector3::new(0.0, 0.0, -image.position.rotation.angle()),
+            ).to_superset();
+
             let world = vs::ty::World {
                 world: world_matrix.unwrap().into()
             };
@@ -353,8 +407,12 @@ impl<'a> Graphics<'a> {
                 self.pipeline.clone(),
                 screen_dynamic_state.clone(),
                 vec![self.vertex_buffer.clone()],
-                (sets, self.animation_images[image.id].clone()),
-                vs::ty::Layer { layer: image.layer },
+                (sets, self.animation_images[image.id].descriptor_set.clone()),
+                vs::ty::Info {
+                    layer: image.layer,
+                    height: self.animation_images[image.id].height as f32,
+                    width: self.animation_images[image.id].width as f32,
+                },
             )
                 .unwrap()
         }
@@ -411,9 +469,11 @@ mod vs {
 layout(location = 0) in vec2 position;
 layout(location = 0) out vec2 tex_coords;
 
-layout(push_constant) uniform Layer {
+layout(push_constant) uniform Info {
     float layer;
-} layer;
+    float height;
+    float width;
+} info;
 
 layout(set = 0, binding = 0) uniform View {
     mat4 view;
@@ -424,9 +484,7 @@ layout(set = 0, binding = 1) uniform World {
 } world;
 
 void main() {
-    gl_Position = view.view * world.world * vec4(position, layer.layer, 1.0);
-    // https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
-    gl_Position.y = - gl_Position.y;
+    gl_Position = view.view * world.world * vec4(position[0]*info.width, position[1]*info.height, info.layer, 1.0);
     tex_coords = position + vec2(0.5);
 }
 "]

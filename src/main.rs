@@ -22,6 +22,7 @@ extern crate vulkano;
 extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
+extern crate alga;
 
 pub use nphysics::math as npm;
 
@@ -76,6 +77,7 @@ fn main() {
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::PhysicWorld::new());
     world.add_resource(::resource::AnimationImages(vec![]));
+    world.add_resource(::resource::Camera::new(::na::one()));
     world.maintain();
 
     let mut update_dispatcher = ::specs::DispatcherBuilder::new()
