@@ -177,6 +177,9 @@ idem s/point/ligne/
 
 transposition avec un monstre
 
+* niveau qui fait changer la caméra lorsqu'on peut pas voir comment
+  juste un bruit
+
 # moyen age
 
 arbalete qui tire mais vitesse =/ oo
@@ -184,8 +187,9 @@ arbalete qui tire mais vitesse =/ oo
 
 # TODO:
 
-* conrod: y a-t-il des features a enelver mettre...
-* faire rendu du monde dans graphics avec camera
-* faire rendu de conrod
+* draw physic
+* then do shapes collision
+* then do blind monsters
 
-* niveau qui fait changer la caméra lorsqu'on peut pas voir comment
+* conrod: y a-t-il des features a enelver mettre...
+* faire rendu de conrod

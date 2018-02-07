@@ -17,4 +17,7 @@ Configuration(
     physic_min_timestep: 0.0,
     map_directory: "assets/maps",
     zoom: 1080,
+
+    player_velocity: 100.0,
+    player_radius: 10.0,
 )

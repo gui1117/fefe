@@ -1,8 +1,44 @@
-// use lyon::tessellation::{FillTessellator, VertexBuffers, FillOptions};
-// use lyon::tessellation::geometry_builder::simple_builder;
-// use ::lyon::svg::path::PathEvent::*;
+use lyon::tessellation::{FillTessellator, VertexBuffers, FillOptions, FillVertex};
+use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::svg::path::default::Path;
 use lyon::svg::path::PathEvent;
+use nphysics::object::BodyStatus;
+use ncollide::shape::{ShapeHandle, Ball2, Triangle2};
+
+#[derive(Deref, DerefMut)]
+pub struct FillPosition(Vec<[::na::Point2<f32>; 3]>);
+
+impl ::map::TryFromPath for FillPosition {
+    fn try_from_path(value: Path) -> Result<Self, ::failure::Error> {
+        let mut buffers: VertexBuffers<FillVertex> = VertexBuffers::new();
+
+        {
+            let mut vertex_builder = simple_builder(&mut buffers);
+            let mut tessellator = FillTessellator::new();
+
+            tessellator.tessellate_path(
+                value.path_iter(),
+                &FillOptions::default().with_normals(false),
+                &mut vertex_builder,
+            )
+                .map_err(|e| format_err!("invalid path for FillPosition: {:?} for path: \"{:?}\"", e, value))?;
+        }
+
+        let mut indices_iter = buffers.indices.iter();
+        let mut position = vec![];
+        while let (Some(i1), Some(i2), Some(i3)) = (indices_iter.next(), indices_iter.next(), indices_iter.next()) {
+            let v1 = buffers.vertices[*i1 as usize].position;
+            let v2 = buffers.vertices[*i2 as usize].position;
+            let v3 = buffers.vertices[*i3 as usize].position;
+            position.push([
+                ::na::Point2::new(v1.x, v1.y),
+                ::na::Point2::new(v2.x, v2.y),
+                ::na::Point2::new(v3.x, v3.y),
+            ]);
+        }
+        Ok(FillPosition(position))
+    }
+}
 
 #[derive(Deref, DerefMut)]
 pub struct InsertPosition(::na::Isometry2<f32>);
@@ -32,13 +68,6 @@ or it is:
     }
 }
 
-impl ::map::Builder for InsertableObject {
-    type Position = InsertPosition;
-    fn build(&self, position: Self::Position, world: &mut ::specs::World) {
-        self.insert(position, world);
-    }
-}
-
 macro_rules! object {
     (
         $t:ident, $f:ident, $p:ident, $o:ident {
@@ -57,8 +86,15 @@ macro_rules! object {
         impl $t for $o {
             fn $f(&self, position: $p, world: &mut ::specs::World) {
                 match self {
-                    $(&$o::$v(ref p) => p.insert(position, world)),*
+                    $(&$o::$v(ref p) => p.$f(position, world)),*
                 }
+            }
+        }
+
+        impl ::map::Builder for $o {
+            type Position = $p;
+            fn build(&self, position: Self::Position, world: &mut ::specs::World) {
+                self.$f(position, world);
             }
         }
     );
@@ -69,6 +105,33 @@ object!(
         Player,
     }
 );
+
+object!(
+    Fillable, fill, FillPosition, FillableObject {
+        Wall,
+    }
+);
+
+#[derive(Serialize, Deserialize)]
+pub struct Wall;
+
+impl Fillable for Wall {
+    fn fill(&self, position: FillPosition, world: &mut ::specs::World) {
+        for position in position.iter() {
+            let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
+
+            let body_handle = physic_world.add_rigid_body(::na::one(), ::npm::Inertia::zero());
+            physic_world.rigid_body_mut(body_handle).unwrap().set_status(BodyStatus::Static);
+
+            physic_world.add_collider(
+                0.0,
+                ShapeHandle::new(Triangle2::from_array(&position).clone()),
+                body_handle,
+                ::na::one(),
+            );
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct Player;
@@ -81,14 +144,23 @@ impl Insertable for Player {
                 ::animation::AnimationSpecie::Character,
                 ::animation::AnimationName::IdleRifle,
             ))
+            .with(::component::Player)
+            .with(::component::Aim(position.rotation.angle()))
+            .with(::component::Life(1))
             .build();
 
-        ::component::RigidBody::safe_insert(
-            p,
-            position.0,
-            ::npm::Inertia::zero(),
+        let body_handle = ::component::RigidBody::safe_insert(
+            p, position.0, ::npm::Inertia::zero(),
+            BodyStatus::Kinematic,
             &mut world.write(),
             &mut world.write_resource(),
         );
+        world.write_resource::<::resource::PhysicWorld>()
+            .add_collider(
+                0.0,
+                ShapeHandle::new(Ball2::new(::CFG.player_radius)),
+                body_handle,
+                ::na::one(),
+            );
     }
 }

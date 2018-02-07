@@ -5,3 +5,4 @@ pub type PhysicWorld = ::nphysics::world::World<f32>;
 pub struct UpdateTime(pub f32);
 pub use animation::AnimationImages;
 pub use graphics::Camera;
+pub use conrod::render::OwnedPrimitives;

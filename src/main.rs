@@ -9,6 +9,7 @@ extern crate lazy_static;
 extern crate lyon;
 extern crate nalgebra as na;
 extern crate nphysics2d as nphysics;
+extern crate ncollide;
 extern crate png;
 extern crate rand;
 extern crate ron;
@@ -23,8 +24,11 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 extern crate alga;
+#[macro_use]
+extern crate conrod;
 
 pub use nphysics::math as npm;
+pub use nphysics::algebra as npa;
 
 mod component;
 mod map;
@@ -70,10 +74,16 @@ fn main() {
     window.window().set_cursor(winit::MouseCursor::NoneCursor);
 
     let mut graphics = graphics::Graphics::new(&window);
+    let mut ui = conrod::UiBuilder::new([1920.0, 1080.0])
+        .build();
+    let ids = game_state::Ids::new(ui.widget_id_generator());
 
     let mut world = specs::World::new();
     world.register::<::component::RigidBody>();
     world.register::<::component::AnimationState>();
+    world.register::<::component::Life>();
+    world.register::<::component::Aim>();
+    world.register::<::component::Player>();
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::PhysicWorld::new());
     world.add_resource(::resource::AnimationImages(vec![]));
@@ -126,10 +136,14 @@ fn main() {
                 }
                 _ => (),
             }
-            game_state = game_state.winit_event(ev, &mut world);
+            game_state = game_state.winit_event(ev, &mut world, &mut ui);
         }
-        while let Some(gilrs::Event { event, .. }) = gilrs.next_event() {
-            game_state = game_state.gilrs_event(event, &mut world);
+        while let Some(ev) = gilrs.next_event() {
+            gilrs.update(&ev);
+            game_state = game_state.gilrs_event(ev.event, &mut world, &mut ui);
+        }
+        for (id, gamepad) in gilrs.gamepads() {
+            game_state = game_state.gilrs_gamepad_state(id, gamepad, &mut world, &mut ui);
         }
 
         // Quit
@@ -147,6 +161,8 @@ fn main() {
             as f32 / 1_000_000_000.0;
 
         update_dispatcher.dispatch(&mut world.res);
+        game_state = game_state.update_draw_ui(&mut ui.set_widgets(), &ids, &mut world);
+        world.add_resource(ui.draw().owned());
 
         // Draw
         graphics.draw(&mut world, &window);

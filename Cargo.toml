@@ -17,7 +17,7 @@ vulkano = "0.7"
 vulkano-shader-derive = "0.7"
 vulkano-win = "0.7"
 winit = "0.7"
-ncollide = { git = "https://github.com/sebcrozet/ncollide/" }
+ncollide = "0.14"
 nphysics2d = { path = "../nphysics/build/nphysics2d" }
 nalgebra = "0.14"
 alga = "0.5"

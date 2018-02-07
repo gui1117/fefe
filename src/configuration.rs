@@ -20,6 +20,9 @@ pub struct Configuration {
     pub physic_min_timestep: f32,
     pub map_directory: PathBuf,
     pub zoom: f32,
+
+    pub player_velocity: f32,
+    pub player_radius: f32,
 }
 
 impl Configuration {

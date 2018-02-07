@@ -1,8 +1,14 @@
 MapSettings(
-    rules: [
+    insert_rules: [
         (
             trigger: "#ff0000",
             processor: TakeNPositions(1, BuildEntity(Player(()))),
+        )
+    ],
+    fill_rules: [
+        (
+            trigger: "#00ff00",
+            processor: TakeNPositions(1, BuildEntity(Wall(()))),
         )
     ]
 )

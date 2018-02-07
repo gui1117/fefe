@@ -114,14 +114,14 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="-545.28572"
-     inkscape:cy="416.39746"
+     inkscape:zoom="1.4"
+     inkscape:cx="-35.87056"
+     inkscape:cy="-9.8540168"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1080"
+     inkscape:window-width="917"
+     inkscape:window-height="1076"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="0" />
@@ -142,9 +142,14 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#TriangleOutL-3)"
-       d="m 0.0,0.0 1.0,1.0"
-       id="path812-7"
+       style="fill:none;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;marker-end:url(#TriangleOutL)"
+       d="M 0.56696427,294.92112 22.678571,272.62052"
+       id="path862"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#00ff00;fill-rule:evenodd;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="m -22.300595,266.9509 16.6309523,0.37796 v 44.03423 l 26.6473207,-3.21281 1.322917,-56.50743 -41.766368,-1.13392 10.2053564,-14.3631 38.1755936,5.85863 -4.157737,83.91071 -50.459821,7.74851 z"
+       id="path876"
        inkscape:connector-curvature="0" />
   </g>
 </svg>

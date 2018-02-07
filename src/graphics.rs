@@ -18,11 +18,13 @@ use vulkano::sync::{now, GpuFuture};
 use vulkano::image::ImageLayout;
 use vulkano::format::{self, ClearValue, Format};
 use vulkano;
+use ncollide::shape;
 use alga::general::SubsetOf;
 
 use std::sync::Arc;
 use std::fs::File;
 use std::time::Duration;
+use std::f32::consts::PI;
 
 // TODO: only a bool for whereas draw the cursor or not
 
@@ -79,6 +81,7 @@ pub struct Graphics<'a> {
     swapchain: Arc<Swapchain>,
     render_pass: Arc<RenderPassAbstract + Sync + Send>,
     pipeline: Arc<GraphicsPipelineAbstract + Sync + Send>,
+    debug_pipeline: Arc<GraphicsPipelineAbstract + Sync + Send>,
     vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
     animation_images: Vec<Image>,
     framebuffers: Vec<Arc<FramebufferAbstract + Sync + Send>>,
@@ -182,6 +185,9 @@ impl<'a> Graphics<'a> {
         let vs = vs::Shader::load(device.clone()).expect("failed to create shader module");
         let fs = fs::Shader::load(device.clone()).expect("failed to create shader module");
 
+        let debug_vs = debug_vs::Shader::load(device.clone()).expect("failed to create shader module");
+        let debug_fs = debug_fs::Shader::load(device.clone()).expect("failed to create shader module");
+
         let pipeline = Arc::new(
             vulkano::pipeline::GraphicsPipeline::start()
                 .vertex_input_single_buffer::<Vertex>()
@@ -190,6 +196,19 @@ impl<'a> Graphics<'a> {
                 .viewports_dynamic_scissors_irrelevant(1)
                 .cull_mode_back()
                 .fragment_shader(fs.main_entry_point(), ())
+                .blend_alpha_blending()
+                .render_pass(vulkano::framebuffer::Subpass::from(render_pass.clone(), 0).unwrap())
+                .build(device.clone())
+                .unwrap(),
+        );
+
+        let debug_pipeline = Arc::new(
+            vulkano::pipeline::GraphicsPipeline::start()
+                .vertex_input_single_buffer::<Vertex>()
+                .vertex_shader(debug_vs.main_entry_point(), ())
+                .triangle_strip()
+                .viewports_dynamic_scissors_irrelevant(1)
+                .fragment_shader(debug_fs.main_entry_point(), ())
                 .blend_alpha_blending()
                 .render_pass(vulkano::framebuffer::Subpass::from(render_pass.clone(), 0).unwrap())
                 .build(device.clone())
@@ -284,6 +303,7 @@ impl<'a> Graphics<'a> {
             swapchain,
             render_pass,
             pipeline,
+            debug_pipeline,
             vertex_buffer,
             animation_images,
             framebuffers,
@@ -378,6 +398,7 @@ impl<'a> Graphics<'a> {
             )
             .unwrap();
 
+        // Draw world
         let view = vs::ty::View {
             view: world.read_resource::<::resource::Camera>().matrix(dimensions),
         };
@@ -416,6 +437,79 @@ impl<'a> Graphics<'a> {
             )
                 .unwrap()
         }
+
+        // Draw physic world
+        if true {
+            let mut future = Box::new(now(self.device.clone())) as Box<GpuFuture>;
+            let sets = Arc::new(PersistentDescriptorSet::start(self.debug_pipeline.clone(), 0)
+                .add_buffer(view_buffer.clone())
+                .unwrap()
+                .build().unwrap());
+
+            let div = 16;
+            let circle = (0..div+1)
+                .flat_map(|i| {
+                    let a1 = i as f32 * 2.0*PI/div as f32;
+                    let a2 = i as f32 * 2.0*PI/div as f32;
+
+                    vec![
+                        ::na::Point2::new(a1.cos(), a1.sin()),
+                        ::na::Point2::new(a2.cos(), a2.sin()),
+                        ::na::Point2::new(0.0, 0.0),
+                    ]
+                })
+                .collect::<Vec<_>>();
+
+            for collider in world.read_resource::<::resource::PhysicWorld>().colliders() {
+                let shape = collider.shape();
+                let mut vertices = None;
+                if let Some(ball) = shape.as_shape::<shape::Ball2<f32>>() {
+                    vertices = Some(
+                        circle.iter()
+                            .map(|p| *p*ball.radius())
+                            .map(|p| {
+                                let p = collider.position() * p;
+                                Vertex { position: [p[0], -p[1]] }
+                            })
+                            .collect::<Vec<_>>()
+                    );
+                }
+                if let Some(triangle) = shape.as_shape::<shape::Triangle2<f32>>() {
+                    vertices = Some(
+                        [
+                            triangle.a(),
+                            triangle.b(),
+                            triangle.c(),
+                        ].iter()
+                            .map(|p| {
+                                let p = collider.position() * *p;
+                                Vertex { position: [p[0], -p[1]] }
+                            })
+                            .collect::<Vec<_>>()
+                    );
+                }
+
+                if let Some(vertices) = vertices {
+                    let (vertex_buffer, vertex_buffer_fut) = ImmutableBuffer::from_iter(
+                        vertices.iter().cloned(),
+                        BufferUsage::vertex_buffer(),
+                        self.queue.clone(),
+                    ).expect("failed to create buffer");
+                    future = Box::new(future.join(vertex_buffer_fut)) as Box<_>;
+
+                    command_buffer_builder = command_buffer_builder.draw(
+                        self.debug_pipeline.clone(),
+                        screen_dynamic_state.clone(),
+                        vec![vertex_buffer],
+                        sets.clone(),
+                        (),
+                    )
+                        .unwrap()
+                }
+            }
+        }
+
+        // TODO: Draw UI
 
         command_buffer_builder
             .end_render_pass()
@@ -504,6 +598,40 @@ layout(set = 1, binding = 0) uniform sampler2D tex;
 
 void main() {
     f_color = texture(tex, tex_coords);
+}
+"]
+    struct _Dummy;
+}
+
+mod debug_vs {
+    #[derive(VulkanoShader)]
+    #[ty = "vertex"]
+    #[src = "
+#version 450
+
+layout(location = 0) in vec2 position;
+
+layout(set = 0, binding = 0) uniform View {
+    mat4 view;
+} view;
+
+void main() {
+    gl_Position = view.view * vec4(position, 0.1, 1.0);
+}
+"]
+    struct _Dummy;
+}
+
+mod debug_fs {
+    #[derive(VulkanoShader)]
+    #[ty = "fragment"]
+    #[src = "
+#version 450
+
+layout(location = 0) out vec4 f_color;
+
+void main() {
+    f_color = vec4(1.0, 0.0, 0.0, 1.0);
 }
 "]
     struct _Dummy;

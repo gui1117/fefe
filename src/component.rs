@@ -1,6 +1,19 @@
 pub use animation::AnimationState;
+use nphysics::object::BodyStatus;
 
+#[derive(Default)]
+pub struct Player;
+
+impl ::specs::Component for Player {
+    type Storage = ::specs::NullStorage<Self>;
+}
+
+#[derive(Deref, DerefMut)]
 pub struct Life(pub usize);
+
+impl ::specs::Component for Life {
+    type Storage = ::specs::VecStorage<Self>;
+}
 
 // G*ma*mb/d^2
 // to every entities around ?
@@ -14,7 +27,12 @@ pub struct Gravity;
 //     timer: f32,
 // }
 
+#[derive(Deref, DerefMut)]
 pub struct Aim(pub f32);
+
+impl ::specs::Component for Aim {
+    type Storage = ::specs::VecStorage<Self>;
+}
 
 // How to store weapons and allow to switch from them
 // and use a trait Weapon
@@ -36,11 +54,14 @@ impl RigidBody {
         entity: ::specs::Entity,
         position: ::npm::Isometry<f32>,
         local_inertia: ::npm::Inertia<f32>,
+        status: BodyStatus,
         bodies_handle: &mut ::specs::WriteStorage<'a, ::component::RigidBody>,
         physic_world: &mut ::resource::PhysicWorld,
-    ) {
+    ) -> ::nphysics::object::BodyHandle {
         let body_handle = physic_world.add_rigid_body(position, local_inertia);
+        physic_world.rigid_body_mut(body_handle).unwrap().set_status(status);
         bodies_handle.insert(entity, RigidBody(body_handle));
+        body_handle
     }
 
     #[inline]

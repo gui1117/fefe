@@ -1,7 +1,3 @@
-// TODO 3 rule
-// filled
-// launched
-// inserted
 use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
 use std::fs::File;
 use std::io::Read;
@@ -12,7 +8,7 @@ use lyon::svg::parser::svg::Name::Svg;
 use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
 use lyon::svg::path::default::Path;
-use entity::InsertableObject;
+use entity::{InsertableObject, FillableObject};
 
 pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
     let mut path = ::CFG.map_directory.clone();
@@ -40,7 +36,8 @@ pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failur
         .read_to_string(&mut svg_string)
         .map_err(|e| format_err!("\"{}\": {}", svg_path.to_string_lossy(), e))?;
 
-    let mut rules_entities = settings.rules.iter().map(|_| vec![]).collect::<Vec<_>>();
+    let mut insert_rules_entities = settings.insert_rules.iter().map(|_| vec![]).collect::<Vec<_>>();
+    let mut fill_rules_entities = settings.fill_rules.iter().map(|_| vec![]).collect::<Vec<_>>();
 
     let mut tokenizer = Tokenizer::from_str(&svg_string);
 
@@ -70,23 +67,29 @@ pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failur
                 }
                 Token::ElementEnd(Empty) => {
                     if let (Some(style), Some(d)) = (style, d) {
-                        for (rule, ref mut rule_entities) in
-                            settings.rules.iter().zip(rules_entities.iter_mut())
+                        // Insert rules
+                        for (rule, ref mut insert_rule_entities) in
+                            settings.insert_rules.iter().zip(insert_rules_entities.iter_mut())
                         {
                             if style.to_str().contains(&rule.trigger) {
                                 let svg_builder = Path::builder().with_svg();
                                 let commands = d.to_str();
-                                let path =
-                                    ::lyon::svg::path_utils::build_path(svg_builder, commands)
-                                        .map_err(|e| {
-                                            format_err!(
-                                                "\"{}\": invalid path \"{}\": {:?}",
-                                                svg_path.to_string_lossy(),
-                                                commands,
-                                                e
-                                            )
-                                        })?;
-                                rule_entities.push(path);
+                                let path = ::lyon::svg::path_utils::build_path(svg_builder, commands)
+                                    .map_err(|e| format_err!("\"{}\": invalid path \"{}\": {:?}", svg_path.to_string_lossy(), commands, e))?;
+                                insert_rule_entities.push(path);
+                            }
+                        }
+
+                        // Fill rules
+                        for (rule, ref mut fill_rule_entities) in
+                            settings.fill_rules.iter().zip(fill_rules_entities.iter_mut())
+                        {
+                            if style.to_str().contains(&rule.trigger) {
+                                let svg_builder = Path::builder().with_svg();
+                                let commands = d.to_str();
+                                let path = ::lyon::svg::path_utils::build_path(svg_builder, commands)
+                                    .map_err(|e| format_err!("\"{}\": invalid path \"{}\": {:?}", svg_path.to_string_lossy(), commands, e))?;
+                                fill_rule_entities.push(path);
                             }
                         }
                     }
@@ -110,29 +113,31 @@ pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failur
     }
 
     // Insert entities to world
-    for (rule, rule_entities) in settings.rules.drain(..).zip(rules_entities.drain(..)) {
-        let rule_trigger = rule.trigger;
-        rule.processor.build(rule_entities, world).map_err(|e| {
-            format_err!(
-                "\"{}\": rule \"{}\": {}",
-                svg_path.to_string_lossy(),
-                rule_trigger,
-                e
-            )
-        })?;
+    for (insert_rule, insert_rule_entities) in settings.insert_rules.drain(..).zip(insert_rules_entities.drain(..)) {
+        let rule_trigger = insert_rule.trigger;
+        insert_rule.processor.build(insert_rule_entities, world)
+            .map_err(|e| format_err!("\"{}\": insert rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
+    }
+
+    // Fill entities to world
+    for (fill_rule, fill_rule_entities) in settings.fill_rules.drain(..).zip(fill_rules_entities.drain(..)) {
+        let rule_trigger = fill_rule.trigger;
+        fill_rule.processor.build(fill_rule_entities, world)
+            .map_err(|e| format_err!("\"{}\": fill rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
     }
     Ok(())
 }
 
 #[derive(Serialize, Deserialize)]
 struct MapSettings {
-    rules: Vec<Rule>,
+    insert_rules: Vec<Rule<InsertableObject>>,
+    fill_rules: Vec<Rule<FillableObject>>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct Rule {
+struct Rule<T: Builder> {
     trigger: String,
-    processor: Processor<InsertableObject>,
+    processor: Processor<T>,
 }
 
 pub trait TryFromPath: Sized {
