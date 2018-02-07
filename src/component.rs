@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 pub use animation::AnimationState;
 
 pub struct Life(pub usize);

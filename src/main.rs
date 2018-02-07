@@ -41,12 +41,7 @@ pub use configuration::CFG;
 
 use game_state::GameState;
 use vulkano_win::VkSurfaceBuild;
-use vulkano::swapchain;
-use vulkano::sync::now;
-use vulkano::sync::GpuFuture;
 use vulkano::instance::Instance;
-use winit::{DeviceEvent, Event, WindowEvent};
-use std::sync::Arc;
 use std::time::Duration;
 use std::time::Instant;
 use std::thread;

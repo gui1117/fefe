@@ -181,7 +181,7 @@ impl AnimationPart {
 
     fn duration(&self) -> Option<f32> {
         match self.framerate {
-            Framerate::Walk(r) => None,
+            Framerate::Walk(_) => None,
             Framerate::Fix(r) => Some(self.images.len() as f32 * r),
         }
     }

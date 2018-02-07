@@ -23,40 +23,16 @@ pub struct Game;
 impl GameState for Game {
     fn winit_event(
         self: Box<Self>,
-        event: ::winit::Event,
-        world: &mut ::specs::World,
+        _event: ::winit::Event,
+        _world: &mut ::specs::World,
     ) -> Box<GameState> {
         self
     }
 
     fn gilrs_event(
         self: Box<Self>,
-        event: ::gilrs::EventType,
-        world: &mut ::specs::World,
-    ) -> Box<GameState> {
-        self
-    }
-
-    fn paused(&self) -> bool {
-        false
-    }
-}
-
-pub struct Menu;
-
-impl GameState for Menu {
-    fn winit_event(
-        self: Box<Self>,
-        event: ::winit::Event,
-        world: &mut ::specs::World,
-    ) -> Box<GameState> {
-        self
-    }
-
-    fn gilrs_event(
-        self: Box<Self>,
-        event: ::gilrs::EventType,
-        world: &mut ::specs::World,
+        _event: ::gilrs::EventType,
+        _world: &mut ::specs::World,
     ) -> Box<GameState> {
         self
     }

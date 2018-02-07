@@ -1,32 +1,23 @@
 use vulkano::device::{Device, DeviceExtensions, Queue};
-use vulkano::swapchain::{self, Swapchain};
-use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode,
-                       UnnormalizedSamplerAddressMode};
-use vulkano::image::{AttachmentImage, Dimensions, ImageUsage, ImmutableImage, SwapchainImage};
-use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer, CpuBufferPool, DeviceLocalBuffer,
-                      ImmutableBuffer};
+use vulkano::swapchain::{self, Swapchain, SwapchainCreationError};
+use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode};
+use vulkano::image::{AttachmentImage, Dimensions, ImageUsage, ImmutableImage};
+use vulkano::buffer::{BufferUsage, CpuBufferPool, ImmutableBuffer};
 use vulkano::framebuffer::{Framebuffer, FramebufferAbstract, LayoutAttachmentDescription,
                            LayoutPassDependencyDescription, LayoutPassDescription, LoadOp,
-                           RenderPass, RenderPassAbstract, RenderPassDesc,
-                           RenderPassDescClearValues, StoreOp, Subpass};
-use vulkano::pipeline::{ComputePipeline, GraphicsPipeline, GraphicsPipelineAbstract};
-use vulkano::pipeline::vertex::SingleBufferDefinition;
-use vulkano::descriptor::PipelineLayoutAbstract;
-use vulkano::descriptor::pipeline_layout::PipelineLayout;
+                           RenderPassAbstract, RenderPassDesc,
+                           RenderPassDescClearValues, StoreOp};
+use vulkano::pipeline::GraphicsPipelineAbstract;
 use vulkano::descriptor::descriptor_set::{DescriptorSet, FixedSizeDescriptorSetsPool,
-                                          PersistentDescriptorSet, PersistentDescriptorSetBuf,
-                                          PersistentDescriptorSetImg,
-                                          PersistentDescriptorSetSampler};
+                                          PersistentDescriptorSet};
 use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
 use vulkano::command_buffer::{AutoCommandBuffer, AutoCommandBufferBuilder, DynamicState};
 use vulkano::instance::PhysicalDevice;
 use vulkano::sync::{now, GpuFuture};
 use vulkano::image::ImageLayout;
 use vulkano::format::{self, ClearValue, Format};
-use vulkano::sync::{AccessFlagBits, PipelineStages};
 use vulkano;
 
-use std::ops;
 use std::sync::Arc;
 use std::fs::File;
 use std::time::Duration;
@@ -41,10 +32,11 @@ pub struct Graphics<'a> {
     render_pass: Arc<RenderPassAbstract + Sync + Send>,
     pipeline: Arc<GraphicsPipelineAbstract + Sync + Send>,
     vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
-    animation_images: Vec<Arc<DescriptorSet>>,
+    animation_images: Vec<Arc<DescriptorSet + Sync + Send>>,
     framebuffers: Vec<Arc<FramebufferAbstract + Sync + Send>>,
     view_buffer_pool: CpuBufferPool<vs::ty::View>,
     world_buffer_pool: CpuBufferPool<vs::ty::World>,
+    descriptor_sets_pool: FixedSizeDescriptorSetsPool<Arc<GraphicsPipelineAbstract + Sync + Send>>,
     future: Option<Box<GpuFuture>>,
 }
 
@@ -93,7 +85,6 @@ impl<'a> Graphics<'a> {
             let dimensions = caps.current_extent.unwrap_or([1280, 1024]);
             let format = caps.supported_formats[0].0;
             let image_usage = ImageUsage {
-                // sampled: true,
                 color_attachment: true,
                 ..ImageUsage::none()
             };
@@ -155,6 +146,8 @@ impl<'a> Graphics<'a> {
                 .build(device.clone())
                 .unwrap(),
         );
+
+        let descriptor_sets_pool = FixedSizeDescriptorSetsPool::new(pipeline.clone() as Arc<_>, 0);
 
         let mut animation_images = vec![];
 
@@ -244,29 +237,40 @@ impl<'a> Graphics<'a> {
             view_buffer_pool,
             world_buffer_pool,
             physical,
+            descriptor_sets_pool,
         }
     }
 
     fn recreate(&mut self, window: &::vulkano_win::Window) {
         let recreate;
+        let mut remaining_try = 20;
         loop {
-            // TODO: Sleep and max number of try
             let dimensions = window
                 .surface()
                 .capabilities(self.physical)
                 .expect("failed to get surface capabilities")
                 .current_extent
                 .unwrap_or([1024, 768]);
-            match self.swapchain.recreate_with_dimension(dimensions) {
-                Err(::vulkano::swapchain::SwapchainCreationError::UnsupportedDimensions) => (),
-                r @ _ => {
-                    recreate = Some(r);
+
+            let res = self.swapchain.recreate_with_dimension(dimensions);
+
+            if remaining_try == 0 {
+                recreate = res;
+                break;
+            }
+
+            match res {
+                Err(SwapchainCreationError::UnsupportedDimensions) => (),
+                res @ _ => {
+                    recreate = res;
                     break;
                 }
             }
+            remaining_try -= 1;
+            ::std::thread::sleep(::std::time::Duration::from_millis(50));
         }
 
-        let (swapchain, images) = recreate.unwrap().unwrap();
+        let (swapchain, images) = recreate.unwrap();
         self.swapchain = swapchain;
 
         // TODO: factorize
@@ -308,17 +312,36 @@ impl<'a> Graphics<'a> {
             )
             .unwrap();
 
-        // TODO view_set
+        let view_matrix= ::na::Transform3::<f32>::identity();
+        let view = vs::ty::View {
+            view: view_matrix.unwrap().into()
+        };
+        let view_buffer = self.view_buffer_pool.next(view).unwrap();
+
         let mut images = world.write_resource::<::resource::AnimationImages>();
         for image in images.drain(..) {
-            // TODO world_set
-            command_buffer_build = command_buffer_builder.draw(
+
+            let world_matrix= ::na::Transform3::<f32>::identity();
+            let world = vs::ty::World {
+                world: world_matrix.unwrap().into()
+            };
+            let world_buffer = self.world_buffer_pool.next(world).unwrap();
+
+            let sets = self.descriptor_sets_pool.next()
+                .add_buffer(view_buffer.clone())
+                .unwrap()
+                .add_buffer(world_buffer)
+                .unwrap()
+                .build().unwrap();
+
+            command_buffer_builder = command_buffer_builder.draw(
                 self.pipeline.clone(),
                 DynamicState::none(),
-                self.vertex_buffers.clone(),
-                (view_set.clone(), static_draw.set.clone()),
+                vec![self.vertex_buffer.clone()],
+                (sets, self.animation_images[image.image].clone()),
                 vs::ty::Layer { layer: image.layer },
             )
+                .unwrap()
         }
 
         command_buffer_builder
@@ -381,7 +404,7 @@ layout(set = 0, binding = 0) uniform View {
     mat4 view;
 } view;
 
-layout(set = 1, binding = 0) uniform World {
+layout(set = 0, binding = 1) uniform World {
     mat4 world;
 } world;
 
@@ -404,7 +427,7 @@ mod fs {
 layout(location = 0) in vec2 tex_coords;
 layout(location = 0) out vec4 f_color;
 
-layout(set = 2, binding = 0) uniform sampler2D tex;
+layout(set = 1, binding = 0) uniform sampler2D tex;
 
 void main() {
     f_color = texture(tex, tex_coords);

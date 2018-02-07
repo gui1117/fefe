@@ -7,7 +7,7 @@ impl<'a> ::specs::System<'a> for AnimationSystem {
         ::specs::ReadStorage<'a, ::component::RigidBody>,
         ::specs::WriteStorage<'a, ::component::AnimationState>,
         ::specs::Fetch<'a, ::resource::UpdateTime>,
-        ::specs::FetchMut<'a, ::resource::PhysicWorld>,
+        ::specs::Fetch<'a, ::resource::PhysicWorld>,
         ::specs::FetchMut<'a, ::resource::AnimationImages>,
     );
 
@@ -17,7 +17,7 @@ impl<'a> ::specs::System<'a> for AnimationSystem {
             rigid_bodies,
             mut animation_states,
             update_time,
-            mut physic_world,
+            physic_world,
             mut animation_images,
         ): Self::SystemData,
 ){

@@ -3,7 +3,6 @@
 // launched
 // inserted
 use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
-use std::path::PathBuf;
 use std::fs::File;
 use std::io::Read;
 use lyon::svg::parser::FromSpan;
