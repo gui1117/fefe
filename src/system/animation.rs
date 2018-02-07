@@ -55,7 +55,7 @@ impl<'a> ::specs::System<'a> for AnimationSystem {
                 animation_images.push(::animation::AnimationImage {
                     position: body.position(),
                     layer: part.layer,
-                    image: part.image_at(state.timer, state.distance),
+                    id: part.image_at(state.timer, state.distance),
                 });
             }
         }

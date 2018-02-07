@@ -8,6 +8,7 @@ use vulkano::framebuffer::{Framebuffer, FramebufferAbstract, LayoutAttachmentDes
                            RenderPassAbstract, RenderPassDesc,
                            RenderPassDescClearValues, StoreOp};
 use vulkano::pipeline::GraphicsPipelineAbstract;
+use vulkano::pipeline::viewport::Viewport;
 use vulkano::descriptor::descriptor_set::{DescriptorSet, FixedSizeDescriptorSetsPool,
                                           PersistentDescriptorSet};
 use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
@@ -118,8 +119,8 @@ impl<'a> Graphics<'a> {
         let (vertex_buffer, vertex_buffer_fut) = ImmutableBuffer::from_iter(
             [
                 [-0.5f32, -0.5],
-                [-0.5, 0.5],
                 [0.5, -0.5],
+                [-0.5, 0.5],
                 [0.5, 0.5],
                 [0.5, -0.5],
                 [-0.5, 0.5],
@@ -140,6 +141,7 @@ impl<'a> Graphics<'a> {
                 .vertex_shader(vs.main_entry_point(), ())
                 .triangle_strip()
                 .viewports_dynamic_scissors_irrelevant(1)
+                .cull_mode_back()
                 .fragment_shader(fs.main_entry_point(), ())
                 .blend_alpha_blending()
                 .render_pass(vulkano::framebuffer::Subpass::from(render_pass.clone(), 0).unwrap())
@@ -185,7 +187,7 @@ impl<'a> Graphics<'a> {
             future = Box::new(future.join(image_fut)) as Box<_>;
 
             let image_descriptor_set = Arc::new(
-                PersistentDescriptorSet::start(pipeline.clone(), 2)
+                PersistentDescriptorSet::start(pipeline.clone(), 1)
                     .add_sampled_image(image.clone(), sampler.clone())
                     .unwrap()
                     .build()
@@ -301,6 +303,19 @@ impl<'a> Graphics<'a> {
         image_num: usize,
         world: &mut ::specs::World,
     ) -> AutoCommandBuffer<StandardCommandPoolAlloc> {
+        let dimensions = self.swapchain.dimensions();
+
+        let screen_dynamic_state = DynamicState {
+            viewports: Some(vec![
+                Viewport {
+                    origin: [0.0, 0.0],
+                    dimensions: [dimensions[0] as f32, dimensions[1] as f32],
+                    depth_range: 0.0..1.0,
+                },
+            ]),
+            ..DynamicState::none()
+        };
+
         let mut command_buffer_builder = AutoCommandBufferBuilder::primary_one_time_submit(
             self.device.clone(),
             self.queue.family(),
@@ -336,9 +351,9 @@ impl<'a> Graphics<'a> {
 
             command_buffer_builder = command_buffer_builder.draw(
                 self.pipeline.clone(),
-                DynamicState::none(),
+                screen_dynamic_state.clone(),
                 vec![self.vertex_buffer.clone()],
-                (sets, self.animation_images[image.image].clone()),
+                (sets, self.animation_images[image.id].clone()),
                 vs::ty::Layer { layer: image.layer },
             )
                 .unwrap()

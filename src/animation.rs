@@ -216,7 +216,7 @@ impl ::specs::Component for AnimationState {
 pub struct AnimationImages(pub Vec<AnimationImage>);
 
 pub struct AnimationImage {
-    pub image: usize,
+    pub id: usize,
     pub position: ::na::Isometry2<f32>,
     pub layer: f32,
 }

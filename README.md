@@ -185,5 +185,5 @@ arbalete qui tire mais vitesse =/ oo
 # TODO:
 
 * conrod: y a-t-il des features a enelver mettre...
-* faire rendu du monde dans graphics
+* faire rendu du monde dans graphics avec camera
 * faire rendu de conrod
