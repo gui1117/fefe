@@ -13,6 +13,9 @@ impl<'a> ::specs::System<'a> for PhysicSystem {
             remaining_to_update -= timestep;
             physic_world.set_timestep(timestep);
             physic_world.step();
+            for i in physic_world.contact_events() {
+                println!("{:?}", i);
+            }
         }
     }
 }

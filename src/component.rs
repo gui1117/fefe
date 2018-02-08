@@ -1,5 +1,6 @@
 pub use animation::AnimationState;
 use nphysics::object::BodyStatus;
+use specs::Join;
 
 #[derive(Default)]
 pub struct Player;
@@ -15,10 +16,41 @@ impl ::specs::Component for Life {
     type Storage = ::specs::VecStorage<Self>;
 }
 
-// G*ma*mb/d^2
-// to every entities around ?
-// or with filter
-pub struct Gravity;
+#[derive(Default)]
+pub struct GravityToPlayers {
+    pub mass: f32,
+}
+
+impl ::specs::Component for GravityToPlayers {
+    type Storage = ::specs::VecStorage<Self>;
+}
+
+// Decrease of sound: -6dB
+// The sound pressure level (SPL) decreases with doubling of distance by (−)6 dB.
+/// This component store the position of the last heard sound
+/// Sound is heard at hear_db
+pub struct Listener {
+    pub hear_position: Option<::na::Vector2<f32>>,
+    pub hear_limit: f32,
+}
+// TODO: better to insert a HeadPosition component so system can iterate on it easily
+
+impl ::specs::Component for Listener {
+    type Storage = ::specs::VecStorage<Self>;
+}
+
+pub fn play_sound(position: ::na::Vector2<f32>, db: f32, world: &mut ::specs::World) {
+    for (listener, body) in (
+        &mut world.write::<::component::Listener>(),
+        &world.read::<::component::RigidBody>()
+    ).join() {
+        let listener_position = body.get(&world.read_resource()).position().translation.vector;
+        let distance = (position - listener_position).norm();
+        if db*(-distance).exp() > listener.hear_limit {
+            listener.hear_position = Some(position);
+        }
+    }
+}
 
 // Launch an entitiy
 // pub struct Launcher {

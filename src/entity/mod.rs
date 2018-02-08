@@ -36,6 +36,7 @@ impl ::map::TryFromPath for FillPosition {
                 ::na::Point2::new(v3.x, v3.y),
             ]);
         }
+        println!("positionl len{}", position.len());
         Ok(FillPosition(position))
     }
 }
@@ -151,7 +152,7 @@ impl Insertable for Player {
 
         let body_handle = ::component::RigidBody::safe_insert(
             p, position.0, ::npm::Inertia::zero(),
-            BodyStatus::Kinematic,
+            BodyStatus::Dynamic,
             &mut world.write(),
             &mut world.write_resource(),
         );

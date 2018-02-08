@@ -20,4 +20,5 @@ Configuration(
 
     player_velocity: 100.0,
     player_radius: 10.0,
+    gravity: 1.0,
 )

@@ -180,6 +180,19 @@ transposition avec un monstre
 * niveau qui fait changer la caméra lorsqu'on peut pas voir comment
   juste un bruit
 
+* le composant listener peut insérer un composant control lorsqu'il est trigger
+
+* monstres qui se dirige vers héros si en voit et le plus proche
+
+* monstres mine qui faut pas marcher dessus
+  ou alors qui sont attiré lorsqu'on est trop proche
+  (en fait idem au dessus sauf distance plus courte)
+
+* monstres qui évite d'être dans la ligne de mire
+
+* monstres se réveille brusquement quand proche
+* faire la même chose que c'est en fonction de bruit fort
+
 # moyen age
 
 arbalete qui tire mais vitesse =/ oo
@@ -187,9 +200,13 @@ arbalete qui tire mais vitesse =/ oo
 
 # TODO:
 
-* draw physic
 * then do shapes collision
 * then do blind monsters
+  va en direction du son
+  sur un collision longe le mur du coté le mieux incliné
+  si a nouveau obstacle
+
+  ou plutôt faire simplement des longeurs de murs :-)
 
 * conrod: y a-t-il des features a enelver mettre...
 * faire rendu de conrod

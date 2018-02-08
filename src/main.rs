@@ -84,6 +84,7 @@ fn main() {
     world.register::<::component::Life>();
     world.register::<::component::Aim>();
     world.register::<::component::Player>();
+    world.register::<::component::GravityToPlayers>();
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::PhysicWorld::new());
     world.add_resource(::resource::AnimationImages(vec![]));
@@ -92,6 +93,7 @@ fn main() {
 
     let mut update_dispatcher = ::specs::DispatcherBuilder::new()
         .add(::system::PhysicSystem, "physic", &[])
+        .add(::system::GravitySystem, "gravity", &[])
         .add_barrier() // Draw barrier
         .add(::system::AnimationSystem, "animation", &[])
         .build();
