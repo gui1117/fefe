@@ -47,9 +47,20 @@ impl Component for PlayerAimInvDamping {
     type Storage = VecStorage<Self>;
 }
 
-pub struct Launcher {
-    // TODO: pub bullet: Box<Launchable>
-    // TODO: next_slave: maybe a vec of duration ?
+#[derive(Deref, DerefMut)]
+pub struct Inserters(Vec<Inserter>);
+
+pub struct Inserter {
+    pub bullet: Box<::entity::Insertable + Sync + Send>,
+    /// Vec of cooldown
+    pub shoots: Vec<f32>,
+    /// Time at startup
+    pub startup_time: f32,
+    pub delta_angle: f32,
+}
+
+impl Component for Inserters {
+    type Storage = VecStorage<Self>;
 }
 
 // TODO: for bullet
