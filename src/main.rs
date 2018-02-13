@@ -50,9 +50,10 @@ use vulkano::instance::Instance;
 use std::time::Duration;
 use std::time::Instant;
 use std::thread;
+use specs::prelude::{DispatcherBuilder, World, BitSet, Join};
 
 fn main() {
-    let mut gilrs = gilrs::Gilrs::new();
+    let mut gilrs = gilrs::Gilrs::new().unwrap();
 
     let instance = {
         let extensions = vulkano_win::required_extensions();
@@ -78,7 +79,7 @@ fn main() {
         .build();
     let ids = game_state::Ids::new(ui.widget_id_generator());
 
-    let mut world = specs::World::new();
+    let mut world = World::new();
     world.register::<::component::RigidBody>();
     world.register::<::component::AnimationState>();
     world.register::<::component::Life>();
@@ -91,7 +92,7 @@ fn main() {
     world.add_resource(::resource::Camera::new(::na::one()));
     world.maintain();
 
-    let mut update_dispatcher = ::specs::DispatcherBuilder::new()
+    let mut update_dispatcher = DispatcherBuilder::new()
         .add(::system::PhysicSystem, "physic", &[])
         .add(::system::GravitySystem, "gravity", &[])
         .add_barrier() // Draw barrier
@@ -107,6 +108,10 @@ fn main() {
 
     ::map::load_map("one".into(), &mut world).unwrap();
 
+    let mut removed = BitSet::new();
+    let mut removed_id = world.write::<::component::RigidBody>().track_removed();
+    let mut removed_cache = vec![];
+
     'main_loop: loop {
         // Parse events
         let mut evs = vec![];
@@ -119,16 +124,8 @@ fn main() {
                     event: winit::WindowEvent::Focused(true),
                     ..
                 } => {
-                    try_multiple_time!(
-                        window.window().set_cursor_state(winit::CursorState::Normal),
-                        100,
-                        10
-                    ).unwrap();
-                    try_multiple_time!(
-                        window.window().set_cursor_state(winit::CursorState::Grab),
-                        100,
-                        10
-                    ).unwrap();
+                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Normal), 100, 10).unwrap();
+                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab), 100, 10).unwrap();
                 }
                 winit::Event::WindowEvent {
                     event: ::winit::WindowEvent::Closed,
@@ -165,6 +162,20 @@ fn main() {
         update_dispatcher.dispatch(&mut world.res);
         game_state = game_state.update_draw_ui(&mut ui.set_widgets(), &ids, &mut world);
         world.add_resource(ui.draw().owned());
+
+        // Maintain world
+        {
+            world.maintain();
+            world.write::<::component::RigidBody>().populate_removed(&mut removed_id, &mut removed);
+            removed_cache.clear();
+            // TODO: is this correct ?
+            //       could an entity be created at a new generation overiding the component ?
+            for (rigid_body, _) in (&world.read::<::component::RigidBody>(), &removed).join() {
+                removed_cache.push(rigid_body.0);
+            }
+            world.write_resource::<::resource::PhysicWorld>()
+                .remove_bodies(&removed_cache);
+        }
 
         // Draw
         graphics.draw(&mut world, &window);

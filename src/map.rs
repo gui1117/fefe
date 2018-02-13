@@ -9,8 +9,9 @@ use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
 use lyon::svg::path::default::Path;
 use entity::{InsertableObject, FillableObject};
+use specs::prelude::World;
 
-pub fn load_map(name: String, world: &mut ::specs::World) -> Result<(), ::failure::Error> {
+pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
     let mut path = ::CFG.map_directory.clone();
     path.push(name);
     if !path.is_dir() {
@@ -146,7 +147,7 @@ pub trait TryFromPath: Sized {
 
 pub trait Builder {
     type Position: TryFromPath;
-    fn build(&self, position: Self::Position, world: &mut ::specs::World);
+    fn build(&self, position: Self::Position, world: &mut World);
 }
 
 #[derive(Serialize, Deserialize)]
@@ -162,7 +163,7 @@ impl<B: Builder> Processor<B> {
     fn build(
         self,
         entities: Vec<Path>,
-        world: &mut ::specs::World,
+        world: &mut World,
     ) -> Result<(), ::failure::Error> {
         let mut positions = vec![];
         for entity in entities {
@@ -174,7 +175,7 @@ impl<B: Builder> Processor<B> {
         Ok(())
     }
 
-    fn build_positions(self, mut entities: Vec<B::Position>, world: &mut ::specs::World) {
+    fn build_positions(self, mut entities: Vec<B::Position>, world: &mut World) {
         use self::Processor::*;
         match self {
             BuildEntity(builder) => for entity in entities {

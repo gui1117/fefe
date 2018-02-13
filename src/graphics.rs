@@ -25,6 +25,7 @@ use std::sync::Arc;
 use std::fs::File;
 use std::time::Duration;
 use std::f32::consts::PI;
+use specs::prelude::World;
 
 // TODO: only a bool for whereas draw the cursor or not
 
@@ -372,7 +373,7 @@ impl<'a> Graphics<'a> {
     fn build_command_buffer(
         &mut self,
         image_num: usize,
-        world: &mut ::specs::World,
+        world: &mut World,
     ) -> AutoCommandBuffer<StandardCommandPoolAlloc> {
         let dimensions = self.swapchain.dimensions();
 
@@ -518,7 +519,7 @@ impl<'a> Graphics<'a> {
             .unwrap()
     }
 
-    pub fn draw(&mut self, world: &mut ::specs::World, window: &::vulkano_win::Window) {
+    pub fn draw(&mut self, world: &mut World, window: &::vulkano_win::Window) {
         self.future.as_mut().unwrap().cleanup_finished();
 
         // On X with Xmonad and intel HD graphics the acquire stay sometimes forever

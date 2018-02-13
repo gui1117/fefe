@@ -1,69 +1,118 @@
 pub use animation::AnimationState;
 use nphysics::object::BodyStatus;
-use specs::Join;
+use specs::prelude::{Component, VecStorage, Entity, World, WriteStorage, Join, FlaggedStorage};
+use specs::storage::NullStorage;
 
 #[derive(Default)]
 pub struct Player;
 
-impl ::specs::Component for Player {
-    type Storage = ::specs::NullStorage<Self>;
+impl Component for Player {
+    type Storage = NullStorage<Self>;
 }
 
 #[derive(Deref, DerefMut)]
 pub struct Life(pub usize);
 
-impl ::specs::Component for Life {
-    type Storage = ::specs::VecStorage<Self>;
+impl Component for Life {
+    type Storage = VecStorage<Self>;
 }
 
-#[derive(Default)]
 pub struct GravityToPlayers {
     pub mass: f32,
 }
 
-impl ::specs::Component for GravityToPlayers {
-    type Storage = ::specs::VecStorage<Self>;
+impl Component for GravityToPlayers {
+    type Storage = VecStorage<Self>;
 }
 
-// Decrease of sound: -6dB
-// The sound pressure level (SPL) decreases with doubling of distance by (−)6 dB.
-/// This component store the position of the last heard sound
-/// Sound is heard at hear_db
-pub struct Listener {
-    pub hear_position: Option<::na::Vector2<f32>>,
-    pub hear_limit: f32,
-}
-// TODO: better to insert a HeadPosition component so system can iterate on it easily
+pub struct ToPlayerInSight;
 
-impl ::specs::Component for Listener {
-    type Storage = ::specs::VecStorage<Self>;
+impl Component for ToPlayerInSight {
+    type Storage = VecStorage<Self>;
 }
 
-pub fn play_sound(position: ::na::Vector2<f32>, db: f32, world: &mut ::specs::World) {
-    for (listener, body) in (
-        &mut world.write::<::component::Listener>(),
-        &world.read::<::component::RigidBody>()
-    ).join() {
-        let listener_position = body.get(&world.read_resource()).position().translation.vector;
-        let distance = (position - listener_position).norm();
-        if db*(-distance).exp() > listener.hear_limit {
-            listener.hear_position = Some(position);
-        }
-    }
+pub struct PlayerAimDamping {
+    pub processor: Box<Fn(f32) -> f32 + Sync + Send>,
 }
 
-// Launch an entitiy
-// pub struct Launcher {
-//     entity: ::entity::EntitySettings,
-//     rate: f32,
-//     timer: f32,
+impl Component for PlayerAimDamping {
+    type Storage = VecStorage<Self>;
+}
+
+pub struct PlayerAimInvDamping {
+    pub processor: Box<Fn(f32) -> f32 + Sync + Send>,
+}
+
+impl Component for PlayerAimInvDamping {
+    type Storage = VecStorage<Self>;
+}
+
+pub struct Launcher {
+    // TODO: pub bullet: Box<Launchable>
+    // TODO: next_slave: maybe a vec of duration ?
+}
+
+// TODO: for bullet
+//       position is function of t along an axis ?
+pub struct Positionned {
+}
+
+// TODO: do something gravity like ! with inertia
+// // Decrease of sound: -6dB
+// // The sound pressure level (SPL) decreases with doubling of distance by (−)6 dB.
+// /// This component store the position of the last heard sound
+// /// compute the main position
+// /// heard sound intensity decrease over time
+// pub struct EarPositionMemory {
+//     heards: Vec<(::na::Vector2<f32>, f32)>,
+//     position: ::na::Vector2<f32>,
+//     db: f32,
+// }
+// // TODO: this can be done better with just position and db and updated each time by decreasing the
+// // memoy and add new heards
+// // MAYBE: impl some gravity like for sound:
+// // sound create a mass at a point during a frame
+// // memory is only consequence of intertia
+
+// impl EarPositionMemory {
+//     pub fn add_heard(&mut self, heard_position: ::na::Vector2<f32>, heard_db: f32) {
+//         self.heards.push((heard_position, heard_db));
+//         self.recompute();
+//     }
+
+//     pub fn recompute(&mut self) {
+//         let (position_sum, db_sum) = self.heards.iter()
+//             // FIXME: This mean may have to be on sound pressure instead of dB
+//             .fold((::na::zero(), 0.0), |acc: (::na::Vector2<f32>, f32), &(position, db)| (acc.0+position*db, acc.1+db));
+//         self.position = position_sum/db_sum;
+//         self.db = db_sum;
+//     }
+// }
+
+// impl Component for EarPositionMemory {
+//     type Storage = VecStorage<Self>;
+// }
+
+// // TODO: or better have a resource with a channel for send and one for receive
+// pub fn play_sound(position: ::na::Vector2<f32>, db: f32, world: &mut World) {
+//     for (listener, body) in (
+//         &mut world.write::<::component::EarPositionMemory>(),
+//         &world.read::<::component::RigidBody>()
+//     ).join() {
+//         // TODO: computation with a resource for gas constant ?
+//         // let listener_position = body.get(&world.read_resource()).position().translation.vector;
+//         // let distance = (position - listener_position).norm();
+//         // if db*(-distance).exp() > listener.hear_limit {
+//         //     listener.hear_position = Some(position);
+//         // }
+//     }
 // }
 
 #[derive(Deref, DerefMut)]
 pub struct Aim(pub f32);
 
-impl ::specs::Component for Aim {
-    type Storage = ::specs::VecStorage<Self>;
+impl Component for Aim {
+    type Storage = VecStorage<Self>;
 }
 
 // How to store weapons and allow to switch from them
@@ -74,20 +123,20 @@ impl ::specs::Component for Aim {
 pub struct Weapon {}
 
 #[derive(Clone)]
-pub struct RigidBody(::nphysics::object::BodyHandle);
+pub struct RigidBody(pub ::nphysics::object::BodyHandle);
 
-impl ::specs::Component for RigidBody {
-    type Storage = ::specs::TrackedStorage<Self, ::specs::DenseVecStorage<Self>>;
+impl Component for RigidBody {
+    type Storage = FlaggedStorage<Self, VecStorage<Self>>;
 }
 
 #[allow(unused)]
 impl RigidBody {
     pub fn safe_insert<'a>(
-        entity: ::specs::Entity,
+        entity: Entity,
         position: ::npm::Isometry<f32>,
         local_inertia: ::npm::Inertia<f32>,
         status: BodyStatus,
-        bodies_handle: &mut ::specs::WriteStorage<'a, ::component::RigidBody>,
+        bodies_handle: &mut WriteStorage<'a, ::component::RigidBody>,
         physic_world: &mut ::resource::PhysicWorld,
     ) -> ::nphysics::object::BodyHandle {
         let body_handle = physic_world.add_rigid_body(position, local_inertia);

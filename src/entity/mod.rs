@@ -4,6 +4,7 @@ use lyon::svg::path::default::Path;
 use lyon::svg::path::PathEvent;
 use nphysics::object::BodyStatus;
 use ncollide::shape::{ShapeHandle, Ball2, Triangle2};
+use specs::prelude::World;
 
 #[derive(Deref, DerefMut)]
 pub struct FillPosition(Vec<[::na::Point2<f32>; 3]>);
@@ -36,7 +37,6 @@ impl ::map::TryFromPath for FillPosition {
                 ::na::Point2::new(v3.x, v3.y),
             ]);
         }
-        println!("positionl len{}", position.len());
         Ok(FillPosition(position))
     }
 }
@@ -76,7 +76,7 @@ macro_rules! object {
         }
     ) => (
         pub trait $t {
-            fn $f(&self, position: $p, world: &mut ::specs::World);
+            fn $f(&self, position: $p, world: &mut World);
         }
 
         #[derive(Serialize, Deserialize)]
@@ -85,7 +85,7 @@ macro_rules! object {
         }
 
         impl $t for $o {
-            fn $f(&self, position: $p, world: &mut ::specs::World) {
+            fn $f(&self, position: $p, world: &mut World) {
                 match self {
                     $(&$o::$v(ref p) => p.$f(position, world)),*
                 }
@@ -94,7 +94,7 @@ macro_rules! object {
 
         impl ::map::Builder for $o {
             type Position = $p;
-            fn build(&self, position: Self::Position, world: &mut ::specs::World) {
+            fn build(&self, position: Self::Position, world: &mut World) {
                 self.$f(position, world);
             }
         }
@@ -117,19 +117,29 @@ object!(
 pub struct Wall;
 
 impl Fillable for Wall {
-    fn fill(&self, position: FillPosition, world: &mut ::specs::World) {
+    fn fill(&self, position: FillPosition, world: &mut World) {
         for position in position.iter() {
             let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
-            let body_handle = physic_world.add_rigid_body(::na::one(), ::npm::Inertia::zero());
+            let body_handle = physic_world.add_rigid_body(::na::Isometry2::new(::na::Vector2::new(0.0, 0.0), 0.0), ::npm::Inertia::zero());
             physic_world.rigid_body_mut(body_handle).unwrap().set_status(BodyStatus::Static);
 
             physic_world.add_collider(
                 0.0,
-                ShapeHandle::new(Triangle2::from_array(&position).clone()),
+                ShapeHandle::new(Ball2::new(::CFG.player_radius).clone()),
                 body_handle,
                 ::na::one(),
             );
+
+            // let body_handle = physic_world.add_rigid_body(::na::one(), ::npm::Inertia::zero());
+            // physic_world.rigid_body_mut(body_handle).unwrap().set_status(BodyStatus::Static);
+
+            // physic_world.add_collider(
+            //     0.0,
+            //     ShapeHandle::new(Triangle2::from_array(&position).clone()),
+            //     body_handle,
+            //     ::na::one(),
+            // );
         }
     }
 }
@@ -138,7 +148,7 @@ impl Fillable for Wall {
 pub struct Player;
 
 impl Insertable for Player {
-    fn insert(&self, position: InsertPosition, world: &mut ::specs::World) {
+    fn insert(&self, position: InsertPosition, world: &mut World) {
         let p = world
             .create_entity()
             .with(::component::AnimationState::new(

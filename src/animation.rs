@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::fs;
 use std::ffi::OsStr;
+use specs::prelude::Component;
+use specs::prelude::VecStorage;
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum Framerate {
@@ -208,8 +210,8 @@ impl AnimationState {
     }
 }
 
-impl ::specs::Component for AnimationState {
-    type Storage = ::specs::VecStorage<Self>;
+impl Component for AnimationState {
+    type Storage = VecStorage<Self>;
 }
 
 #[derive(Deref, DerefMut)]

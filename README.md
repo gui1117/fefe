@@ -193,12 +193,62 @@ transposition avec un monstre
 * monstres se réveille brusquement quand proche
 * faire la même chose que c'est en fonction de bruit fort
 
+* monstres qui sont attiré lorsqu'on les regarde
+* monstres qui sont attiré lorsqu'on les regarde pas
+* ou penser l'inverse: ils sont pas attiré quand X mais ils sont figé quand !X
+
+* (un monstre qui saute (ou dash) pour se déplacé)
+
+### monstres finalement:
+
+faire:
+* boids:
+  évite la ligne de mire
+  va vers le héros
+  se regroupe
+  se regroupe pas trop
+
+* gravité
+
+* gravité sonore
+
+* va vers le héros si en ligne de mir
+
+* monstre attiré quand regarde ou quand regarde pas:
+  implémenté a partir de modification induite du regard du héros sur l'entité
+  le héros a un pouvoir de paralysie avec son aim sur certain monstres
+  le héros a un pouvoir de paralysie avec son non aim sur certain monstres
+
+réflechir:
+* tourelles: les facons de tirer est ce que certaines peuvent se déplacé sur les rondes écrite ?
+  le lancement des tourelles peuvent correspondre au son au ryhtme régulier :-)
+
+* balles: lancé par les tourelles: des mouvements spéciaux
+  leurs positions doivent être une fonction paramétré par le temps
+
+* NEAT: faire que les réseaux soit calculé sur GPU et faire les visions du monde
+
+This works for entity that have to go to the player
+but what about other entities
+
+also there should be more shootemup like entities
+those should be made with turrets launching balls that have special behavior!!!!!!
+
+then
+
 # moyen age
 
 arbalete qui tire mais vitesse =/ oo
 + épée
 
 # TODO:
+
+* Implémenter les oreilles qui retiennent position/date
+* impl les truc qui se déplace vers toi plus ou moins vite en fonction de la distance
+  rigidbody
+  ??? DOES THIS CAN BE DONE WITH GRAVITY ????
+  YES
+* impl les truc qui se déplace vers le son plus ou moins vite en fonction du volume
 
 * then do shapes collision
 * then do blind monsters

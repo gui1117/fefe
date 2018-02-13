@@ -1,13 +1,13 @@
-use specs::Join;
+use specs::prelude::{Join, WriteStorage, ReadStorage, FetchMut, System};
 
 pub struct GravitySystem;
 
-impl<'a> ::specs::System<'a> for GravitySystem {
+impl<'a> System<'a> for GravitySystem {
     type SystemData = (
-        ::specs::ReadStorage<'a, ::component::GravityToPlayers>,
-        ::specs::ReadStorage<'a, ::component::Player>,
-        ::specs::WriteStorage<'a, ::component::RigidBody>,
-        ::specs::FetchMut<'a, ::resource::PhysicWorld>,
+        ReadStorage<'a, ::component::GravityToPlayers>,
+        ReadStorage<'a, ::component::Player>,
+        WriteStorage<'a, ::component::RigidBody>,
+        FetchMut<'a, ::resource::PhysicWorld>,
     );
 
     fn run(

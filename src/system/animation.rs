@@ -1,14 +1,14 @@
-use specs::Join;
+use specs::prelude::{Join, WriteStorage, ReadStorage, Fetch, FetchMut, System};
 
 pub struct AnimationSystem;
 
-impl<'a> ::specs::System<'a> for AnimationSystem {
+impl<'a> System<'a> for AnimationSystem {
     type SystemData = (
-        ::specs::ReadStorage<'a, ::component::RigidBody>,
-        ::specs::WriteStorage<'a, ::component::AnimationState>,
-        ::specs::Fetch<'a, ::resource::UpdateTime>,
-        ::specs::Fetch<'a, ::resource::PhysicWorld>,
-        ::specs::FetchMut<'a, ::resource::AnimationImages>,
+        ReadStorage<'a, ::component::RigidBody>,
+        WriteStorage<'a, ::component::AnimationState>,
+        Fetch<'a, ::resource::UpdateTime>,
+        Fetch<'a, ::resource::PhysicWorld>,
+        FetchMut<'a, ::resource::AnimationImages>,
     );
 
     fn run(
