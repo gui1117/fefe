@@ -75,8 +75,7 @@ struct Image {
     height: u32,
 }
 
-pub struct Graphics<'a> {
-    physical: PhysicalDevice<'a>,
+pub struct Graphics {
     queue: Arc<Queue>,
     device: Arc<Device>,
     swapchain: Arc<Swapchain>,
@@ -310,7 +309,6 @@ impl<'a> Graphics<'a> {
             framebuffers,
             view_buffer_pool,
             world_buffer_pool,
-            physical,
             descriptor_sets_pool,
         }
     }
@@ -321,7 +319,7 @@ impl<'a> Graphics<'a> {
         loop {
             let dimensions = window
                 .surface()
-                .capabilities(self.physical)
+                .capabilities(self.device().physical_device())
                 .expect("failed to get surface capabilities")
                 .current_extent
                 .unwrap_or([1024, 768]);
@@ -548,10 +546,20 @@ impl<'a> Graphics<'a> {
             .then_execute(self.queue.clone(), command_buffer)
             .unwrap()
             .then_swapchain_present(self.queue.clone(), self.swapchain.clone(), image_num)
-            .then_signal_fence_and_flush()
-            .unwrap();
+            .then_signal_fence_and_flush();
 
-        self.future = Some(Box::new(future) as Box<_>);
+        match future {
+            Ok(future) => {
+                self.future = Some(Box::new(future) as Box<_>);
+            }
+            Err(vulkano::sync::FlushError::OutOfDate) => {
+                self.future = Some(Box::new(vulkano::sync::now(self.device.clone())) as Box<_>);
+            }
+            Err(e) => {
+                println!("ERROR: {:?}", e);
+                self.future = Some(Box::new(vulkano::sync::now(self.device.clone())) as Box<_>);
+            }
+        }
     }
 }
 

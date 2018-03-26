@@ -48,9 +48,9 @@ impl Component for PlayerAimInvDamping {
 }
 
 #[derive(Deref, DerefMut)]
-pub struct Inserters(Vec<Inserter>);
+pub struct Turret(Vec<TurretPart>);
 
-pub struct Inserter {
+pub struct TurretPart {
     pub bullet: Box<::entity::Insertable + Sync + Send>,
     /// Vec of cooldown
     pub shoots: Vec<f32>,
@@ -59,7 +59,7 @@ pub struct Inserter {
     pub delta_angle: f32,
 }
 
-impl Component for Inserters {
+impl Component for Turret {
     type Storage = VecStorage<Self>;
 }
 

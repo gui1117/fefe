@@ -1,5 +1,9 @@
 # Fefe
 
+* USE GGEZ ?
+
+* faire recreate swapchain on signal and fence
+
 A game that mix hotline miami and left 4 dead.
 and shoot em up (esquive de balles lentes)
 
@@ -221,10 +225,13 @@ faire:
 
 réflechir:
 * tourelles: les facons de tirer est ce que certaines peuvent se déplacé sur les rondes écrite ?
-  le lancement des tourelles peuvent correspondre au son au ryhtme régulier :-)
+  le lancement des tourelles peuvent correspondre au son au ryhtme régulier :-) aaaah non arrête
 
 * balles: lancé par les tourelles: des mouvements spéciaux
   leurs positions doivent être une fonction paramétré par le temps
+
+* des spawner: pour les glaces qui s'anime: spawner lorsque près du héros. ou plutôt truc spécial
+  pour les endroits ou avec des vagues.
 
 * NEAT: faire que les réseaux soit calculé sur GPU et faire les visions du monde
 
