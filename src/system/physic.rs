@@ -1,4 +1,4 @@
-use specs::prelude::{Fetch, FetchMut, System};
+use specs::{Fetch, FetchMut, System};
 
 pub struct PhysicSystem;
 

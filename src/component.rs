@@ -1,7 +1,7 @@
 pub use animation::AnimationState;
-use nphysics::object::BodyStatus;
-use specs::prelude::{Component, VecStorage, Entity, World, WriteStorage, Join, FlaggedStorage};
-use specs::storage::NullStorage;
+use nphysics2d::object::BodyStatus;
+use specs::{Component, VecStorage, Entity, World, WriteStorage, Join, NullStorage};
+use retained_storage::RetainedStorage;
 
 #[derive(Default)]
 pub struct Player;
@@ -134,23 +134,24 @@ impl Component for Aim {
 pub struct Weapon {}
 
 #[derive(Clone)]
-pub struct RigidBody(pub ::nphysics::object::BodyHandle);
+pub struct RigidBody(pub ::nphysics2d::object::BodyHandle);
 
 impl Component for RigidBody {
-    type Storage = FlaggedStorage<Self, VecStorage<Self>>;
+    type Storage = RetainedStorage<Self, VecStorage<Self>>;
 }
 
 #[allow(unused)]
 impl RigidBody {
     pub fn safe_insert<'a>(
         entity: Entity,
-        position: ::npm::Isometry<f32>,
-        local_inertia: ::npm::Inertia<f32>,
+        position: ::nphysics2d::math::Isometry<f32>,
+        local_inertia: ::nphysics2d::math::Inertia<f32>,
+        local_center_of_mass: ::nphysics2d::math::Point<f32>,
         status: BodyStatus,
         bodies_handle: &mut WriteStorage<'a, ::component::RigidBody>,
         physic_world: &mut ::resource::PhysicWorld,
-    ) -> ::nphysics::object::BodyHandle {
-        let body_handle = physic_world.add_rigid_body(position, local_inertia);
+    ) -> ::nphysics2d::object::BodyHandle {
+        let body_handle = physic_world.add_rigid_body(position, local_inertia, local_center_of_mass);
         physic_world.rigid_body_mut(body_handle).unwrap().set_status(status);
         bodies_handle.insert(entity, RigidBody(body_handle));
         body_handle
@@ -160,7 +161,7 @@ impl RigidBody {
     pub fn get<'a>(
         &'a self,
         physic_world: &'a ::resource::PhysicWorld,
-    ) -> &'a ::nphysics::object::RigidBody<f32> {
+    ) -> &'a ::nphysics2d::object::RigidBody<f32> {
         physic_world
             .rigid_body(self.0)
             .expect("Rigid body in specs does not exist in physic world")
@@ -170,7 +171,7 @@ impl RigidBody {
     pub fn get_mut<'a>(
         &'a mut self,
         physic_world: &'a mut ::resource::PhysicWorld,
-    ) -> &'a mut ::nphysics::object::RigidBody<f32> {
+    ) -> &'a mut ::nphysics2d::object::RigidBody<f32> {
         physic_world
             .rigid_body_mut(self.0)
             .expect("Rigid body in specs does not exist in physic world")

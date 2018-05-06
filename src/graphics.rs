@@ -1,5 +1,5 @@
 use vulkano::device::{Device, DeviceExtensions, Queue};
-use vulkano::swapchain::{self, Swapchain, SwapchainCreationError};
+use vulkano::swapchain::{self, Surface, Swapchain, SwapchainCreationError};
 use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode};
 use vulkano::image::{AttachmentImage, Dimensions, ImageUsage, ImmutableImage};
 use vulkano::buffer::{BufferUsage, CpuBufferPool, ImmutableBuffer};
@@ -18,14 +18,14 @@ use vulkano::sync::{now, GpuFuture};
 use vulkano::image::ImageLayout;
 use vulkano::format::{self, ClearValue, Format};
 use vulkano;
-use ncollide::shape;
+use ncollide2d::shape;
 use alga::general::SubsetOf;
 
 use std::sync::Arc;
 use std::fs::File;
 use std::time::Duration;
 use std::f32::consts::PI;
-use specs::prelude::World;
+use specs::World;
 
 // TODO: only a bool for whereas draw the cursor or not
 
@@ -78,7 +78,7 @@ struct Image {
 pub struct Graphics {
     queue: Arc<Queue>,
     device: Arc<Device>,
-    swapchain: Arc<Swapchain>,
+    swapchain: Arc<Swapchain<::winit::Window>>,
     render_pass: Arc<RenderPassAbstract + Sync + Send>,
     pipeline: Arc<GraphicsPipelineAbstract + Sync + Send>,
     debug_pipeline: Arc<GraphicsPipelineAbstract + Sync + Send>,
@@ -97,9 +97,9 @@ struct Vertex {
 }
 impl_vertex!(Vertex, position);
 
-impl<'a> Graphics<'a> {
-    pub fn new(window: &'a ::vulkano_win::Window) -> Graphics<'a> {
-        let physical = PhysicalDevice::enumerate(&window.surface().instance())
+impl Graphics {
+    pub fn new(window: &Arc<Surface<::winit::Window>>) -> Graphics {
+        let physical = PhysicalDevice::enumerate(&window.instance())
             .next()
             .expect("no device available");
 
@@ -107,7 +107,7 @@ impl<'a> Graphics<'a> {
             .queue_families()
             .find(|&q| {
                 q.supports_graphics() && q.supports_compute()
-                    && window.surface().is_supported(q).unwrap_or(false)
+                    && window.is_supported(q).unwrap_or(false)
             })
             .expect("couldn't find a graphical queue family");
 
@@ -129,7 +129,6 @@ impl<'a> Graphics<'a> {
 
         let (swapchain, images) = {
             let caps = window
-                .surface()
                 .capabilities(physical)
                 .expect("failed to get surface capabilities");
 
@@ -142,7 +141,7 @@ impl<'a> Graphics<'a> {
 
             Swapchain::new(
                 device.clone(),
-                window.surface().clone(),
+                window.clone(),
                 caps.min_image_count,
                 format,
                 dimensions,
@@ -313,13 +312,12 @@ impl<'a> Graphics<'a> {
         }
     }
 
-    fn recreate(&mut self, window: &::vulkano_win::Window) {
+    fn recreate(&mut self, window: &Arc<Surface<::winit::Window>>) {
         let recreate;
         let mut remaining_try = 20;
         loop {
             let dimensions = window
-                .surface()
-                .capabilities(self.device().physical_device())
+                .capabilities(self.device.physical_device())
                 .expect("failed to get surface capabilities")
                 .current_extent
                 .unwrap_or([1024, 768]);
@@ -462,7 +460,7 @@ impl<'a> Graphics<'a> {
             for collider in world.read_resource::<::resource::PhysicWorld>().colliders() {
                 let shape = collider.shape();
                 let mut vertices = None;
-                if let Some(ball) = shape.as_shape::<shape::Ball2<f32>>() {
+                if let Some(ball) = shape.as_shape::<shape::Ball<f32>>() {
                     vertices = Some(
                         circle.iter()
                             .map(|p| *p*ball.radius())
@@ -473,20 +471,21 @@ impl<'a> Graphics<'a> {
                             .collect::<Vec<_>>()
                     );
                 }
-                if let Some(triangle) = shape.as_shape::<shape::Triangle2<f32>>() {
-                    vertices = Some(
-                        [
-                            triangle.a(),
-                            triangle.b(),
-                            triangle.c(),
-                        ].iter()
-                            .map(|p| {
-                                let p = collider.position() * *p;
-                                Vertex { position: [p[0], -p[1]] }
-                            })
-                            .collect::<Vec<_>>()
-                    );
-                }
+                // TODO:
+                // if let Some(triangle) = shape.as_shape::<shape::Triangle<f32>>() {
+                //     vertices = Some(
+                //         [
+                //             triangle.a(),
+                //             triangle.b(),
+                //             triangle.c(),
+                //         ].iter()
+                //             .map(|p| {
+                //                 let p = collider.position() * *p;
+                //                 Vertex { position: [p[0], -p[1]] }
+                //             })
+                //             .collect::<Vec<_>>()
+                //     );
+                // }
 
                 if let Some(vertices) = vertices {
                     let (vertex_buffer, vertex_buffer_fut) = ImmutableBuffer::from_iter(
@@ -517,7 +516,7 @@ impl<'a> Graphics<'a> {
             .unwrap()
     }
 
-    pub fn draw(&mut self, world: &mut World, window: &::vulkano_win::Window) {
+    pub fn draw(&mut self, world: &mut World, window: &Arc<Surface<::winit::Window>>) {
         self.future.as_mut().unwrap().cleanup_finished();
 
         // On X with Xmonad and intel HD graphics the acquire stay sometimes forever

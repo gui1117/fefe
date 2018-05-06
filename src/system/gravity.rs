@@ -1,4 +1,4 @@
-use specs::prelude::{Join, WriteStorage, ReadStorage, FetchMut, System};
+use specs::{Join, WriteStorage, ReadStorage, FetchMut, System};
 
 pub struct GravitySystem;
 

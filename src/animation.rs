@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::fs;
 use std::ffi::OsStr;
-use specs::prelude::Component;
-use specs::prelude::VecStorage;
+use specs::{Component, VecStorage};
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum Framerate {

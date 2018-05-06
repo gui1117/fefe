@@ -2,9 +2,9 @@ use lyon::tessellation::{FillTessellator, VertexBuffers, FillOptions, FillVertex
 use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::svg::path::default::Path;
 use lyon::svg::path::PathEvent;
-use nphysics::object::BodyStatus;
-use ncollide::shape::{ShapeHandle, Ball2, Triangle2};
-use specs::prelude::World;
+use nphysics2d::object::BodyStatus;
+use ncollide2d::shape::{ShapeHandle, Ball, Triangle};
+use specs::World;
 
 #[derive(Deref, DerefMut)]
 pub struct FillPosition(Vec<[::na::Point2<f32>; 3]>);
@@ -119,27 +119,29 @@ pub struct Wall;
 impl Fillable for Wall {
     fn fill(&self, position: FillPosition, world: &mut World) {
         for position in position.iter() {
-            let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
+            unimplemented!();
+            // let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
-            let body_handle = physic_world.add_rigid_body(::na::Isometry2::new(::na::Vector2::new(0.0, 0.0), 0.0), ::npm::Inertia::zero());
-            physic_world.rigid_body_mut(body_handle).unwrap().set_status(BodyStatus::Static);
-
-            physic_world.add_collider(
-                0.0,
-                ShapeHandle::new(Ball2::new(::CFG.player_radius).clone()),
-                body_handle,
-                ::na::one(),
-            );
-
-            // let body_handle = physic_world.add_rigid_body(::na::one(), ::npm::Inertia::zero());
+            // let body_handle = physic_world.add_rigid_body(::na::Isometry2::new(::na::Vector2::new(0.0, 0.0), 0.0), ::npm::Inertia::zero());
             // physic_world.rigid_body_mut(body_handle).unwrap().set_status(BodyStatus::Static);
 
             // physic_world.add_collider(
             //     0.0,
-            //     ShapeHandle::new(Triangle2::from_array(&position).clone()),
+            //     ShapeHandle::new(Ball::new(::CFG.player_radius).clone()),
             //     body_handle,
             //     ::na::one(),
             // );
+
+
+            // // let body_handle = physic_world.add_rigid_body(::na::one(), ::npm::Inertia::zero());
+            // // physic_world.rigid_body_mut(body_handle).unwrap().set_status(BodyStatus::Static);
+
+            // // physic_world.add_collider(
+            // //     0.0,
+            // //     ShapeHandle::new(Triangle::from_array(&position).clone()),
+            // //     body_handle,
+            // //     ::na::one(),
+            // // );
         }
     }
 }
@@ -149,29 +151,30 @@ pub struct Player;
 
 impl Insertable for Player {
     fn insert(&self, position: InsertPosition, world: &mut World) {
-        let p = world
-            .create_entity()
-            .with(::component::AnimationState::new(
-                ::animation::AnimationSpecie::Character,
-                ::animation::AnimationName::IdleRifle,
-            ))
-            .with(::component::Player)
-            .with(::component::Aim(position.rotation.angle()))
-            .with(::component::Life(1))
-            .build();
+        unimplemented!();
+        // let p = world
+        //     .create_entity()
+        //     .with(::component::AnimationState::new(
+        //         ::animation::AnimationSpecie::Character,
+        //         ::animation::AnimationName::IdleRifle,
+        //     ))
+        //     .with(::component::Player)
+        //     .with(::component::Aim(position.rotation.angle()))
+        //     .with(::component::Life(1))
+        //     .build();
 
-        let body_handle = ::component::RigidBody::safe_insert(
-            p, position.0, ::npm::Inertia::zero(),
-            BodyStatus::Dynamic,
-            &mut world.write(),
-            &mut world.write_resource(),
-        );
-        world.write_resource::<::resource::PhysicWorld>()
-            .add_collider(
-                0.0,
-                ShapeHandle::new(Ball2::new(::CFG.player_radius)),
-                body_handle,
-                ::na::one(),
-            );
+        // let body_handle = ::component::RigidBody::safe_insert(
+        //     p, position.0, ::npm::Inertia::zero(),
+        //     BodyStatus::Dynamic,
+        //     &mut world.write(),
+        //     &mut world.write_resource(),
+        // );
+        // world.write_resource::<::resource::PhysicWorld>()
+        //     .add_collider(
+        //         0.0,
+        //         ShapeHandle::new(Ball::new(::CFG.player_radius)),
+        //         body_handle,
+        //         ::na::one(),
+        //     );
     }
 }

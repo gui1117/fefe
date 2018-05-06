@@ -1,3 +1,8 @@
+# ?
+
+pour dessiner le cursor faire avec le truc natif ou redessiner un autre:
+le truc natif est surement mieux pour le temps de réponse
+
 # Fefe
 
 * USE GGEZ ?
@@ -145,7 +150,7 @@ Every action create sound that can trigger entities around
 * faire un trait pour les entité pouvant être créer depuis une tourelle
 
 * auto insert into/remove from physic world can be made through tracked storage
-  insert: physic body need physic world resource to be created.
+  insert: physic body need physic world resource to be created. Must be done at the same with `safe_insert`
   remove: after each maintain consistency is done.
 
   allow one way inconsistency: some entity can be in physic world but not in specs world

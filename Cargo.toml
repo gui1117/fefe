@@ -4,29 +4,34 @@ version = "0.1.0"
 authors = ["thiolliere <gui.thiolliere@gmail.com>"]
 
 [dependencies]
-specs = { git = "https://github.com/slide-rs/specs/" }
+specs = "0.10"
 rand = "0.4"
-ron = "0.1"
+ron = "0.2"
 serde_derive = "1.0"
 serde = "1.0"
 failure = "0.1"
 lyon = "0.9"
 lazy_static = "1"
 gilrs = "0.6"
-vulkano = "0.7"
-vulkano-shader-derive = "0.7"
-vulkano-win = "0.7"
-winit = "0.7"
-ncollide = "0.14"
-nphysics2d = { path = "../nphysics/build/nphysics2d" }
+vulkano = "0.9"
+vulkano-shader-derive = "0.9"
+vulkano-win = "0.9"
+winit = "0.11"
+ncollide2d = "*"
+nphysics2d = "*"
 nalgebra = "0.14"
 alga = "0.5"
-pathfinding = "0.6"
-png = "0.11"
+pathfinding = "0.7"
+png = "0.12"
 typenum = "1"
 generic-array = "0.8"
 fps_counter = "1"
-app_dirs = "1"
-rodio = "0.5"
-conrod = { path = "../conrod" }#"0.57"
+app_dirs2 = "2"
+rodio = "0.7"
 derive_deref = "1"
+rusttype = { version = "0.5", features = ["gpu_cache"] }
+
+[patch.crates-io]
+nalgebra  = { path = "../nalgebra" }
+ncollide2d = { path = "../ncollide-dev/build/ncollide2d" }
+nphysics2d = { path = "../nphysics/build/nphysics2d" }

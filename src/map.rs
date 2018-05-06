@@ -9,7 +9,7 @@ use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
 use lyon::svg::path::default::Path;
 use entity::{InsertableObject, FillableObject};
-use specs::prelude::World;
+use specs::World;
 
 pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
     let mut path = ::CFG.map_directory.clone();
