@@ -466,6 +466,7 @@ dependencies = [
  "fps_counter 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "generic-array 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "gilrs 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "itertools 0.7.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lyon 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nalgebra 0.14.1",

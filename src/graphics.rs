@@ -26,8 +26,11 @@ use std::fs::File;
 use std::time::Duration;
 use std::f32::consts::PI;
 use specs::World;
+use itertools::Itertools;
 
 // TODO: only a bool for whereas draw the cursor or not
+
+const DEBUG_SEGMENT_WIDTH: f32 = 10.0;
 
 pub struct Camera {
     position: ::na::Isometry2<f32>,
@@ -471,21 +474,39 @@ impl Graphics {
                             .collect::<Vec<_>>()
                     );
                 }
-                // TODO:
-                // if let Some(triangle) = shape.as_shape::<shape::Triangle<f32>>() {
-                //     vertices = Some(
-                //         [
-                //             triangle.a(),
-                //             triangle.b(),
-                //             triangle.c(),
-                //         ].iter()
-                //             .map(|p| {
-                //                 let p = collider.position() * *p;
-                //                 Vertex { position: [p[0], -p[1]] }
-                //             })
-                //             .collect::<Vec<_>>()
-                //     );
-                // }
+                if let Some(convex_polygon) = shape.as_shape::<shape::ConvexPolygon<f32>>() {
+                    let mut points_iter = convex_polygon.points().iter();
+                    let pivot = points_iter.next().unwrap();
+                    vertices = Some(
+                        points_iter.tuples()
+                            .flat_map(|(p1, p2)| vec![pivot, p1, p2])
+                            .map(|p| {
+                                let p = collider.position() * *p;
+                                Vertex { position: [p[0], -p[1]] }
+                            })
+                            .collect::<Vec<_>>()
+                    );
+                }
+                if let Some(segment) = shape.as_shape::<shape::Segment<f32>>() {
+                    let direction = segment.scaled_direction().normalize();
+                    let normal = ::na::Vector2::new(-direction[1], direction[0]);
+
+                    vertices = Some(
+                        [
+                            segment.a() + normal*DEBUG_SEGMENT_WIDTH/2.0,
+                            segment.a() - normal*DEBUG_SEGMENT_WIDTH/2.0,
+                            segment.b() - normal*DEBUG_SEGMENT_WIDTH/2.0,
+                            segment.b() + normal*DEBUG_SEGMENT_WIDTH/2.0,
+                            segment.b() - normal*DEBUG_SEGMENT_WIDTH/2.0,
+                            segment.a() + normal*DEBUG_SEGMENT_WIDTH/2.0,
+                        ].iter()
+                            .map(|p| {
+                                let p = collider.position() * *p;
+                                Vertex { position: [p[0], -p[1]] }
+                            })
+                            .collect::<Vec<_>>()
+                    );
+                }
 
                 if let Some(vertices) = vertices {
                     let (vertex_buffer, vertex_buffer_fut) = ImmutableBuffer::from_iter(

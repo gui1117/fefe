@@ -6,9 +6,15 @@ MapSettings(
         )
     ],
     fill_rules: [
+        // (
+        //     trigger: "#00ff00",
+        //     processor: TakeNPositions(1, BuildEntity(Wall(()))),
+        // )
+    ],
+    segment_rules: [
         (
             trigger: "#00ff00",
             processor: TakeNPositions(1, BuildEntity(Wall(()))),
         )
-    ]
+    ],
 )

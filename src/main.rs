@@ -24,6 +24,7 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 extern crate alga;
+extern crate itertools;
 
 mod component;
 mod map;
@@ -46,9 +47,11 @@ use vulkano::instance::Instance;
 use std::time::Duration;
 use std::time::Instant;
 use std::thread;
-use specs::{DispatcherBuilder, World, Join};
+use specs::{DispatcherBuilder, World};
 
 fn main() {
+    ::std::env::set_var("WINIT_UNIX_BACKEND", "x11");
+
     let mut gilrs = gilrs::Gilrs::new().unwrap();
 
     let instance = {
@@ -120,7 +123,8 @@ fn main() {
                     event: ::winit::WindowEvent::Closed,
                     ..
                 } => {
-                    break 'main_loop;
+                    // FIXME: breaking with ControlFLow::Quit bugs on X11: function never ends
+                    ::std::process::exit(0);
                 }
                 _ => (),
             }

@@ -1,6 +1,6 @@
 pub use animation::AnimationState;
 use nphysics2d::object::BodyStatus;
-use specs::{Component, VecStorage, Entity, World, WriteStorage, Join, NullStorage};
+use specs::{Component, VecStorage, Entity, WriteStorage, NullStorage};
 use retained_storage::RetainedStorage;
 
 #[derive(Default)]

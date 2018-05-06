@@ -8,7 +8,7 @@ use lyon::svg::parser::svg::Name::Svg;
 use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
 use lyon::svg::path::default::Path;
-use entity::{InsertableObject, FillableObject};
+use entity::{InsertableObject, FillableObject, SegmentableObject};
 use specs::World;
 
 pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
@@ -39,6 +39,7 @@ pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error>
 
     let mut insert_rules_entities = settings.insert_rules.iter().map(|_| vec![]).collect::<Vec<_>>();
     let mut fill_rules_entities = settings.fill_rules.iter().map(|_| vec![]).collect::<Vec<_>>();
+    let mut segment_rules_entities = settings.segment_rules.iter().map(|_| vec![]).collect::<Vec<_>>();
 
     let mut tokenizer = Tokenizer::from_str(&svg_string);
 
@@ -93,6 +94,19 @@ pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error>
                                 fill_rule_entities.push(path);
                             }
                         }
+
+                        // Segment rules
+                        for (rule, ref mut segment_rules_entities) in
+                            settings.segment_rules.iter().zip(segment_rules_entities.iter_mut())
+                        {
+                            if style.to_str().contains(&rule.trigger) {
+                                let svg_builder = Path::builder().with_svg();
+                                let commands = d.to_str();
+                                let path = ::lyon::svg::path_utils::build_path(svg_builder, commands)
+                                    .map_err(|e| format_err!("\"{}\": invalid path \"{}\": {:?}", svg_path.to_string_lossy(), commands, e))?;
+                                segment_rules_entities.push(path);
+                            }
+                        }
                     }
                     in_path_attribute = false;
                 }
@@ -126,6 +140,13 @@ pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error>
         fill_rule.processor.build(fill_rule_entities, world)
             .map_err(|e| format_err!("\"{}\": fill rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
     }
+
+    // Segment entities to world
+    for (segment_rule, segment_rule_entities) in settings.segment_rules.drain(..).zip(segment_rules_entities.drain(..)) {
+        let rule_trigger = segment_rule.trigger;
+        segment_rule.processor.build(segment_rule_entities, world)
+            .map_err(|e| format_err!("\"{}\": segment rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
+    }
     Ok(())
 }
 
@@ -133,6 +154,7 @@ pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error>
 struct MapSettings {
     insert_rules: Vec<Rule<InsertableObject>>,
     fill_rules: Vec<Rule<FillableObject>>,
+    segment_rules: Vec<Rule<SegmentableObject>>,
 }
 
 #[derive(Serialize, Deserialize)]
