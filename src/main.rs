@@ -48,6 +48,7 @@ use std::time::Duration;
 use std::time::Instant;
 use std::thread;
 use specs::{DispatcherBuilder, World};
+use retained_storage::Retained;
 
 fn main() {
     ::std::env::set_var("WINIT_UNIX_BACKEND", "x11");
@@ -157,16 +158,12 @@ fn main() {
         // Maintain world
         {
             world.maintain();
-            // TODO: ramove rigidbodies and things
-            // world.write::<::component::RigidBody>().populate_removed(&mut removed_id, &mut removed);
-            // removed_cache.clear();
-            // // TODO: is this correct ?
-            // //       could an entity be created at a new generation overiding the component ?
-            // for (rigid_body, _) in (&world.read::<::component::RigidBody>(), &removed).join() {
-            //     removed_cache.push(rigid_body.0);
-            // }
-            // world.write_resource::<::resource::PhysicWorld>()
-            //     .remove_bodies(&removed_cache);
+            let retained = world.write::<::component::RigidBody>().retained()
+                .iter()
+                .map(|r| r.0)
+                .collect::<Vec<_>>();
+            let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
+            physic_world.remove_bodies(&retained);
         }
 
         // Draw
