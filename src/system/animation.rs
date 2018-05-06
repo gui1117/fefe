@@ -1,4 +1,4 @@
-use specs::{Join, WriteStorage, ReadStorage, Fetch, FetchMut, System};
+use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
 
 pub struct AnimationSystem;
 

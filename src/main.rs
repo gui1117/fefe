@@ -1,15 +1,17 @@
+extern crate alga;
 #[macro_use]
 extern crate derive_deref;
 #[macro_use]
 extern crate failure;
 extern crate fps_counter;
 extern crate gilrs;
+extern crate itertools;
 #[macro_use]
 extern crate lazy_static;
 extern crate lyon;
 extern crate nalgebra as na;
-extern crate nphysics2d;
 extern crate ncollide2d;
+extern crate nphysics2d;
 extern crate png;
 extern crate rand;
 extern crate ron;
@@ -23,8 +25,6 @@ extern crate vulkano;
 extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
-extern crate alga;
-extern crate itertools;
 
 mod component;
 mod map;
@@ -66,11 +66,7 @@ fn main() {
         .build_vk_surface(&events_loop, instance.clone())
         .unwrap();
 
-    try_multiple_time!(
-        window.window().set_cursor_state(winit::CursorState::Grab),
-        100,
-        10
-    ).unwrap();
+    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab)).unwrap();
     window.window().set_cursor(winit::MouseCursor::NoneCursor);
 
     let mut graphics = graphics::Graphics::new(&window);
@@ -116,8 +112,11 @@ fn main() {
                     event: winit::WindowEvent::Focused(true),
                     ..
                 } => {
-                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Normal), 100, 10).unwrap();
-                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab), 100, 10).unwrap();
+                    try_multiple_time!(
+                        window.window().set_cursor_state(winit::CursorState::Normal)
+                    ).unwrap();
+                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab))
+                        .unwrap();
                 }
                 winit::Event::WindowEvent {
                     event: ::winit::WindowEvent::Closed,

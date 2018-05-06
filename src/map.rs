@@ -8,7 +8,7 @@ use lyon::svg::parser::svg::Name::Svg;
 use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
 use lyon::svg::path::default::Path;
-use entity::{InsertableObject, FillableObject, SegmentableObject};
+use entity::{FillableObject, InsertableObject, SegmentableObject};
 use specs::World;
 
 pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
@@ -37,9 +37,21 @@ pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error>
         .read_to_string(&mut svg_string)
         .map_err(|e| format_err!("\"{}\": {}", svg_path.to_string_lossy(), e))?;
 
-    let mut insert_rules_entities = settings.insert_rules.iter().map(|_| vec![]).collect::<Vec<_>>();
-    let mut fill_rules_entities = settings.fill_rules.iter().map(|_| vec![]).collect::<Vec<_>>();
-    let mut segment_rules_entities = settings.segment_rules.iter().map(|_| vec![]).collect::<Vec<_>>();
+    let mut insert_rules_entities = settings
+        .insert_rules
+        .iter()
+        .map(|_| vec![])
+        .collect::<Vec<_>>();
+    let mut fill_rules_entities = settings
+        .fill_rules
+        .iter()
+        .map(|_| vec![])
+        .collect::<Vec<_>>();
+    let mut segment_rules_entities = settings
+        .segment_rules
+        .iter()
+        .map(|_| vec![])
+        .collect::<Vec<_>>();
 
     let mut tokenizer = Tokenizer::from_str(&svg_string);
 
@@ -70,40 +82,70 @@ pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error>
                 Token::ElementEnd(Empty) => {
                     if let (Some(style), Some(d)) = (style, d) {
                         // Insert rules
-                        for (rule, ref mut insert_rule_entities) in
-                            settings.insert_rules.iter().zip(insert_rules_entities.iter_mut())
+                        for (rule, ref mut insert_rule_entities) in settings
+                            .insert_rules
+                            .iter()
+                            .zip(insert_rules_entities.iter_mut())
                         {
                             if style.to_str().contains(&rule.trigger) {
                                 let svg_builder = Path::builder().with_svg();
                                 let commands = d.to_str();
-                                let path = ::lyon::svg::path_utils::build_path(svg_builder, commands)
-                                    .map_err(|e| format_err!("\"{}\": invalid path \"{}\": {:?}", svg_path.to_string_lossy(), commands, e))?;
+                                let path =
+                                    ::lyon::svg::path_utils::build_path(svg_builder, commands)
+                                        .map_err(|e| {
+                                            format_err!(
+                                                "\"{}\": invalid path \"{}\": {:?}",
+                                                svg_path.to_string_lossy(),
+                                                commands,
+                                                e
+                                            )
+                                        })?;
                                 insert_rule_entities.push(path);
                             }
                         }
 
                         // Fill rules
-                        for (rule, ref mut fill_rule_entities) in
-                            settings.fill_rules.iter().zip(fill_rules_entities.iter_mut())
+                        for (rule, ref mut fill_rule_entities) in settings
+                            .fill_rules
+                            .iter()
+                            .zip(fill_rules_entities.iter_mut())
                         {
                             if style.to_str().contains(&rule.trigger) {
                                 let svg_builder = Path::builder().with_svg();
                                 let commands = d.to_str();
-                                let path = ::lyon::svg::path_utils::build_path(svg_builder, commands)
-                                    .map_err(|e| format_err!("\"{}\": invalid path \"{}\": {:?}", svg_path.to_string_lossy(), commands, e))?;
+                                let path =
+                                    ::lyon::svg::path_utils::build_path(svg_builder, commands)
+                                        .map_err(|e| {
+                                            format_err!(
+                                                "\"{}\": invalid path \"{}\": {:?}",
+                                                svg_path.to_string_lossy(),
+                                                commands,
+                                                e
+                                            )
+                                        })?;
                                 fill_rule_entities.push(path);
                             }
                         }
 
                         // Segment rules
-                        for (rule, ref mut segment_rules_entities) in
-                            settings.segment_rules.iter().zip(segment_rules_entities.iter_mut())
+                        for (rule, ref mut segment_rules_entities) in settings
+                            .segment_rules
+                            .iter()
+                            .zip(segment_rules_entities.iter_mut())
                         {
                             if style.to_str().contains(&rule.trigger) {
                                 let svg_builder = Path::builder().with_svg();
                                 let commands = d.to_str();
-                                let path = ::lyon::svg::path_utils::build_path(svg_builder, commands)
-                                    .map_err(|e| format_err!("\"{}\": invalid path \"{}\": {:?}", svg_path.to_string_lossy(), commands, e))?;
+                                let path =
+                                    ::lyon::svg::path_utils::build_path(svg_builder, commands)
+                                        .map_err(|e| {
+                                            format_err!(
+                                                "\"{}\": invalid path \"{}\": {:?}",
+                                                svg_path.to_string_lossy(),
+                                                commands,
+                                                e
+                                            )
+                                        })?;
                                 segment_rules_entities.push(path);
                             }
                         }
@@ -128,24 +170,63 @@ pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error>
     }
 
     // Insert entities to world
-    for (insert_rule, insert_rule_entities) in settings.insert_rules.drain(..).zip(insert_rules_entities.drain(..)) {
+    for (insert_rule, insert_rule_entities) in settings
+        .insert_rules
+        .drain(..)
+        .zip(insert_rules_entities.drain(..))
+    {
         let rule_trigger = insert_rule.trigger;
-        insert_rule.processor.build(insert_rule_entities, world)
-            .map_err(|e| format_err!("\"{}\": insert rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
+        insert_rule
+            .processor
+            .build(insert_rule_entities, world)
+            .map_err(|e| {
+                format_err!(
+                    "\"{}\": insert rule \"{}\": {}",
+                    svg_path.to_string_lossy(),
+                    rule_trigger,
+                    e
+                )
+            })?;
     }
 
     // Fill entities to world
-    for (fill_rule, fill_rule_entities) in settings.fill_rules.drain(..).zip(fill_rules_entities.drain(..)) {
+    for (fill_rule, fill_rule_entities) in settings
+        .fill_rules
+        .drain(..)
+        .zip(fill_rules_entities.drain(..))
+    {
         let rule_trigger = fill_rule.trigger;
-        fill_rule.processor.build(fill_rule_entities, world)
-            .map_err(|e| format_err!("\"{}\": fill rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
+        fill_rule
+            .processor
+            .build(fill_rule_entities, world)
+            .map_err(|e| {
+                format_err!(
+                    "\"{}\": fill rule \"{}\": {}",
+                    svg_path.to_string_lossy(),
+                    rule_trigger,
+                    e
+                )
+            })?;
     }
 
     // Segment entities to world
-    for (segment_rule, segment_rule_entities) in settings.segment_rules.drain(..).zip(segment_rules_entities.drain(..)) {
+    for (segment_rule, segment_rule_entities) in settings
+        .segment_rules
+        .drain(..)
+        .zip(segment_rules_entities.drain(..))
+    {
         let rule_trigger = segment_rule.trigger;
-        segment_rule.processor.build(segment_rule_entities, world)
-            .map_err(|e| format_err!("\"{}\": segment rule \"{}\": {}", svg_path.to_string_lossy(), rule_trigger, e))?;
+        segment_rule
+            .processor
+            .build(segment_rule_entities, world)
+            .map_err(|e| {
+                format_err!(
+                    "\"{}\": segment rule \"{}\": {}",
+                    svg_path.to_string_lossy(),
+                    rule_trigger,
+                    e
+                )
+            })?;
     }
     Ok(())
 }
@@ -182,11 +263,7 @@ enum Processor<B: Builder> {
 }
 
 impl<B: Builder> Processor<B> {
-    fn build(
-        self,
-        entities: Vec<Path>,
-        world: &mut World,
-    ) -> Result<(), ::failure::Error> {
+    fn build(self, entities: Vec<Path>, world: &mut World) -> Result<(), ::failure::Error> {
         let mut positions = vec![];
         for entity in entities {
             let position = B::Position::try_from_path(entity)

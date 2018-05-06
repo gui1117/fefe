@@ -1,10 +1,10 @@
-use lyon::tessellation::{FillTessellator, VertexBuffers, FillOptions, FillVertex};
+use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
 use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::svg::path::iterator::PathIterator;
 use lyon::svg::path::default::Path;
-use lyon::svg::path::{PathEvent, FlattenedEvent};
+use lyon::svg::path::{FlattenedEvent, PathEvent};
 use nphysics2d::object::{BodyStatus, Material};
-use ncollide2d::shape::{ShapeHandle, Ball, ConvexPolygon, Segment};
+use ncollide2d::shape::{Ball, ConvexPolygon, Segment, ShapeHandle};
 use specs::World;
 use itertools::Itertools;
 
@@ -15,14 +15,21 @@ pub struct SegmentsPosition(Vec<[::na::Point2<f32>; 2]>);
 
 impl ::map::TryFromPath for SegmentsPosition {
     fn try_from_path(value: Path) -> Result<Self, ::failure::Error> {
-        let path_iter = value.path_iter().flattened(SEGMENTS_POSITION_FLATTENED_TOLERANCE);
+        let path_iter = value
+            .path_iter()
+            .flattened(SEGMENTS_POSITION_FLATTENED_TOLERANCE);
 
         let err = |msg: String| {
             format_err!(
                 "invalid path for SegmentsPosition.
 {}
 Full path after being converted to absolute flattened event path:
-{:?}", msg, value.path_iter().flattened(SEGMENTS_POSITION_FLATTENED_TOLERANCE).collect::<Vec<_>>()
+{:?}",
+                msg,
+                value
+                    .path_iter()
+                    .flattened(SEGMENTS_POSITION_FLATTENED_TOLERANCE)
+                    .collect::<Vec<_>>()
             )
         };
 
@@ -39,15 +46,26 @@ Full path after being converted to absolute flattened event path:
             let option_p1_p2 = match (e1, e2) {
                 (FlattenedEvent::MoveTo(p1), FlattenedEvent::LineTo(p2))
                 | (FlattenedEvent::LineTo(p1), FlattenedEvent::LineTo(p2)) => Some((p1, p2)),
-                (FlattenedEvent::LineTo(p1), FlattenedEvent::Close) => {
-                    Some((p1, last_start.ok_or_else(|| err("Closed event without MoveTo event before".to_string()))?))
-                },
+                (FlattenedEvent::LineTo(p1), FlattenedEvent::Close) => Some((
+                    p1,
+                    last_start.ok_or_else(
+                        || err("Closed event without MoveTo event before".to_string()),
+                    )?,
+                )),
                 (FlattenedEvent::Close, FlattenedEvent::MoveTo(_)) => None,
                 (FlattenedEvent::LineTo(_), FlattenedEvent::MoveTo(_)) => None,
-                (FlattenedEvent::Close, FlattenedEvent::LineTo(_)) => return Err(err("Close event followed by LineTo event".to_string())),
-                (FlattenedEvent::MoveTo(_), FlattenedEvent::MoveTo(_)) => return Err(err("MoveTo event followed by MoveTo event".to_string())),
-                (FlattenedEvent::MoveTo(_), FlattenedEvent::Close) => return Err(err("MoveTo event followed by Close event".to_string())),
-                (FlattenedEvent::Close, FlattenedEvent::Close) => return Err(err("Close event followed by Close event".to_string())),
+                (FlattenedEvent::Close, FlattenedEvent::LineTo(_)) => {
+                    return Err(err("Close event followed by LineTo event".to_string()))
+                }
+                (FlattenedEvent::MoveTo(_), FlattenedEvent::MoveTo(_)) => {
+                    return Err(err("MoveTo event followed by MoveTo event".to_string()))
+                }
+                (FlattenedEvent::MoveTo(_), FlattenedEvent::Close) => {
+                    return Err(err("MoveTo event followed by Close event".to_string()))
+                }
+                (FlattenedEvent::Close, FlattenedEvent::Close) => {
+                    return Err(err("Close event followed by Close event".to_string()))
+                }
             };
             if let Some((p1, p2)) = option_p1_p2 {
                 segments.push([::na::Point2::new(p1.x, p1.y), ::na::Point2::new(p2.x, p2.y)]);
@@ -68,17 +86,28 @@ impl ::map::TryFromPath for FillPosition {
             let mut vertex_builder = simple_builder(&mut buffers);
             let mut tessellator = FillTessellator::new();
 
-            tessellator.tessellate_path(
-                value.path_iter(),
-                &FillOptions::default().with_normals(false),
-                &mut vertex_builder,
-            )
-                .map_err(|e| format_err!("invalid path for FillPosition: {:?} for path: \"{:?}\"", e, value))?;
+            tessellator
+                .tessellate_path(
+                    value.path_iter(),
+                    &FillOptions::default().with_normals(false),
+                    &mut vertex_builder,
+                )
+                .map_err(|e| {
+                    format_err!(
+                        "invalid path for FillPosition: {:?} for path: \"{:?}\"",
+                        e,
+                        value
+                    )
+                })?;
         }
 
         let mut indices_iter = buffers.indices.iter();
         let mut position = vec![];
-        while let (Some(i1), Some(i2), Some(i3)) = (indices_iter.next(), indices_iter.next(), indices_iter.next()) {
+        while let (Some(i1), Some(i2), Some(i3)) = (
+            indices_iter.next(),
+            indices_iter.next(),
+            indices_iter.next(),
+        ) {
             let v1 = buffers.vertices[*i1 as usize].position;
             let v2 = buffers.vertices[*i2 as usize].position;
             let v3 = buffers.vertices[*i3 as usize].position;
@@ -123,6 +152,15 @@ or it is:
 macro_rules! object {
     (
         $t:ident, $f:ident, $p:ident, $o:ident {
+            $($v:ident),*
+        }
+    ) => (
+        object!($t, $f, $p, $o {
+            $($v,)*
+        });
+    );
+    (
+        $t:ident, $f:ident, $p:ident, $o:ident {
             $($v:ident)*,
         }
     ) => (
@@ -153,21 +191,19 @@ macro_rules! object {
 }
 
 object!(
-    Insertable, insert, InsertPosition, InsertableObject {
-        Player,
-    }
+    Insertable,
+    insert,
+    InsertPosition,
+    InsertableObject { Player }
 );
 
-object!(
-    Fillable, fill, FillPosition, FillableObject {
-        Wall,
-    }
-);
+object!(Fillable, fill, FillPosition, FillableObject { Wall });
 
 object!(
-    Segmentable, segments, SegmentsPosition, SegmentableObject {
-        Wall,
-    }
+    Segmentable,
+    segments,
+    SegmentsPosition,
+    SegmentableObject { Wall }
 );
 
 #[derive(Serialize, Deserialize)]
@@ -183,13 +219,22 @@ impl Fillable for Wall {
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
-        let body_handle = physic_world.add_rigid_body(::na::Isometry2::new(::na::Vector2::new(0.0, 0.0), 0.0), ::nphysics2d::math::Inertia::zero(), ::nphysics2d::math::Point::new(0.0, 0.0));
-        physic_world.rigid_body_mut(body_handle).unwrap().set_status(BodyStatus::Static);
+        let body_handle = physic_world.add_rigid_body(
+            ::na::Isometry2::new(::na::Vector2::new(0.0, 0.0), 0.0),
+            ::nphysics2d::math::Inertia::zero(),
+            ::nphysics2d::math::Point::new(0.0, 0.0),
+        );
+        physic_world
+            .rigid_body_mut(body_handle)
+            .unwrap()
+            .set_status(BodyStatus::Static);
 
         for position in position.iter() {
             physic_world.add_collider(
                 0.0,
-                ShapeHandle::new(ConvexPolygon::try_new(position.iter().cloned().collect()).unwrap()),
+                ShapeHandle::new(
+                    ConvexPolygon::try_new(position.iter().cloned().collect()).unwrap(),
+                ),
                 body_handle,
                 ::na::one(),
                 Material::new(0.0, 0.0),
@@ -203,8 +248,15 @@ impl Segmentable for Wall {
         // FIXME: same fill
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
-        let body_handle = physic_world.add_rigid_body(::na::Isometry2::new(::na::Vector2::new(0.0, 0.0), 0.0), ::nphysics2d::math::Inertia::zero(), ::nphysics2d::math::Point::new(0.0, 0.0));
-        physic_world.rigid_body_mut(body_handle).unwrap().set_status(BodyStatus::Static);
+        let body_handle = physic_world.add_rigid_body(
+            ::na::Isometry2::new(::na::Vector2::new(0.0, 0.0), 0.0),
+            ::nphysics2d::math::Inertia::zero(),
+            ::nphysics2d::math::Point::new(0.0, 0.0),
+        );
+        physic_world
+            .rigid_body_mut(body_handle)
+            .unwrap()
+            .set_status(BodyStatus::Static);
 
         for position in position.iter() {
             physic_world.add_collider(
@@ -235,14 +287,16 @@ impl Insertable for Player {
             .build();
 
         let body_handle = ::component::RigidBody::safe_insert(
-            p, position.0,
+            p,
+            position.0,
             ::nphysics2d::math::Inertia::new(1.0, 1.0),
             ::nphysics2d::math::Point::new(0.0, 0.0),
             BodyStatus::Dynamic,
             &mut world.write(),
             &mut world.write_resource(),
         );
-        world.write_resource::<::resource::PhysicWorld>()
+        world
+            .write_resource::<::resource::PhysicWorld>()
             .add_collider(
                 0.0,
                 ShapeHandle::new(Ball::new(::CFG.player_radius)),

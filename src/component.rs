@@ -1,6 +1,6 @@
 pub use animation::AnimationState;
 use nphysics2d::object::BodyStatus;
-use specs::{Component, VecStorage, Entity, WriteStorage, NullStorage};
+use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 use retained_storage::RetainedStorage;
 
 #[derive(Default)]
@@ -65,8 +65,7 @@ impl Component for Turret {
 
 // TODO: for bullet
 //       position is function of t along an axis ?
-pub struct Positionned {
-}
+pub struct Positionned {}
 
 // TODO: do something gravity like ! with inertia
 // // Decrease of sound: -6dB
@@ -151,8 +150,12 @@ impl RigidBody {
         bodies_handle: &mut WriteStorage<'a, ::component::RigidBody>,
         physic_world: &mut ::resource::PhysicWorld,
     ) -> ::nphysics2d::object::BodyHandle {
-        let body_handle = physic_world.add_rigid_body(position, local_inertia, local_center_of_mass);
-        physic_world.rigid_body_mut(body_handle).unwrap().set_status(status);
+        let body_handle =
+            physic_world.add_rigid_body(position, local_inertia, local_center_of_mass);
+        physic_world
+            .rigid_body_mut(body_handle)
+            .unwrap()
+            .set_status(status);
         bodies_handle.insert(entity, RigidBody(body_handle));
         body_handle
     }

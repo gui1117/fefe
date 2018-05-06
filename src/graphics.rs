@@ -5,8 +5,7 @@ use vulkano::image::{AttachmentImage, Dimensions, ImageUsage, ImmutableImage};
 use vulkano::buffer::{BufferUsage, CpuBufferPool, ImmutableBuffer};
 use vulkano::framebuffer::{Framebuffer, FramebufferAbstract, LayoutAttachmentDescription,
                            LayoutPassDependencyDescription, LayoutPassDescription, LoadOp,
-                           RenderPassAbstract, RenderPassDesc,
-                           RenderPassDescClearValues, StoreOp};
+                           RenderPassAbstract, RenderPassDesc, RenderPassDescClearValues, StoreOp};
 use vulkano::pipeline::GraphicsPipelineAbstract;
 use vulkano::pipeline::viewport::Viewport;
 use vulkano::descriptor::descriptor_set::{DescriptorSet, FixedSizeDescriptorSetsPool,
@@ -38,35 +37,36 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(position: ::na::Isometry2<f32>) -> Self {
-        Camera {
-            position,
-        }
+        Camera { position }
     }
 }
 
 impl Camera {
-    fn matrix(&self, dimensions: [u32; 2]) -> [[f32;4];4] {
+    fn matrix(&self, dimensions: [u32; 2]) -> [[f32; 4]; 4] {
         let rescale_trans = {
-            let ratio = dimensions[0] as f32/ dimensions[1] as f32;
+            let ratio = dimensions[0] as f32 / dimensions[1] as f32;
 
             let (kx, ky) = if ratio > 1. {
-                (1.0 / (::CFG.zoom * ratio),
-                 1.0 / ::CFG.zoom)
+                (1.0 / (::CFG.zoom * ratio), 1.0 / ::CFG.zoom)
             } else {
-                (1.0 / ::CFG.zoom,
-                 ratio / ::CFG.zoom)
+                (1.0 / ::CFG.zoom, ratio / ::CFG.zoom)
             };
 
             let mut trans: ::na::Transform3<f32> = ::na::one();
-            trans[(0,0)] = kx;
-            trans[(1,1)] = ky;
+            trans[(0, 0)] = kx;
+            trans[(1, 1)] = ky;
             trans
         };
 
         let world_trans: ::na::Transform3<f32> = ::na::Isometry3::<f32>::new(
-            ::na::Vector3::new(self.position.translation.vector[0], -self.position.translation.vector[1], 0.0),
+            ::na::Vector3::new(
+                self.position.translation.vector[0],
+                -self.position.translation.vector[1],
+                0.0,
+            ),
             ::na::Vector3::new(0.0, 0.0, -self.position.rotation.angle()),
-        ).inverse().to_superset();
+        ).inverse()
+            .to_superset();
 
         (rescale_trans * world_trans).unwrap().into()
     }
@@ -187,8 +187,10 @@ impl Graphics {
         let vs = vs::Shader::load(device.clone()).expect("failed to create shader module");
         let fs = fs::Shader::load(device.clone()).expect("failed to create shader module");
 
-        let debug_vs = debug_vs::Shader::load(device.clone()).expect("failed to create shader module");
-        let debug_fs = debug_fs::Shader::load(device.clone()).expect("failed to create shader module");
+        let debug_vs =
+            debug_vs::Shader::load(device.clone()).expect("failed to create shader module");
+        let debug_fs =
+            debug_fs::Shader::load(device.clone()).expect("failed to create shader module");
 
         let pipeline = Arc::new(
             vulkano::pipeline::GraphicsPipeline::start()
@@ -400,57 +402,68 @@ impl Graphics {
 
         // Draw world
         let view = vs::ty::View {
-            view: world.read_resource::<::resource::Camera>().matrix(dimensions),
+            view: world
+                .read_resource::<::resource::Camera>()
+                .matrix(dimensions),
         };
         let view_buffer = self.view_buffer_pool.next(view).unwrap();
 
         let mut images = world.write_resource::<::resource::AnimationImages>();
         for image in images.drain(..) {
-
             let world_matrix: ::na::Transform3<f32> = ::na::Isometry3::<f32>::new(
-                ::na::Vector3::new(image.position.translation.vector[0], -image.position.translation.vector[1], 0.0),
+                ::na::Vector3::new(
+                    image.position.translation.vector[0],
+                    -image.position.translation.vector[1],
+                    0.0,
+                ),
                 ::na::Vector3::new(0.0, 0.0, -image.position.rotation.angle()),
             ).to_superset();
 
             let world = vs::ty::World {
-                world: world_matrix.unwrap().into()
+                world: world_matrix.unwrap().into(),
             };
             let world_buffer = self.world_buffer_pool.next(world).unwrap();
 
-            let sets = self.descriptor_sets_pool.next()
+            let sets = self.descriptor_sets_pool
+                .next()
                 .add_buffer(view_buffer.clone())
                 .unwrap()
                 .add_buffer(world_buffer)
                 .unwrap()
-                .build().unwrap();
+                .build()
+                .unwrap();
 
-            command_buffer_builder = command_buffer_builder.draw(
-                self.pipeline.clone(),
-                screen_dynamic_state.clone(),
-                vec![self.vertex_buffer.clone()],
-                (sets, self.animation_images[image.id].descriptor_set.clone()),
-                vs::ty::Info {
-                    layer: image.layer,
-                    height: self.animation_images[image.id].height as f32,
-                    width: self.animation_images[image.id].width as f32,
-                },
-            )
+            command_buffer_builder = command_buffer_builder
+                .draw(
+                    self.pipeline.clone(),
+                    screen_dynamic_state.clone(),
+                    vec![self.vertex_buffer.clone()],
+                    (sets, self.animation_images[image.id].descriptor_set.clone()),
+                    vs::ty::Info {
+                        layer: image.layer,
+                        height: self.animation_images[image.id].height as f32,
+                        width: self.animation_images[image.id].width as f32,
+                    },
+                )
                 .unwrap()
         }
 
         // Draw physic world
         if true {
             let mut future = Box::new(now(self.device.clone())) as Box<GpuFuture>;
-            let sets = Arc::new(PersistentDescriptorSet::start(self.debug_pipeline.clone(), 0)
-                .add_buffer(view_buffer.clone())
-                .unwrap()
-                .build().unwrap());
+            let sets = Arc::new(
+                PersistentDescriptorSet::start(self.debug_pipeline.clone(), 0)
+                    .add_buffer(view_buffer.clone())
+                    .unwrap()
+                    .build()
+                    .unwrap(),
+            );
 
             let div = 16;
-            let circle = (0..div+1)
+            let circle = (0..div + 1)
                 .flat_map(|i| {
-                    let a1 = i as f32 * 2.0*PI/div as f32;
-                    let a2 = i as f32 * 2.0*PI/div as f32;
+                    let a1 = i as f32 * 2.0 * PI / div as f32;
+                    let a2 = i as f32 * 2.0 * PI / div as f32;
 
                     vec![
                         ::na::Point2::new(a1.cos(), a1.sin()),
@@ -465,26 +478,32 @@ impl Graphics {
                 let mut vertices = None;
                 if let Some(ball) = shape.as_shape::<shape::Ball<f32>>() {
                     vertices = Some(
-                        circle.iter()
-                            .map(|p| *p*ball.radius())
+                        circle
+                            .iter()
+                            .map(|p| *p * ball.radius())
                             .map(|p| {
                                 let p = collider.position() * p;
-                                Vertex { position: [p[0], -p[1]] }
+                                Vertex {
+                                    position: [p[0], -p[1]],
+                                }
                             })
-                            .collect::<Vec<_>>()
+                            .collect::<Vec<_>>(),
                     );
                 }
                 if let Some(convex_polygon) = shape.as_shape::<shape::ConvexPolygon<f32>>() {
                     let mut points_iter = convex_polygon.points().iter();
                     let pivot = points_iter.next().unwrap();
                     vertices = Some(
-                        points_iter.tuples()
+                        points_iter
+                            .tuples()
                             .flat_map(|(p1, p2)| vec![pivot, p1, p2])
                             .map(|p| {
                                 let p = collider.position() * *p;
-                                Vertex { position: [p[0], -p[1]] }
+                                Vertex {
+                                    position: [p[0], -p[1]],
+                                }
                             })
-                            .collect::<Vec<_>>()
+                            .collect::<Vec<_>>(),
                     );
                 }
                 if let Some(segment) = shape.as_shape::<shape::Segment<f32>>() {
@@ -493,18 +512,20 @@ impl Graphics {
 
                     vertices = Some(
                         [
-                            segment.a() + normal*DEBUG_SEGMENT_WIDTH/2.0,
-                            segment.a() - normal*DEBUG_SEGMENT_WIDTH/2.0,
-                            segment.b() - normal*DEBUG_SEGMENT_WIDTH/2.0,
-                            segment.b() + normal*DEBUG_SEGMENT_WIDTH/2.0,
-                            segment.b() - normal*DEBUG_SEGMENT_WIDTH/2.0,
-                            segment.a() + normal*DEBUG_SEGMENT_WIDTH/2.0,
+                            segment.a() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                            segment.a() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                            segment.b() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                            segment.b() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                            segment.b() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                            segment.a() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
                         ].iter()
                             .map(|p| {
                                 let p = collider.position() * *p;
-                                Vertex { position: [p[0], -p[1]] }
+                                Vertex {
+                                    position: [p[0], -p[1]],
+                                }
                             })
-                            .collect::<Vec<_>>()
+                            .collect::<Vec<_>>(),
                     );
                 }
 
@@ -516,13 +537,14 @@ impl Graphics {
                     ).expect("failed to create buffer");
                     future = Box::new(future.join(vertex_buffer_fut)) as Box<_>;
 
-                    command_buffer_builder = command_buffer_builder.draw(
-                        self.debug_pipeline.clone(),
-                        screen_dynamic_state.clone(),
-                        vec![vertex_buffer],
-                        sets.clone(),
-                        (),
-                    )
+                    command_buffer_builder = command_buffer_builder
+                        .draw(
+                            self.debug_pipeline.clone(),
+                            screen_dynamic_state.clone(),
+                            vec![vertex_buffer],
+                            sets.clone(),
+                            (),
+                        )
                         .unwrap()
                 }
             }

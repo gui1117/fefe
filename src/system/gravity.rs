@@ -1,4 +1,4 @@
-use specs::{Join, WriteStorage, ReadStorage, FetchMut, System};
+use specs::{FetchMut, Join, ReadStorage, System, WriteStorage};
 
 pub struct GravitySystem;
 
@@ -10,27 +10,21 @@ impl<'a> System<'a> for GravitySystem {
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-    fn run(
-        &mut self,
-        (
-            gravities,
-            players,
-            mut rigid_bodies,
-            mut physic_world,
-        ): Self::SystemData,
-    ) {
-        let players = (&players, &rigid_bodies).join()
+    fn run(&mut self, (gravities, players, mut rigid_bodies, mut physic_world): Self::SystemData) {
+        let players = (&players, &rigid_bodies)
+            .join()
             .map(|(_, body)| body.get(&physic_world).center_of_mass())
             .collect::<Vec<_>>();
 
         for (gravity, body) in (&gravities, &mut rigid_bodies).join() {
             let body = body.get_mut(&mut physic_world);
-            let _forces = players.iter()
+            let _forces = players
+                .iter()
                 .map(|p| {
                     let dir = p - body.center_of_mass();
                     let distance = dir.norm();
 
-                    let vec = ::CFG.gravity*gravity.mass/distance.powi(3) * dir;
+                    let vec = ::CFG.gravity * gravity.mass / distance.powi(3) * dir;
                     assert_eq!(vec, vec);
                 })
                 .collect::<Vec<_>>();

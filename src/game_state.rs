@@ -2,16 +2,9 @@ use specs::{Join, World};
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;
-    fn winit_event(
-        self: Box<Self>,
-        event: ::winit::Event,
-        world: &mut World,
-    ) -> Box<GameState>;
-    fn gilrs_event(
-        self: Box<Self>,
-        event: ::gilrs::EventType,
-        world: &mut World,
-    ) -> Box<GameState>;
+    fn winit_event(self: Box<Self>, event: ::winit::Event, world: &mut World) -> Box<GameState>;
+    fn gilrs_event(self: Box<Self>, event: ::gilrs::EventType, world: &mut World)
+        -> Box<GameState>;
     fn gilrs_gamepad_state(
         self: Box<Self>,
         id: usize,
@@ -37,11 +30,7 @@ impl GameState for Game {
     fn update_draw_ui(self: Box<Self>, _world: &mut World) -> Box<GameState> {
         self
     }
-    fn winit_event(
-        self: Box<Self>,
-        _event: ::winit::Event,
-        _world: &mut World,
-    ) -> Box<GameState> {
+    fn winit_event(self: Box<Self>, _event: ::winit::Event, _world: &mut World) -> Box<GameState> {
         self
     }
 
@@ -59,30 +48,44 @@ impl GameState for Game {
         gamepad: &::gilrs::Gamepad,
         world: &mut World,
     ) -> Box<GameState> {
-        let px = gamepad.axis_data(::gilrs::Axis::LeftStickX).map(|e| e.value()).unwrap_or(0.0);
-        let py = gamepad.axis_data(::gilrs::Axis::LeftStickY).map(|e| e.value()).unwrap_or(0.0);
+        let px = gamepad
+            .axis_data(::gilrs::Axis::LeftStickX)
+            .map(|e| e.value())
+            .unwrap_or(0.0);
+        let py = gamepad
+            .axis_data(::gilrs::Axis::LeftStickY)
+            .map(|e| e.value())
+            .unwrap_or(0.0);
 
         let (px_circle, py_circle) = square_to_circle(px, py);
 
         for (_, rigid_body) in (
             &world.read::<::component::Player>(),
             &mut world.write::<::component::RigidBody>(),
-        ).join() {
-            rigid_body.get_mut(&mut world.write_resource()).set_velocity(
-                ::nphysics2d::math::Velocity {
-                    linear: ::na::Vector2::new(px_circle, py_circle)*::CFG.player_velocity,
+        ).join()
+        {
+            rigid_body
+                .get_mut(&mut world.write_resource())
+                .set_velocity(::nphysics2d::math::Velocity {
+                    linear: ::na::Vector2::new(px_circle, py_circle) * ::CFG.player_velocity,
                     angular: 0.0,
-                }
-            );
+                });
         }
 
-        let ax = gamepad.axis_data(::gilrs::Axis::RightStickX).map(|e| e.value()).unwrap_or(0.0);
-        let ay = gamepad.axis_data(::gilrs::Axis::RightStickY).map(|e| e.value()).unwrap_or(0.0);
+        let ax = gamepad
+            .axis_data(::gilrs::Axis::RightStickX)
+            .map(|e| e.value())
+            .unwrap_or(0.0);
+        let ay = gamepad
+            .axis_data(::gilrs::Axis::RightStickY)
+            .map(|e| e.value())
+            .unwrap_or(0.0);
 
         for (_, aim) in (
             &world.read::<::component::Player>(),
             &mut world.write::<::component::Aim>(),
-        ).join() {
+        ).join()
+        {
             **aim = ay.atan2(ax);
         }
 
