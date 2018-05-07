@@ -49,7 +49,6 @@ impl<N: Real> ForceGenerator<N> for Damping<N> {
             if bodies.contains(body) {
                 let mut part = bodies.body_part_mut(body);
                 let velocity = part.as_ref().velocity();
-                println!("{:?}", velocity);
                 part.apply_force(&Force {
                     linear: -velocity.linear*self.linear_damping,
                     angular: -velocity.angular*self.angular_damping,

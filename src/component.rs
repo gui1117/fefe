@@ -12,7 +12,7 @@ impl Component for Player {
 }
 
 #[derive(Clone)]
-pub struct DirectionForce(usize);
+pub struct DirectionForce(pub usize);
 
 impl DirectionForce {
     pub fn safe_insert<'a>(
@@ -181,10 +181,12 @@ impl RigidBody {
     ) -> ::nphysics2d::object::BodyHandle {
         let body_handle =
             physic_world.add_rigid_body(position, local_inertia, local_center_of_mass);
-        physic_world
-            .rigid_body_mut(body_handle)
-            .unwrap()
-            .set_status(status);
+        {
+            let mut rigid_body = physic_world.rigid_body_mut(body_handle).unwrap();
+            rigid_body.set_status(status);
+            rigid_body.activation_status_mut().set_deactivation_threshold(None);
+        }
+
         bodies_handle.insert(entity, RigidBody(body_handle));
         body_handle
     }

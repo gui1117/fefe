@@ -163,12 +163,19 @@ fn main() {
         // Maintain world
         {
             world.maintain();
+            let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
             let retained = world.write::<::component::RigidBody>().retained()
                 .iter()
                 .map(|r| r.0)
                 .collect::<Vec<_>>();
-            let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
             physic_world.remove_bodies(&retained);
+            let retained = world.write::<::component::DirectionForce>().retained()
+                .iter()
+                .map(|r| r.0)
+                .collect::<Vec<_>>();
+            for force_generator in retained {
+                physic_world.remove_force_generator(force_generator);
+            }
         }
 
         // Draw
