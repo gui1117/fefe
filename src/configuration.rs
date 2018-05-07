@@ -23,6 +23,9 @@ pub struct Configuration {
 
     pub player_velocity: f32,
     pub player_radius: f32,
+    pub player_linear_damping: f32,
+    pub player_angular_damping: f32,
+
     pub gravity: f32,
 }
 

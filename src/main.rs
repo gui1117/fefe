@@ -27,6 +27,7 @@ extern crate vulkano_win;
 extern crate winit;
 
 mod component;
+mod force_generator;
 mod map;
 mod entity;
 mod animation;
@@ -79,8 +80,12 @@ fn main() {
     world.register::<::component::Aim>();
     world.register::<::component::Player>();
     world.register::<::component::GravityToPlayers>();
+    world.register::<::component::DirectionForce>();
+
+    let mut physic_world = ::resource::PhysicWorld::new();
+    world.add_resource(::resource::CharacterDamping::new(&mut physic_world));
+    world.add_resource(physic_world);
     world.add_resource(::resource::UpdateTime(0.0));
-    world.add_resource(::resource::PhysicWorld::new());
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one()));
     world.maintain();

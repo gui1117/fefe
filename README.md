@@ -3,6 +3,12 @@
 pour dessiner le cursor faire avec le truc natif ou redessiner un autre:
 le truc natif est surement mieux pour le temps de réponse
 
+# AI
+
+rustneat
+https://github.com/tspooner/rsrl
+https://github.com/milanboers/rurel
+
 # Fefe
 
 * USE GGEZ ?

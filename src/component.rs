@@ -2,12 +2,42 @@ pub use animation::AnimationState;
 use nphysics2d::object::BodyStatus;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 use retained_storage::RetainedStorage;
+use force_generator::{DerefVariableAcceleration, VariableAcceleration};
 
 #[derive(Default)]
 pub struct Player;
 
 impl Component for Player {
     type Storage = NullStorage<Self>;
+}
+
+#[derive(Clone)]
+pub struct DirectionForce(usize);
+
+impl DirectionForce {
+    pub fn safe_insert<'a>(
+        entity: Entity,
+        linear_acc: ::na::Vector2<f32>,
+        angular_acc: f32,
+        body_handle: ::nphysics2d::object::BodyHandle,
+        direction_forces: &mut WriteStorage<'a, ::component::DirectionForce>,
+        physic_world: &mut ::resource::PhysicWorld,
+    ) {
+        let mut force_generator = VariableAcceleration::new(linear_acc, angular_acc);
+        force_generator.add_body_part(body_handle);
+        let handle = physic_world.add_force_generator(force_generator);
+        direction_forces.insert(entity, DirectionForce(handle));
+    }
+}
+
+impl DerefVariableAcceleration for DirectionForce {
+    fn force_generator_handle(&self) -> usize {
+        self.0
+    }
+}
+
+impl Component for DirectionForce {
+    type Storage = RetainedStorage<Self, VecStorage<Self>>;
 }
 
 #[derive(Deref, DerefMut)]
@@ -129,7 +159,6 @@ impl Component for Aim {
 // and use a trait Weapon
 // or an enum
 // with a trait you can store it in an inventory
-
 pub struct Weapon {}
 
 #[derive(Clone)]

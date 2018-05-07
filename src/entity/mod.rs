@@ -3,10 +3,12 @@ use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::svg::path::iterator::PathIterator;
 use lyon::svg::path::default::Path;
 use lyon::svg::path::{FlattenedEvent, PathEvent};
+use nphysics2d::volumetric::Volumetric;
 use nphysics2d::object::{BodyStatus, Material};
 use ncollide2d::shape::{Ball, ConvexPolygon, Segment, ShapeHandle};
 use specs::World;
 use itertools::Itertools;
+use force_generator::DerefDamping;
 
 const SEGMENTS_POSITION_FLATTENED_TOLERANCE: f32 = 1.0;
 
@@ -216,7 +218,8 @@ impl Fillable for Wall {
         // also it is better if we have one rigid body per collider ?
         //
         // we probably don't care as it is static
-
+        //
+        // TODO: mabye we should use the ground !!!
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
         let body_handle = physic_world.add_rigid_body(
@@ -275,7 +278,7 @@ pub struct Player;
 
 impl Insertable for Player {
     fn insert(&self, position: InsertPosition, world: &mut World) {
-        let p = world
+        let entity = world
             .create_entity()
             .with(::component::AnimationState::new(
                 ::animation::AnimationSpecie::Character,
@@ -286,23 +289,38 @@ impl Insertable for Player {
             .with(::component::Life(1))
             .build();
 
+        let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
+
+        let shape = ShapeHandle::new(Ball::new(::CFG.player_radius));
         let body_handle = ::component::RigidBody::safe_insert(
-            p,
+            entity,
             position.0,
-            ::nphysics2d::math::Inertia::new(1.0, 1.0),
-            ::nphysics2d::math::Point::new(0.0, 0.0),
+            shape.inertia(1.0),
+            shape.center_of_mass(),
             BodyStatus::Dynamic,
             &mut world.write(),
-            &mut world.write_resource(),
+            &mut physic_world,
         );
-        world
-            .write_resource::<::resource::PhysicWorld>()
-            .add_collider(
-                0.0,
-                ShapeHandle::new(Ball::new(::CFG.player_radius)),
-                body_handle,
-                ::na::one(),
-                Material::new(0.0, 0.0),
-            );
+
+        world.write_resource::<::resource::CharacterDamping>()
+            .get_mut(&mut physic_world)
+            .add_body_part(body_handle);
+
+        physic_world.add_collider(
+            0.0,
+            shape,
+            body_handle,
+            ::na::one(),
+            Material::new(0.0, 0.0),
+        );
+
+        ::component::DirectionForce::safe_insert(
+            entity,
+            ::na::zero(),
+            0.0,
+            body_handle,
+            &mut world.write(),
+            &mut physic_world,
+        );
     }
 }
