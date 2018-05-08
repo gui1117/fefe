@@ -1,8 +1,8 @@
 pub use animation::AnimationState;
 use nphysics2d::object::BodyStatus;
+use nphysics2d::math::Force;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 use retained_storage::RetainedStorage;
-use force_generator::{DerefVariableAcceleration, VariableAcceleration};
 
 #[derive(Default)]
 pub struct Player;
@@ -11,33 +11,17 @@ impl Component for Player {
     type Storage = NullStorage<Self>;
 }
 
-#[derive(Clone)]
-pub struct DirectionForce(pub usize);
-
-impl DirectionForce {
-    pub fn safe_insert<'a>(
-        entity: Entity,
-        linear_acc: ::na::Vector2<f32>,
-        angular_acc: f32,
-        body_handle: ::nphysics2d::object::BodyHandle,
-        direction_forces: &mut WriteStorage<'a, ::component::DirectionForce>,
-        physic_world: &mut ::resource::PhysicWorld,
-    ) {
-        let mut force_generator = VariableAcceleration::new(linear_acc, angular_acc);
-        force_generator.add_body_part(body_handle);
-        let handle = physic_world.add_force_generator(force_generator);
-        direction_forces.insert(entity, DirectionForce(handle));
-    }
+pub struct ControlForce(pub Force<f32>);
+impl Component for ControlForce {
+    type Storage = VecStorage<Self>;
 }
 
-impl DerefVariableAcceleration for DirectionForce {
-    fn force_generator_handle(&self) -> usize {
-        self.0
-    }
+pub struct Damping {
+    pub linear: f32,
+    pub angular: f32,
 }
-
-impl Component for DirectionForce {
-    type Storage = RetainedStorage<Self, VecStorage<Self>>;
+impl Component for Damping {
+    type Storage = VecStorage<Self>;
 }
 
 #[derive(Deref, DerefMut)]
@@ -203,7 +187,7 @@ impl RigidBody {
 
     #[inline]
     pub fn get_mut<'a>(
-        &'a mut self,
+        &self,
         physic_world: &'a mut ::resource::PhysicWorld,
     ) -> &'a mut ::nphysics2d::object::RigidBody<f32> {
         physic_world

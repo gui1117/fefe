@@ -80,10 +80,11 @@ fn main() {
     world.register::<::component::Aim>();
     world.register::<::component::Player>();
     world.register::<::component::GravityToPlayers>();
-    world.register::<::component::DirectionForce>();
+    world.register::<::component::ControlForce>();
+    world.register::<::component::Damping>();
 
     let mut physic_world = ::resource::PhysicWorld::new();
-    world.add_resource(::resource::CharacterDamping::new(&mut physic_world));
+    world.add_resource(::resource::StepForces::new(&mut physic_world));
     world.add_resource(physic_world);
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
@@ -91,7 +92,7 @@ fn main() {
     world.maintain();
 
     let mut update_dispatcher = DispatcherBuilder::new()
-        .add(::system::PhysicSystem, "physic", &[])
+        .add(::system::PhysicSystem::new(), "physic", &[])
         .add(::system::GravitySystem, "gravity", &[])
         .add_barrier() // Draw barrier
         .add(::system::AnimationSystem, "animation", &[])
@@ -169,13 +170,6 @@ fn main() {
                 .map(|r| r.0)
                 .collect::<Vec<_>>();
             physic_world.remove_bodies(&retained);
-            let retained = world.write::<::component::DirectionForce>().retained()
-                .iter()
-                .map(|r| r.0)
-                .collect::<Vec<_>>();
-            for force_generator in retained {
-                physic_world.remove_force_generator(force_generator);
-            }
         }
 
         // Draw

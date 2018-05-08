@@ -5,10 +5,10 @@ use lyon::svg::path::default::Path;
 use lyon::svg::path::{FlattenedEvent, PathEvent};
 use nphysics2d::volumetric::Volumetric;
 use nphysics2d::object::{BodyStatus, Material};
+use nphysics2d::math::Force;
 use ncollide2d::shape::{Ball, ConvexPolygon, Segment, ShapeHandle};
 use specs::World;
 use itertools::Itertools;
-use force_generator::DerefDamping;
 
 const SEGMENTS_POSITION_FLATTENED_TOLERANCE: f32 = 1.0;
 
@@ -287,6 +287,11 @@ impl Insertable for Player {
             .with(::component::Player)
             .with(::component::Aim(position.rotation.angle()))
             .with(::component::Life(1))
+            .with(::component::ControlForce(Force::zero()))
+            .with(::component::Damping {
+                linear: ::CFG.player_linear_damping,
+                angular: ::CFG.player_angular_damping,
+            })
             .build();
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
@@ -302,25 +307,12 @@ impl Insertable for Player {
             &mut physic_world,
         );
 
-        world.write_resource::<::resource::CharacterDamping>()
-            .get_mut(&mut physic_world)
-            .add_body_part(body_handle);
-
         physic_world.add_collider(
             0.0,
             shape,
             body_handle,
             ::na::one(),
             Material::new(0.0, 0.0),
-        );
-
-        ::component::DirectionForce::safe_insert(
-            entity,
-            ::na::zero(),
-            0.0,
-            body_handle,
-            &mut world.write(),
-            &mut physic_world,
         );
     }
 }

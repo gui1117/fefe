@@ -1,5 +1,5 @@
 use specs::{Join, World};
-use force_generator::DerefVariableAcceleration;
+use nphysics2d::math::Force;
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;
@@ -60,13 +60,15 @@ impl GameState for Game {
 
         let (px_circle, py_circle) = square_to_circle(px, py);
 
-        for (_, direction_force) in (
+        for (_, control_force) in (
             &world.read::<::component::Player>(),
-            &mut world.write::<::component::DirectionForce>(),
+            &mut world.write::<::component::ControlForce>(),
         ).join()
         {
-            direction_force.get_mut(&mut world.write_resource())
-                .reset(::na::Vector2::new(px_circle, py_circle) * ::CFG.player_velocity, 0.0);
+            control_force.0 = Force {
+                linear: ::na::Vector2::new(px_circle, py_circle) * ::CFG.player_velocity,
+                angular: 10.0,
+            };
         }
 
         let ax = gamepad

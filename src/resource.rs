@@ -5,21 +5,19 @@ pub struct UpdateTime(pub f32);
 pub use animation::AnimationImages;
 pub use graphics::Camera;
 
-pub struct CharacterDamping(usize);
+pub struct StepForces(usize);
 
-impl CharacterDamping {
+impl StepForces {
     pub fn new(world: &mut PhysicWorld) -> Self {
-        let force_generator = ::force_generator::Damping::new(
-            ::CFG.player_linear_damping,
-            ::CFG.player_angular_damping,
-        );
-        let handle = world.add_force_generator(force_generator);
-        CharacterDamping(handle)
+        let handle = world.add_force_generator(::force_generator::StepForces::new());
+        StepForces(handle)
     }
-}
 
-impl ::force_generator::DerefDamping for CharacterDamping {
-    fn force_generator_handle(&self) -> usize {
-        self.0
+    pub fn get<'a>(&self, world: &'a ::resource::PhysicWorld) -> &'a ::force_generator::StepForces {
+        world.force_generator(self.0).downcast_ref().unwrap()
+    }
+
+    pub fn get_mut<'a>(&self, world: &'a mut ::resource::PhysicWorld) -> &'a mut ::force_generator::StepForces {
+        world.force_generator_mut(self.0).downcast_mut().unwrap()
     }
 }

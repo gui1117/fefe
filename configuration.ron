@@ -18,7 +18,7 @@ Configuration(
     map_directory: "assets/maps",
     zoom: 1080,
 
-    player_velocity: 5000.0,
+    player_velocity: 1000000.0,
     player_radius: 10.0,
     player_linear_damping: 10000.0,
     player_angular_damping: 10000.0,
