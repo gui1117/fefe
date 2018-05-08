@@ -131,11 +131,13 @@ pub enum AnimationName {
     IdleRifle,
     TakeRifle,
     UntakeRifle,
+    Idle,
 }
 
 #[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum AnimationSpecie {
     Character,
+    Bomb,
     Monster,
 }
 

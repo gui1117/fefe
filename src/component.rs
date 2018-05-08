@@ -11,6 +11,13 @@ impl Component for Player {
     type Storage = NullStorage<Self>;
 }
 
+pub struct Bomb {
+    pub damage: usize,
+}
+impl Component for Bomb {
+    type Storage = VecStorage<Self>;
+}
+
 pub struct ControlForce(pub Force<f32>);
 impl Component for ControlForce {
     type Storage = VecStorage<Self>;
@@ -33,31 +40,35 @@ impl Component for Life {
 
 pub struct GravityToPlayers {
     pub mass: f32,
+    pub powi: i32,
 }
 
 impl Component for GravityToPlayers {
     type Storage = VecStorage<Self>;
 }
 
-pub struct ToPlayerInSight;
+// TODO: or maybe not
+// If multiple players then the closest in sight
+pub struct ToPlayerInSight {
+    refreash_rate: f32,
+    last_refreash: f32,
+    closest_in_sight: Option<::na::Vector2<f32>>,
+    force: f32,
+}
 
 impl Component for ToPlayerInSight {
     type Storage = VecStorage<Self>;
 }
 
-pub struct PlayerAimDamping {
-    pub processor: Box<Fn(f32) -> f32 + Sync + Send>,
+pub struct PlayersAimDamping {
+    // The processor takes distance with aim in radiant
+    // It should output the damping associated
+    //
+    // TODO: maybe use a trait if I want to extend from clamp function too much
+    pub processor: ::util::ClampFunction,
 }
 
-impl Component for PlayerAimDamping {
-    type Storage = VecStorage<Self>;
-}
-
-pub struct PlayerAimInvDamping {
-    pub processor: Box<Fn(f32) -> f32 + Sync + Send>,
-}
-
-impl Component for PlayerAimInvDamping {
+impl Component for PlayersAimDamping {
     type Storage = VecStorage<Self>;
 }
 
@@ -162,6 +173,7 @@ impl RigidBody {
         status: BodyStatus,
         bodies_handle: &mut WriteStorage<'a, ::component::RigidBody>,
         physic_world: &mut ::resource::PhysicWorld,
+        bodies_map: &mut ::resource::BodiesMap,
     ) -> ::nphysics2d::object::BodyHandle {
         let body_handle =
             physic_world.add_rigid_body(position, local_inertia, local_center_of_mass);
@@ -170,12 +182,14 @@ impl RigidBody {
             rigid_body.set_status(status);
             rigid_body.activation_status_mut().set_deactivation_threshold(None);
         }
+        bodies_map.insert(body_handle, entity);
 
         bodies_handle.insert(entity, RigidBody(body_handle));
         body_handle
     }
 
     #[inline]
+    #[allow(unused)]
     pub fn get<'a>(
         &'a self,
         physic_world: &'a ::resource::PhysicWorld,
@@ -194,4 +208,17 @@ impl RigidBody {
             .rigid_body_mut(self.0)
             .expect("Rigid body in specs does not exist in physic world")
     }
+}
+
+#[derive(Default)]
+pub struct Ground;
+impl Component for Ground {
+    type Storage = NullStorage<Self>;
+}
+
+#[derive(Deref, DerefMut)]
+pub struct Contactor(pub Vec<Entity>);
+
+impl Component for Contactor {
+    type Storage = VecStorage<Self>;
 }

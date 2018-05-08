@@ -4,11 +4,12 @@ use lyon::svg::path::iterator::PathIterator;
 use lyon::svg::path::default::Path;
 use lyon::svg::path::{FlattenedEvent, PathEvent};
 use nphysics2d::volumetric::Volumetric;
-use nphysics2d::object::{BodyStatus, Material};
+use nphysics2d::object::{BodyStatus, Material, BodyHandle};
 use nphysics2d::math::Force;
 use ncollide2d::shape::{Ball, ConvexPolygon, Segment, ShapeHandle};
 use specs::World;
 use itertools::Itertools;
+use animation::{AnimationName, AnimationSpecie};
 
 const SEGMENTS_POSITION_FLATTENED_TOLERANCE: f32 = 1.0;
 
@@ -163,7 +164,7 @@ macro_rules! object {
     );
     (
         $t:ident, $f:ident, $p:ident, $o:ident {
-            $($v:ident)*,
+            $($v:ident,)*
         }
     ) => (
         pub trait $t {
@@ -172,7 +173,7 @@ macro_rules! object {
 
         #[derive(Serialize, Deserialize)]
         pub enum $o {
-            $($v(Box<$v>))*,
+            $($v(Box<$v>),)*
         }
 
         impl $t for $o {
@@ -196,7 +197,7 @@ object!(
     Insertable,
     insert,
     InsertPosition,
-    InsertableObject { Player }
+    InsertableObject { Player, GravityBomb }
 );
 
 object!(Fillable, fill, FillPosition, FillableObject { Wall });
@@ -248,24 +249,13 @@ impl Fillable for Wall {
 
 impl Segmentable for Wall {
     fn segments(&self, position: SegmentsPosition, world: &mut World) {
-        // FIXME: same fill
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
-
-        let body_handle = physic_world.add_rigid_body(
-            ::na::Isometry2::new(::na::Vector2::new(0.0, 0.0), 0.0),
-            ::nphysics2d::math::Inertia::zero(),
-            ::nphysics2d::math::Point::new(0.0, 0.0),
-        );
-        physic_world
-            .rigid_body_mut(body_handle)
-            .unwrap()
-            .set_status(BodyStatus::Static);
 
         for position in position.iter() {
             physic_world.add_collider(
                 0.0,
                 ShapeHandle::new(Segment::from_array(&position).clone()),
-                body_handle,
+                BodyHandle::ground(),
                 ::na::one(),
                 Material::new(0.0, 0.0),
             );
@@ -281,8 +271,8 @@ impl Insertable for Player {
         let entity = world
             .create_entity()
             .with(::component::AnimationState::new(
-                ::animation::AnimationSpecie::Character,
-                ::animation::AnimationName::IdleRifle,
+                AnimationSpecie::Character,
+                AnimationName::IdleRifle,
             ))
             .with(::component::Player)
             .with(::component::Aim(position.rotation.angle()))
@@ -305,6 +295,66 @@ impl Insertable for Player {
             BodyStatus::Dynamic,
             &mut world.write(),
             &mut physic_world,
+            &mut world.write_resource(),
+        );
+
+        physic_world.add_collider(
+            0.0,
+            shape,
+            body_handle,
+            ::na::one(),
+            Material::new(0.0, 0.0),
+        );
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GravityBomb {
+    animation_specie: AnimationSpecie,
+    damage: usize,
+    mass: f32,
+    powi: i32,
+    players_aim_damping: Option<::util::ClampFunction>,
+    radius: f32,
+}
+
+impl Insertable for GravityBomb {
+    fn insert(&self, position: InsertPosition, world: &mut World) {
+        let entity = world
+            .create_entity()
+            .with(::component::AnimationState::new(
+                self.animation_specie,
+                AnimationName::Idle,
+            ))
+            .with(::component::Life(1))
+            .with(::component::Bomb {
+                damage: self.damage,
+            })
+            .with(::component::GravityToPlayers {
+                mass: self.mass,
+                powi: self.powi,
+            })
+            .build();
+
+        if let Some(ref players_aim_damping) = self.players_aim_damping {
+            world.write::<::component::PlayersAimDamping>()
+                .insert(entity, ::component::PlayersAimDamping {
+                    processor: players_aim_damping.clone(),
+                });
+        }
+
+        let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
+
+        let shape = ShapeHandle::new(Ball::new(self.radius));
+        let body_handle = ::component::RigidBody::safe_insert(
+            entity,
+            position.0,
+            shape.inertia(1.0),
+            shape.center_of_mass(),
+            BodyStatus::Dynamic,
+            &mut world.write(),
+            &mut physic_world,
+            &mut world.write_resource(),
         );
 
         physic_world.add_collider(

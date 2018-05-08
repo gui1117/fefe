@@ -1,4 +1,5 @@
 extern crate alga;
+extern crate fnv;
 #[macro_use]
 extern crate derive_deref;
 #[macro_use]
@@ -76,16 +77,27 @@ fn main() {
     let mut world = World::new();
     world.register::<::component::RigidBody>();
     world.register::<::component::AnimationState>();
+    world.register::<::component::Ground>();
     world.register::<::component::Life>();
     world.register::<::component::Aim>();
     world.register::<::component::Player>();
     world.register::<::component::GravityToPlayers>();
+    world.register::<::component::Bomb>();
+    world.register::<::component::Contactor>();
     world.register::<::component::ControlForce>();
+    world.register::<::component::PlayersAimDamping>();
+    world.register::<::component::GravityToPlayers>();
     world.register::<::component::Damping>();
+
+    let ground = world.create_entity()
+        .with(::component::Ground)
+        .build();
+    world.add_resource(::resource::BodiesMap::new(ground));
 
     let mut physic_world = ::resource::PhysicWorld::new();
     world.add_resource(::resource::StepForces::new(&mut physic_world));
     world.add_resource(physic_world);
+
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one()));
@@ -93,7 +105,6 @@ fn main() {
 
     let mut update_dispatcher = DispatcherBuilder::new()
         .add(::system::PhysicSystem::new(), "physic", &[])
-        .add(::system::GravitySystem, "gravity", &[])
         .add_barrier() // Draw barrier
         .add(::system::AnimationSystem, "animation", &[])
         .build();

@@ -1,3 +1,14 @@
+# TODO
+
+* faire wall on ground
+* réflechir comment on fait le mapping de collision object handle vers entity
+  une solution est de faire que l'ensemble des collider doivent ajouter à quelle entité il se rattache dans une hashmap (fnv)
+  oui on fait une ressource avec avec cette hashmap
+  et puis pour les wall par exemple puisq'ils sont rattaché au sol on peut créer un entité sol dans cette hashmap au début
+
+* faire une touche pour recharger la map
+* faire un monstre qui arrive tellement vite quand tu le regarde qu'il faut passer sans le regarder
+
 # ?
 
 pour dessiner le cursor faire avec le truc natif ou redessiner un autre:
