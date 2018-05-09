@@ -1,4 +1,5 @@
 use specs::{Join, World};
+use winit::{WindowEvent, ElementState, KeyboardInput, VirtualKeyCode};
 use nphysics2d::math::Force;
 
 pub trait GameState {
@@ -31,7 +32,23 @@ impl GameState for Game {
     fn update_draw_ui(self: Box<Self>, _world: &mut World) -> Box<GameState> {
         self
     }
-    fn winit_event(self: Box<Self>, _event: ::winit::Event, _world: &mut World) -> Box<GameState> {
+    fn winit_event(self: Box<Self>, event: ::winit::Event, world: &mut World) -> Box<GameState> {
+        match event {
+            ::winit::Event::WindowEvent {
+                event: WindowEvent::KeyboardInput {
+                    input: KeyboardInput {
+                        state: ElementState::Pressed,
+                        virtual_keycode: Some(VirtualKeyCode::R),
+                        ..
+                    },
+                    ..
+                },
+                ..
+            } => {
+                ::map::load_map("one".into(), world).unwrap();
+            }
+            _ => (),
+        }
         self
     }
 

@@ -1,3 +1,6 @@
+use specs::World;
+use retained_storage::Retained;
+
 macro_rules! try_multiple_time {
     ($e:expr) => (
         {
@@ -36,4 +39,29 @@ impl ClampFunction {
                 * (self.max_value - self.min_value) + self.min_value
         }
     }
+}
+
+pub fn reset_world(world: &mut World) {
+    world.maintain();
+    world.delete_all();
+
+    let ground = world.create_entity()
+        .with(::component::Ground)
+        .build();
+    world.add_resource(::resource::BodiesMap::new(ground));
+
+    let mut physic_world = ::resource::PhysicWorld::new();
+    world.add_resource(::resource::StepForces::new(&mut physic_world));
+    world.add_resource(physic_world);
+
+}
+
+pub fn safe_maintain(world: &mut World) {
+    world.maintain();
+    let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
+    let retained = world.write::<::component::RigidBody>().retained()
+        .iter()
+        .map(|r| r.0)
+        .collect::<Vec<_>>();
+    physic_world.remove_bodies(&retained);
 }

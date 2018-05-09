@@ -12,6 +12,8 @@ use entity::{FillableObject, InsertableObject, SegmentableObject};
 use specs::World;
 
 pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
+    ::util::reset_world(world);
+
     let mut path = ::CFG.map_directory.clone();
     path.push(name);
     if !path.is_dir() {

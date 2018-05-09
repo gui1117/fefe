@@ -50,7 +50,6 @@ use std::time::Duration;
 use std::time::Instant;
 use std::thread;
 use specs::{DispatcherBuilder, World};
-use retained_storage::Retained;
 
 fn main() {
     ::std::env::set_var("WINIT_UNIX_BACKEND", "x11");
@@ -89,15 +88,6 @@ fn main() {
     world.register::<::component::GravityToPlayers>();
     world.register::<::component::Damping>();
 
-    let ground = world.create_entity()
-        .with(::component::Ground)
-        .build();
-    world.add_resource(::resource::BodiesMap::new(ground));
-
-    let mut physic_world = ::resource::PhysicWorld::new();
-    world.add_resource(::resource::StepForces::new(&mut physic_world));
-    world.add_resource(physic_world);
-
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one()));
@@ -105,6 +95,8 @@ fn main() {
 
     let mut update_dispatcher = DispatcherBuilder::new()
         .add(::system::PhysicSystem::new(), "physic", &[])
+        .add(::system::BombSystem, "bomb", &[])
+        .add(::system::LifeSystem, "life", &[])
         .add_barrier() // Draw barrier
         .add(::system::AnimationSystem, "animation", &[])
         .build();
@@ -173,15 +165,7 @@ fn main() {
         game_state = game_state.update_draw_ui(&mut world);
 
         // Maintain world
-        {
-            world.maintain();
-            let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
-            let retained = world.write::<::component::RigidBody>().retained()
-                .iter()
-                .map(|r| r.0)
-                .collect::<Vec<_>>();
-            physic_world.remove_bodies(&retained);
-        }
+        ::util::safe_maintain(&mut world);
 
         // Draw
         graphics.draw(&mut world, &window);

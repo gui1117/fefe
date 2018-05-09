@@ -1,13 +1,7 @@
 # TODO
 
-* faire wall on ground
-* réflechir comment on fait le mapping de collision object handle vers entity
-  une solution est de faire que l'ensemble des collider doivent ajouter à quelle entité il se rattache dans une hashmap (fnv)
-  oui on fait une ressource avec avec cette hashmap
-  et puis pour les wall par exemple puisq'ils sont rattaché au sol on peut créer un entité sol dans cette hashmap au début
-
 * faire une touche pour recharger la map
-* faire un monstre qui arrive tellement vite quand tu le regarde qu'il faut passer sans le regarder
+* rustneat
 
 # ?
 
@@ -22,20 +16,13 @@ https://github.com/milanboers/rurel
 
 # Fefe
 
-* USE GGEZ ?
-
 * faire recreate swapchain on signal and fence
 
 A game that mix hotline miami and left 4 dead.
 and shoot em up (esquive de balles lentes)
 
 impl:
-* conrod with own backend
 * protocols on top of udp TODO
-* vulkano+winit or gfx+winit.
-  see how hal evolve and if vulkano could be used on top of hal as it is vulkanic.
-  this would be awesome
-* nphysics next
 * animations, particles effects ?
 * map is layers divide map in grid
   * cell are loaded and saved. (monster are created, layers are drawn)
@@ -265,6 +252,8 @@ those should be made with turrets launching balls that have special behavior!!!!
 
 then
 
+* faire un monstre qui arrive tellement vite quand tu le regarde qu'il faut passer sans le regarder
+
 # moyen age
 
 arbalete qui tire mais vitesse =/ oo
@@ -277,15 +266,11 @@ arbalete qui tire mais vitesse =/ oo
   rigidbody
   ??? DOES THIS CAN BE DONE WITH GRAVITY ????
   YES
-* impl les truc qui se déplace vers le son plus ou moins vite en fonction du volume
+* impl les truc qui se déplace vers le son plus ou moins vite en fonction du volume sonore
 
-* then do shapes collision
 * then do blind monsters
   va en direction du son
   sur un collision longe le mur du coté le mieux incliné
   si a nouveau obstacle
 
   ou plutôt faire simplement des longeurs de murs :-)
-
-* conrod: y a-t-il des features a enelver mettre...
-* faire rendu de conrod
