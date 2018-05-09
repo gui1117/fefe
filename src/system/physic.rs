@@ -1,4 +1,4 @@
-use specs::{ReadStorage, WriteStorage, Fetch, FetchMut, System, Join};
+use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyHandle;
 use ncollide2d::events::ContactEvent;
@@ -33,16 +33,34 @@ impl<'a> System<'a> for PhysicSystem {
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-    fn run(&mut self, (players, rigid_bodies, aims, control_forces, dampings, gravities_to_players, players_aim_dampings, mut contactors, update_time, entities, step_forces, bodies_map, mut physic_world): Self::SystemData) {
+    fn run(
+        &mut self,
+        (
+            players,
+            rigid_bodies,
+            aims,
+            control_forces,
+            dampings,
+            gravities_to_players,
+            players_aim_dampings,
+            mut contactors,
+            update_time,
+            entities,
+            step_forces,
+            bodies_map,
+            mut physic_world,
+        ): Self::SystemData,
+    ) {
         {
-            let players_aim = (&players, &aims, &rigid_bodies).join()
-                .map(|(_, aim, body)| (
-                    aim.0,
-                    body.get(&physic_world).position().translation.vector,
-                ))
+            let players_aim = (&players, &aims, &rigid_bodies)
+                .join()
+                .map(|(_, aim, body)| {
+                    (aim.0, body.get(&physic_world).position().translation.vector)
+                })
                 .collect::<Vec<_>>();
 
-            let players_position = (&players, &rigid_bodies).join()
+            let players_position = (&players, &rigid_bodies)
+                .join()
                 .map(|(_, body)| body.get(&physic_world).position())
                 .collect::<Vec<_>>();
 
@@ -78,18 +96,18 @@ impl<'a> System<'a> for PhysicSystem {
                     for &(player_aim, ref player_position) in &players_aim {
                         let mut v = player_position - position;
                         let angle = v[1].atan2(v[0]);
-                        let mut angle_distance = (angle - player_aim).abs() % 2.0*PI;
+                        let mut angle_distance = (angle - player_aim).abs() % 2.0 * PI;
                         if angle_distance >= PI {
-                            angle_distance = 2.0*PI - angle_distance;
+                            angle_distance = 2.0 * PI - angle_distance;
                         }
                         linear_damping += player_aim_damping.processor.compute(angle_distance);
                     }
                 }
 
-                let velocity  = body.velocity();
+                let velocity = body.velocity();
                 force += Force {
-                    linear: -velocity.linear*linear_damping,
-                    angular: -velocity.angular*angular_damping,
+                    linear: -velocity.linear * linear_damping,
+                    angular: -velocity.angular * angular_damping,
                 };
 
                 if force.linear != ::na::zero() || force.angular != 0.0 {
@@ -110,8 +128,16 @@ impl<'a> System<'a> for PhysicSystem {
                 let collision_world = physic_world.collision_world();
                 match contact {
                     &ContactEvent::Started(coh1, coh2) => {
-                        let bh1 = collision_world.collision_object(coh1).unwrap().data().body();
-                        let bh2 = collision_world.collision_object(coh2).unwrap().data().body();
+                        let bh1 = collision_world
+                            .collision_object(coh1)
+                            .unwrap()
+                            .data()
+                            .body();
+                        let bh2 = collision_world
+                            .collision_object(coh2)
+                            .unwrap()
+                            .data()
+                            .body();
                         let e1 = *bodies_map.get(&bh1).unwrap();
                         let e2 = *bodies_map.get(&bh2).unwrap();
                         if let Some(contactor) = contactors.get_mut(e1) {

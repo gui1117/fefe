@@ -9,9 +9,7 @@ pub struct StepForces {
 
 impl StepForces {
     pub fn new() -> Self {
-        StepForces {
-            forces: vec![],
-        }
+        StepForces { forces: vec![] }
     }
 }
 

@@ -180,7 +180,9 @@ impl RigidBody {
         {
             let mut rigid_body = physic_world.rigid_body_mut(body_handle).unwrap();
             rigid_body.set_status(status);
-            rigid_body.activation_status_mut().set_deactivation_threshold(None);
+            rigid_body
+                .activation_status_mut()
+                .set_deactivation_threshold(None);
         }
         bodies_map.insert(body_handle, entity);
 

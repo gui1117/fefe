@@ -1,9 +1,9 @@
 extern crate alga;
-extern crate fnv;
 #[macro_use]
 extern crate derive_deref;
 #[macro_use]
 extern crate failure;
+extern crate fnv;
 extern crate fps_counter;
 extern crate gilrs;
 extern crate itertools;

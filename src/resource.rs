@@ -22,7 +22,10 @@ impl StepForces {
         world.force_generator(self.0).downcast_ref().unwrap()
     }
 
-    pub fn get_mut<'a>(&self, world: &'a mut ::resource::PhysicWorld) -> &'a mut ::force_generator::StepForces {
+    pub fn get_mut<'a>(
+        &self,
+        world: &'a mut ::resource::PhysicWorld,
+    ) -> &'a mut ::force_generator::StepForces {
         world.force_generator_mut(self.0).downcast_mut().unwrap()
     }
 }

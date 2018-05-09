@@ -4,7 +4,7 @@ use lyon::svg::path::iterator::PathIterator;
 use lyon::svg::path::default::Path;
 use lyon::svg::path::{FlattenedEvent, PathEvent};
 use nphysics2d::volumetric::Volumetric;
-use nphysics2d::object::{BodyStatus, Material, BodyHandle};
+use nphysics2d::object::{BodyHandle, BodyStatus, Material};
 use nphysics2d::math::Force;
 use ncollide2d::shape::{Ball, ConvexPolygon, Segment, ShapeHandle};
 use specs::World;
@@ -197,7 +197,10 @@ object!(
     Insertable,
     insert,
     InsertPosition,
-    InsertableObject { Player, GravityBomb }
+    InsertableObject {
+        Player,
+        GravityBomb,
+    }
 );
 
 object!(Fillable, fill, FillPosition, FillableObject { Wall });
@@ -337,10 +340,12 @@ impl Insertable for GravityBomb {
             .build();
 
         if let Some(ref players_aim_damping) = self.players_aim_damping {
-            world.write::<::component::PlayersAimDamping>()
-                .insert(entity, ::component::PlayersAimDamping {
+            world.write::<::component::PlayersAimDamping>().insert(
+                entity,
+                ::component::PlayersAimDamping {
                     processor: players_aim_damping.clone(),
-                });
+                },
+            );
         }
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
