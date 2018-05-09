@@ -1,6 +1,7 @@
 # TODO
 
 * faire une touche pour recharger la map
+* réflechir a propos de synchronisation tempo
 * rustneat
 
 # ?
@@ -274,3 +275,8 @@ arbalete qui tire mais vitesse =/ oo
   si a nouveau obstacle
 
   ou plutôt faire simplement des longeurs de murs :-)
+
+# musique
+
+* utiliser les boid pour faire de la synchro entre canon
+* faire quelque chose en relation avec le fait que chaque note est a une place précise dans la mesure
