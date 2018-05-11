@@ -1,8 +1,8 @@
 # TODO
 
-* faire une touche pour recharger la map
 * réflechir a propos de synchronisation tempo
 * rustneat
+* faire meilleur prise en charge des erreurs
 
 # ?
 
