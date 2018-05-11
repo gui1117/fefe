@@ -27,14 +27,14 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 
+mod animation;
 mod component;
+mod configuration;
+mod entity;
 mod force_generator;
 mod map;
-mod entity;
-mod animation;
-mod system;
-mod configuration;
 mod resource;
+mod system;
 #[macro_use]
 mod util;
 mod game_state;
@@ -44,12 +44,12 @@ mod retained_storage;
 pub use configuration::CFG;
 
 use game_state::GameState;
-use vulkano_win::VkSurfaceBuild;
-use vulkano::instance::Instance;
+use specs::{DispatcherBuilder, World};
+use std::thread;
 use std::time::Duration;
 use std::time::Instant;
-use std::thread;
-use specs::{DispatcherBuilder, World};
+use vulkano::instance::Instance;
+use vulkano_win::VkSurfaceBuild;
 
 fn main() {
     ::std::env::set_var("WINIT_UNIX_BACKEND", "x11");

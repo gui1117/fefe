@@ -1,7 +1,7 @@
-use nphysics2d::object::{BodyHandle, BodyStatus, Material};
+use entity::{FillPosition, Fillable, Segmentable, SegmentsPosition};
 use ncollide2d::shape::{ConvexPolygon, Segment, ShapeHandle};
+use nphysics2d::object::{BodyHandle, BodyStatus, Material};
 use specs::World;
-use entity::{Fillable, FillPosition, Segmentable, SegmentsPosition};
 
 #[derive(Serialize, Deserialize)]
 pub struct Wall;

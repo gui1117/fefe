@@ -1,31 +1,34 @@
-use vulkano::device::{Device, DeviceExtensions, Queue};
-use vulkano::swapchain::{self, Surface, Swapchain, SwapchainCreationError};
-use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode};
-use vulkano::image::{AttachmentImage, Dimensions, ImageUsage, ImmutableImage};
+use alga::general::SubsetOf;
+use ncollide2d::shape;
+use vulkano;
 use vulkano::buffer::{BufferUsage, CpuBufferPool, ImmutableBuffer};
-use vulkano::framebuffer::{Framebuffer, FramebufferAbstract, LayoutAttachmentDescription,
-                           LayoutPassDependencyDescription, LayoutPassDescription, LoadOp,
-                           RenderPassAbstract, RenderPassDesc, RenderPassDescClearValues, StoreOp};
-use vulkano::pipeline::GraphicsPipelineAbstract;
-use vulkano::pipeline::viewport::Viewport;
-use vulkano::descriptor::descriptor_set::{DescriptorSet, FixedSizeDescriptorSetsPool,
-                                          PersistentDescriptorSet};
 use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
 use vulkano::command_buffer::{AutoCommandBuffer, AutoCommandBufferBuilder, DynamicState};
-use vulkano::instance::PhysicalDevice;
-use vulkano::sync::{now, GpuFuture};
-use vulkano::image::ImageLayout;
+use vulkano::descriptor::descriptor_set::{
+    DescriptorSet, FixedSizeDescriptorSetsPool, PersistentDescriptorSet,
+};
+use vulkano::device::{Device, DeviceExtensions, Queue};
 use vulkano::format::{self, ClearValue, Format};
-use vulkano;
-use ncollide2d::shape;
-use alga::general::SubsetOf;
+use vulkano::framebuffer::{
+    Framebuffer, FramebufferAbstract, LayoutAttachmentDescription, LayoutPassDependencyDescription,
+    LayoutPassDescription, LoadOp, RenderPassAbstract, RenderPassDesc, RenderPassDescClearValues,
+    StoreOp,
+};
+use vulkano::image::ImageLayout;
+use vulkano::image::{AttachmentImage, Dimensions, ImageUsage, ImmutableImage};
+use vulkano::instance::PhysicalDevice;
+use vulkano::pipeline::viewport::Viewport;
+use vulkano::pipeline::GraphicsPipelineAbstract;
+use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode};
+use vulkano::swapchain::{self, Surface, Swapchain, SwapchainCreationError};
+use vulkano::sync::{now, GpuFuture};
 
-use std::sync::Arc;
-use std::fs::File;
-use std::time::Duration;
-use std::f32::consts::PI;
-use specs::World;
 use itertools::Itertools;
+use specs::World;
+use std::f32::consts::PI;
+use std::fs::File;
+use std::sync::Arc;
+use std::time::Duration;
 
 // TODO: only a bool for whereas draw the cursor or not
 
@@ -109,7 +112,8 @@ impl Graphics {
         let queue_family = physical
             .queue_families()
             .find(|&q| {
-                q.supports_graphics() && q.supports_compute()
+                q.supports_graphics()
+                    && q.supports_compute()
                     && window.is_supported(q).unwrap_or(false)
             })
             .expect("couldn't find a graphical queue family");
@@ -379,13 +383,11 @@ impl Graphics {
         let dimensions = self.swapchain.dimensions();
 
         let screen_dynamic_state = DynamicState {
-            viewports: Some(vec![
-                Viewport {
-                    origin: [0.0, 0.0],
-                    dimensions: [dimensions[0] as f32, dimensions[1] as f32],
-                    depth_range: 0.0..1.0,
-                },
-            ]),
+            viewports: Some(vec![Viewport {
+                origin: [0.0, 0.0],
+                dimensions: [dimensions[0] as f32, dimensions[1] as f32],
+                depth_range: 0.0..1.0,
+            }]),
             ..DynamicState::none()
         };
 

@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::fs;
-use std::ffi::OsStr;
 use specs::{Component, VecStorage};
+use std::collections::HashMap;
+use std::ffi::OsStr;
+use std::fs;
+use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum Framerate {

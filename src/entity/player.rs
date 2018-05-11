@@ -1,10 +1,10 @@
-use nphysics2d::volumetric::Volumetric;
-use nphysics2d::object::{BodyStatus, Material};
-use nphysics2d::math::Force;
-use ncollide2d::shape::{Ball, ShapeHandle};
-use specs::World;
-use entity::{Insertable, InsertPosition};
 use animation::{AnimationName, AnimationSpecie};
+use entity::{InsertPosition, Insertable};
+use ncollide2d::shape::{Ball, ShapeHandle};
+use nphysics2d::math::Force;
+use nphysics2d::object::{BodyStatus, Material};
+use nphysics2d::volumetric::Volumetric;
+use specs::World;
 
 #[derive(Serialize, Deserialize)]
 pub struct Player;

@@ -1,6 +1,6 @@
 use fnv::FnvHashMap;
-use specs::Entity;
 use nphysics2d::object::BodyHandle;
+use specs::Entity;
 
 pub type PhysicWorld = ::nphysics2d::world::World<f32>;
 

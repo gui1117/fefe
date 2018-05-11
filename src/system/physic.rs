@@ -1,7 +1,7 @@
-use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
+use ncollide2d::events::ContactEvent;
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyHandle;
-use ncollide2d::events::ContactEvent;
+use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
 use std::f32::consts::PI;
 
 pub struct PhysicSystem {

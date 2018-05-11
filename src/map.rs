@@ -1,15 +1,15 @@
-use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
-use std::fs::File;
-use std::io::Read;
-use lyon::svg::parser::FromSpan;
-use lyon::svg::parser::svg::{Token, Tokenizer};
-use lyon::svg::parser::{AttributeId, ElementId};
-use lyon::svg::parser::svg::Name::Svg;
+use entity::{FillableObject, InsertableObject, SegmentableObject};
 use lyon::svg::parser::svg::ElementEnd::Close;
 use lyon::svg::parser::svg::ElementEnd::Empty;
+use lyon::svg::parser::svg::Name::Svg;
+use lyon::svg::parser::svg::{Token, Tokenizer};
+use lyon::svg::parser::FromSpan;
+use lyon::svg::parser::{AttributeId, ElementId};
 use lyon::svg::path::default::Path;
-use entity::{FillableObject, InsertableObject, SegmentableObject};
+use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
 use specs::World;
+use std::fs::File;
+use std::io::Read;
 
 pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
     ::util::reset_world(world);

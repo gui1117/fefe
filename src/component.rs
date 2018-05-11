@@ -1,8 +1,8 @@
 pub use animation::AnimationState;
-use nphysics2d::object::BodyStatus;
 use nphysics2d::math::Force;
-use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
+use nphysics2d::object::BodyStatus;
 use retained_storage::RetainedStorage;
+use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 
 #[derive(Default)]
 pub struct Player;

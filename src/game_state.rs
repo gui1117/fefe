@@ -1,6 +1,6 @@
+use nphysics2d::math::Force;
 use specs::{Join, World};
 use winit::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
-use nphysics2d::math::Force;
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;

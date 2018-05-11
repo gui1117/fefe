@@ -1,7 +1,7 @@
+use specs::{Component, Index, Join, MaskedStorage, Storage, UnprotectedStorage};
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::DerefMut;
-use specs::{Component, Index, Join, MaskedStorage, Storage, UnprotectedStorage};
 
 pub trait Retained<C> {
     fn retained(&mut self) -> Vec<C>;

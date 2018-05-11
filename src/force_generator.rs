@@ -1,7 +1,7 @@
-use nphysics2d::solver::IntegrationParameters;
 use nphysics2d::force_generator::ForceGenerator;
-use nphysics2d::object::{BodyHandle, BodySet};
 use nphysics2d::math::Force;
+use nphysics2d::object::{BodyHandle, BodySet};
+use nphysics2d::solver::IntegrationParameters;
 
 pub struct StepForces {
     pub forces: Vec<(BodyHandle, Force<f32>)>,

@@ -1,10 +1,10 @@
-use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
-use lyon::tessellation::geometry_builder::simple_builder;
-use lyon::svg::path::iterator::PathIterator;
-use lyon::svg::path::default::Path;
-use lyon::svg::path::{FlattenedEvent, PathEvent};
-use specs::World;
 use itertools::Itertools;
+use lyon::svg::path::default::Path;
+use lyon::svg::path::iterator::PathIterator;
+use lyon::svg::path::{FlattenedEvent, PathEvent};
+use lyon::tessellation::geometry_builder::simple_builder;
+use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
+use specs::World;
 
 const SEGMENTS_POSITION_FLATTENED_TOLERANCE: f32 = 1.0;
 
@@ -46,9 +46,9 @@ Full path after being converted to absolute flattened event path:
                 | (FlattenedEvent::LineTo(p1), FlattenedEvent::LineTo(p2)) => Some((p1, p2)),
                 (FlattenedEvent::LineTo(p1), FlattenedEvent::Close) => Some((
                     p1,
-                    last_start.ok_or_else(
-                        || err("Closed event without MoveTo event before".to_string()),
-                    )?,
+                    last_start.ok_or_else(|| {
+                        err("Closed event without MoveTo event before".to_string())
+                    })?,
                 )),
                 (FlattenedEvent::Close, FlattenedEvent::MoveTo(_)) => None,
                 (FlattenedEvent::LineTo(_), FlattenedEvent::MoveTo(_)) => None,
@@ -207,11 +207,10 @@ object!(
     SegmentableObject { Wall }
 );
 
-mod wall;
-mod player;
 mod gravity_bomb;
+mod player;
+mod wall;
 
-pub use self::wall::Wall;
-pub use self::player::Player;
 pub use self::gravity_bomb::GravityBomb;
-
+pub use self::player::Player;
+pub use self::wall::Wall;

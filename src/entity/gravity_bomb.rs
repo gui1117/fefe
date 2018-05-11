@@ -1,8 +1,8 @@
-use nphysics2d::volumetric::Volumetric;
-use nphysics2d::object::{BodyStatus, Material};
-use ncollide2d::shape::{Ball, ShapeHandle};
 use animation::{AnimationName, AnimationSpecie};
-use entity::{Insertable, InsertPosition};
+use entity::{InsertPosition, Insertable};
+use ncollide2d::shape::{Ball, ShapeHandle};
+use nphysics2d::object::{BodyStatus, Material};
+use nphysics2d::volumetric::Volumetric;
 use specs::World;
 
 #[derive(Serialize, Deserialize)]
