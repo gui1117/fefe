@@ -138,7 +138,6 @@ pub enum AnimationName {
 pub enum AnimationSpecie {
     Character,
     Bomb,
-    Monster,
 }
 
 #[derive(Clone)]

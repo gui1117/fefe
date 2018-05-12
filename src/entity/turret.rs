@@ -1,58 +1,46 @@
 use animation::{AnimationName, AnimationSpecie};
-use entity::{InsertPosition, Insertable};
+use entity::{InsertPosition, Insertable, InsertableObject};
 use ncollide2d::shape::{Ball, ShapeHandle};
 use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
+use rand::thread_rng;
+use rand::distributions::{IndependentSample, Range};
 use specs::World;
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct GravityBomb {
+pub struct Turret {
+    pub bullet: InsertableObject,
     pub animation_specie: AnimationSpecie,
-    pub damage: usize,
-    pub mass: f32,
-    pub powi: i32,
-    pub players_aim_damping: Option<::util::ClampFunction>,
     pub radius: f32,
-    pub insert_shift: bool,
+    pub max_cooldown: f32,
 }
 
-impl Insertable for GravityBomb {
+impl Insertable for Turret {
     fn insert(&self, position: InsertPosition, world: &World) {
-        let entity = world.entities().create();
+        let mut rng = thread_rng();
 
+        let cooldown = Range::new(0.0, self.max_cooldown).ind_sample(&mut rng);
+        let start_remaining_cooldown = cooldown;
+
+        let entity = world.entities().create();
         world.write().insert(entity, ::component::AnimationState::new(
             self.animation_specie,
             AnimationName::Idle,
         ));
-        world.write().insert(entity, ::component::Life(1));
-        world.write().insert(entity, ::component::Bomb {
-            damage: self.damage,
+        world.write().insert(entity, ::component::Turret {
+            cooldown,
+            bullet: self.bullet.clone(),
+            remaining_cooldown: start_remaining_cooldown,
+            angle: position.0.rotation.angle(),
+            shoot_distance: self.radius,
         });
-        world.write().insert(entity, ::component::GravityToPlayers {
-            mass: self.mass,
-            powi: self.powi,
-        });
-
-        if let Some(ref players_aim_damping) = self.players_aim_damping {
-            world.write::<::component::PlayersAimDamping>().insert(
-                entity,
-                ::component::PlayersAimDamping {
-                    processor: players_aim_damping.clone(),
-                },
-            );
-        }
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
-
-        let mut position = position.0;
-        if self.insert_shift {
-            ::util::move_forward(&mut position, self.radius);
-        }
 
         let shape = ShapeHandle::new(Ball::new(self.radius));
         let body_handle = ::component::RigidBody::safe_insert(
             entity,
-            position,
+            position.0,
             shape.inertia(1.0),
             shape.center_of_mass(),
             BodyStatus::Dynamic,

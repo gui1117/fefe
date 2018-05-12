@@ -1,5 +1,19 @@
 # TODO
 
+* faire que les createurs ne prennent que &world et non &mut world
+* faire tourelle
+
+* synchronisation turret:
+  when shoot look at each cooldown remaining for all turret sync
+  then function of distance and cooldown remaining for each is 
+  like boid force
+  (to do it another system just recompute the condition shoot in another system: easy)
+
+  ou alors juste lorsqu'on tire on incite les autre a tirer:
+  en diminuant le cooldown max
+
+  ou alors synchronisatino des tempo alors que le rythme n'est pas sur le tempo. par exemple un rythme de 3/4 essai et essai de synchroniser son tempo avec un rythme de 2/4
+
 * réflechir a propos de synchronisation tempo
 * rustneat
 * faire meilleur prise en charge des erreurs

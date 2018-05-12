@@ -6,26 +6,25 @@ use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
 use specs::World;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Player;
 
 impl Insertable for Player {
-    fn insert(&self, position: InsertPosition, world: &mut World) {
-        let entity = world
-            .create_entity()
-            .with(::component::AnimationState::new(
-                AnimationSpecie::Character,
-                AnimationName::IdleRifle,
-            ))
-            .with(::component::Player)
-            .with(::component::Aim(position.rotation.angle()))
-            .with(::component::Life(1))
-            .with(::component::ControlForce(Force::zero()))
-            .with(::component::Damping {
-                linear: ::CFG.player_linear_damping,
-                angular: ::CFG.player_angular_damping,
-            })
-            .build();
+    fn insert(&self, position: InsertPosition, world: &World) {
+        let entity = world.entities().create();
+
+        world.write().insert(entity, ::component::AnimationState::new(
+            AnimationSpecie::Character,
+            AnimationName::IdleRifle,
+        ));
+        world.write().insert(entity, ::component::Player);
+        world.write().insert(entity, ::component::Aim(position.rotation.angle()));
+        world.write().insert(entity, ::component::Life(1));
+        world.write().insert(entity, ::component::ControlForce(Force::zero()));
+        world.write().insert(entity, ::component::Damping {
+            linear: ::CFG.player_linear_damping,
+            angular: ::CFG.player_angular_damping,
+        });
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 

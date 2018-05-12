@@ -3,11 +3,11 @@ use ncollide2d::shape::{ConvexPolygon, Segment, ShapeHandle};
 use nphysics2d::object::{BodyHandle, BodyStatus, Material};
 use specs::World;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Wall;
 
 impl Fillable for Wall {
-    fn fill(&self, position: FillPosition, world: &mut World) {
+    fn fill(&self, position: FillPosition, world: &World) {
         // FIXME: is it better if we center the triangle on the position of the collider or on the
         // position of the rigid body ?
         // also it is better if we have one rigid body per collider ?
@@ -42,7 +42,7 @@ impl Fillable for Wall {
 }
 
 impl Segmentable for Wall {
-    fn segments(&self, position: SegmentsPosition, world: &mut World) {
+    fn segments(&self, position: SegmentsPosition, world: &World) {
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
         for position in position.iter() {

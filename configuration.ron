@@ -2,6 +2,7 @@ Configuration(
     animation: (
         table: {
             (Character, IdleRifle): ["character_idle_rifle"],
+            (Character, Idle): ["character_idle_rifle"],
         },
         parts: {
             "character_idle_rifle": (

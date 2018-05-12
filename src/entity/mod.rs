@@ -147,6 +147,12 @@ or it is:
     }
 }
 
+impl From<::na::Isometry2<f32>> for InsertPosition {
+    fn from(isometry: ::na::Isometry2<f32>) -> Self {
+        InsertPosition(isometry)
+    }
+}
+
 macro_rules! object {
     (
         $t:ident, $f:ident, $p:ident, $o:ident {
@@ -163,16 +169,16 @@ macro_rules! object {
         }
     ) => (
         pub trait $t {
-            fn $f(&self, position: $p, world: &mut World);
+            fn $f(&self, position: $p, world: &World);
         }
 
-        #[derive(Serialize, Deserialize)]
+        #[derive(Serialize, Deserialize, Clone)]
         pub enum $o {
             $($v(Box<$v>),)*
         }
 
         impl $t for $o {
-            fn $f(&self, position: $p, world: &mut World) {
+            fn $f(&self, position: $p, world: &World) {
                 match self {
                     $(&$o::$v(ref p) => p.$f(position, world)),*
                 }
@@ -195,6 +201,7 @@ object!(
     InsertableObject {
         Player,
         GravityBomb,
+        Turret,
     }
 );
 
@@ -210,7 +217,9 @@ object!(
 mod gravity_bomb;
 mod player;
 mod wall;
+mod turret;
 
 pub use self::gravity_bomb::GravityBomb;
 pub use self::player::Player;
+pub use self::turret::Turret;
 pub use self::wall::Wall;

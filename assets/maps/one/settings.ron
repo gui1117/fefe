@@ -2,7 +2,13 @@ MapSettings(
     insert_rules: [
         (
             trigger: "#ff0000",
-            processor: TakeNPositions(1, BuildEntity(Player(()))),
+            processor: TakeNPositions(1, BuildEntity(Turret((
+                bullet: Player(()),
+                animation_specie: Character,
+                radius: 1.0,
+                max_cooldown: 1.0,
+                insert_shift: true,
+            )))),
         )
     ],
     fill_rules: [

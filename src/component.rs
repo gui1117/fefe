@@ -3,6 +3,7 @@ use nphysics2d::math::Force;
 use nphysics2d::object::BodyStatus;
 use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
+use entity::InsertableObject;
 
 #[derive(Default)]
 pub struct Player;
@@ -72,16 +73,12 @@ impl Component for PlayersAimDamping {
     type Storage = VecStorage<Self>;
 }
 
-#[derive(Deref, DerefMut)]
-pub struct Turret(Vec<TurretPart>);
-
-pub struct TurretPart {
-    pub bullet: Box<::entity::Insertable + Sync + Send>,
-    /// Vec of cooldown
-    pub shoots: Vec<f32>,
-    /// Time at startup
-    pub startup_time: f32,
-    pub delta_angle: f32,
+pub struct Turret {
+    pub bullet: InsertableObject,
+    pub cooldown: f32,
+    pub remaining_cooldown: f32,
+    pub angle: f32,
+    pub shoot_distance: f32,
 }
 
 impl Component for Turret {

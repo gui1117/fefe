@@ -62,3 +62,14 @@ pub fn safe_maintain(world: &mut World) {
         .collect::<Vec<_>>();
     physic_world.remove_bodies(&retained);
 }
+
+#[inline]
+pub fn move_toward(isometry: &mut ::na::Isometry2<f32>, angle: f32, distance: f32) {
+    isometry.translation.vector += ::na::Vector2::new(angle.cos(), angle.sin())*distance;
+}
+
+#[inline]
+pub fn move_forward(isometry: &mut ::na::Isometry2<f32>, distance: f32) {
+    let angle = isometry.rotation.angle();
+    move_toward(isometry, angle, distance);
+}

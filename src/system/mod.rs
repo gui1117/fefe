@@ -9,3 +9,6 @@ pub use self::bomb::*;
 
 mod life;
 pub use self::life::*;
+
+mod turret;
+pub use self::turret::*;

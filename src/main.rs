@@ -27,10 +27,10 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 
-mod animation;
+pub mod animation;
 mod component;
-mod configuration;
-mod entity;
+pub mod configuration;
+pub mod entity;
 mod force_generator;
 mod map;
 mod resource;
@@ -87,6 +87,7 @@ fn main() {
     world.register::<::component::PlayersAimDamping>();
     world.register::<::component::GravityToPlayers>();
     world.register::<::component::Damping>();
+    world.register::<::component::Turret>();
 
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
@@ -97,6 +98,7 @@ fn main() {
         .add(::system::PhysicSystem::new(), "physic", &[])
         .add(::system::BombSystem, "bomb", &[])
         .add(::system::LifeSystem, "life", &[])
+        .add(::system::TurretSystem, "turret", &[])
         .add_barrier() // Draw barrier
         .add(::system::AnimationSystem, "animation", &[])
         .build();
