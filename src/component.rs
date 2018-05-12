@@ -39,6 +39,12 @@ impl Component for Life {
     type Storage = VecStorage<Self>;
 }
 
+impl From<usize> for Life {
+    fn from(l: usize) -> Self {
+        Life(l)
+    }
+}
+
 pub struct GravityToPlayers {
     pub mass: f32,
     pub powi: i32,

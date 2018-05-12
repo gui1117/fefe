@@ -32,6 +32,7 @@ impl Insertable for GravityBomb {
             mass: self.mass,
             powi: self.powi,
         });
+        world.write().insert(entity, ::component::Contactor(vec![]));
 
         if let Some(ref players_aim_damping) = self.players_aim_damping {
             world.write::<::component::PlayersAimDamping>().insert(

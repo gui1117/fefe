@@ -3,11 +3,19 @@ MapSettings(
         (
             trigger: "#ff0000",
             processor: TakeNPositions(1, BuildEntity(Turret((
-                bullet: Player(()),
                 animation_specie: Character,
-                radius: 1.0,
-                max_cooldown: 1.0,
+                radius: 1,
+                max_cooldown: 1,
                 insert_shift: true,
+                bullet: GravityBomb((
+                    animation_specie: Character,
+                    damage: 1,
+                    mass: 1,
+                    powi: 1,
+                    radius: 1,
+                    players_aim_damping: None,
+                    insert_shift: true,
+                )),
             )))),
         )
     ],
