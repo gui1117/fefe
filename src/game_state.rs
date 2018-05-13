@@ -68,6 +68,7 @@ impl GameState for Game {
         gamepad: &::gilrs::Gamepad,
         world: &mut World,
     ) -> Box<GameState> {
+        let conf = world.read_resource::<::resource::Conf>();
         let px = gamepad
             .axis_data(::gilrs::Axis::LeftStickX)
             .map(|e| e.value())
@@ -85,7 +86,7 @@ impl GameState for Game {
         ).join()
         {
             control_force.0 = Force {
-                linear: ::na::Vector2::new(px_circle, py_circle) * ::CFG.player_velocity,
+                linear: ::na::Vector2::new(px_circle, py_circle) * conf.player_velocity,
                 angular: 10.0,
             };
         }

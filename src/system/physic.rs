@@ -30,6 +30,7 @@ impl<'a> System<'a> for PhysicSystem {
         Fetch<'a, ::specs::EntitiesRes>,
         Fetch<'a, ::resource::StepForces>,
         Fetch<'a, ::resource::BodiesMap>,
+        Fetch<'a, ::resource::Conf>,
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
@@ -48,6 +49,7 @@ impl<'a> System<'a> for PhysicSystem {
             entities,
             step_forces,
             bodies_map,
+            conf,
             mut physic_world,
         ): Self::SystemData,
     ) {
@@ -79,7 +81,7 @@ impl<'a> System<'a> for PhysicSystem {
 
                     for player_position in &players_position {
                         let mut v = player_position.translation.vector - position;
-                        v *= mass * ::CFG.gravity / v.norm().powi(powi + 1);
+                        v *= mass * conf.gravity / v.norm().powi(powi + 1);
                         force += Force::linear(v);
                     }
                 }
@@ -119,8 +121,8 @@ impl<'a> System<'a> for PhysicSystem {
         }
 
         let mut remaining_to_update = update_time.0;
-        while remaining_to_update > ::CFG.physic_min_timestep + ::std::f32::EPSILON {
-            let timestep = remaining_to_update.min(::CFG.physic_max_timestep);
+        while remaining_to_update > conf.physic_min_timestep + ::std::f32::EPSILON {
+            let timestep = remaining_to_update.min(conf.physic_max_timestep);
             remaining_to_update -= timestep;
             physic_world.set_timestep(timestep);
             physic_world.step();

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs;
 use std::path::PathBuf;
+use std::fs::File;
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum Framerate {
@@ -13,14 +14,14 @@ pub enum Framerate {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct AnimationsCfg {
+pub struct AnimationsConf {
     table: HashMap<(AnimationSpecie, AnimationName), Vec<String>>,
-    parts: HashMap<String, AnimationPartCfg>,
+    parts: HashMap<String, AnimationPartConf>,
     directory: PathBuf,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct AnimationPartCfg {
+pub struct AnimationPartConf {
     filename: String,
     layer: f32,
     framerate: Framerate,
@@ -38,14 +39,17 @@ pub struct Animations {
 
 impl Animations {
     fn load() -> Result<Animations, ::failure::Error> {
+        let animations_cfg: AnimationsConf =
+            ::ron::de::from_reader(File::open("assets/animation.ron")?)?;
+
         let mut parts_table = HashMap::new();
         let mut images = vec![];
 
         let mut dir_entries = vec![];
-        for entry in fs::read_dir(&::CFG.animation.directory).map_err(|e| {
+        for entry in fs::read_dir(&animations_cfg.directory).map_err(|e| {
             format_err!(
                 "read dir \"{}\": {}",
-                ::CFG.animation.directory.to_string_lossy(),
+                animations_cfg.directory.to_string_lossy(),
                 e
             )
         })? {
@@ -53,7 +57,7 @@ impl Animations {
                 .map_err(|e| {
                     format_err!(
                         "read dir \"{}\": {}",
-                        ::CFG.animation.directory.to_string_lossy(),
+                        animations_cfg.directory.to_string_lossy(),
                         e
                     )
                 })?
@@ -64,7 +68,7 @@ impl Animations {
             }
         }
 
-        for (part_name, part) in &::CFG.animation.parts {
+        for (part_name, part) in &animations_cfg.parts {
             let mut part_images = dir_entries
                 .iter()
                 .filter(|p| {
@@ -84,7 +88,7 @@ impl Animations {
                 return Err(format_err!(
                     "invalid animation configuration: \"{}\" have no images in \"{}\"",
                     part_name,
-                    ::CFG.animation.directory.to_string_lossy()
+                    animations_cfg.directory.to_string_lossy()
                 ));
             }
 
@@ -108,7 +112,7 @@ impl Animations {
 
         let mut table = HashMap::new();
 
-        for (&key, part_names) in &::CFG.animation.table {
+        for (&key, part_names) in &animations_cfg.table {
             let mut parts = vec![];
             for part_name in part_names {
                 let part = parts_table.get(&part_name)

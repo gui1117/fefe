@@ -36,11 +36,12 @@ const DEBUG_SEGMENT_WIDTH: f32 = 10.0;
 
 pub struct Camera {
     position: ::na::Isometry2<f32>,
+    zoom: f32,
 }
 
 impl Camera {
-    pub fn new(position: ::na::Isometry2<f32>) -> Self {
-        Camera { position }
+    pub fn new(position: ::na::Isometry2<f32>, zoom: f32) -> Self {
+        Camera { position, zoom }
     }
 }
 
@@ -50,9 +51,9 @@ impl Camera {
             let ratio = dimensions[0] as f32 / dimensions[1] as f32;
 
             let (kx, ky) = if ratio > 1. {
-                (1.0 / (::CFG.zoom * ratio), 1.0 / ::CFG.zoom)
+                (1.0 / (self.zoom * ratio), 1.0 / self.zoom)
             } else {
-                (1.0 / ::CFG.zoom, ratio / ::CFG.zoom)
+                (1.0 / self.zoom, ratio / self.zoom)
             };
 
             let mut trans: ::na::Transform3<f32> = ::na::one();

@@ -11,6 +11,7 @@ pub struct Player;
 
 impl Insertable for Player {
     fn insert(&self, position: InsertPosition, world: &World) {
+        let conf = world.read_resource::<::resource::Conf>();
         let entity = world.entities().create();
 
         world.write().insert(entity, ::component::AnimationState::new(
@@ -22,13 +23,13 @@ impl Insertable for Player {
         world.write().insert(entity, ::component::Life(1));
         world.write().insert(entity, ::component::ControlForce(Force::zero()));
         world.write().insert(entity, ::component::Damping {
-            linear: ::CFG.player_linear_damping,
-            angular: ::CFG.player_angular_damping,
+            linear: conf.player_linear_damping,
+            angular: conf.player_angular_damping,
         });
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
-        let shape = ShapeHandle::new(Ball::new(::CFG.player_radius));
+        let shape = ShapeHandle::new(Ball::new(conf.player_radius));
         let body_handle = ::component::RigidBody::safe_insert(
             entity,
             position.0,

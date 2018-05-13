@@ -1,6 +1,28 @@
 use fnv::FnvHashMap;
 use nphysics2d::object::BodyHandle;
 use specs::Entity;
+use std::fs::File;
+
+#[derive(Serialize, Deserialize)]
+pub struct Conf {
+    pub fps: usize,
+    pub physic_max_timestep: f32,
+    pub physic_min_timestep: f32,
+    pub zoom: f32,
+
+    pub player_velocity: f32,
+    pub player_radius: f32,
+    pub player_linear_damping: f32,
+    pub player_angular_damping: f32,
+
+    pub gravity: f32,
+}
+
+impl Conf {
+    pub fn load() -> Self {
+        ::ron::de::from_reader(File::open("assets/configuration.ron").unwrap()).unwrap()
+    }
+}
 
 pub type PhysicWorld = ::nphysics2d::world::World<f32>;
 

@@ -1,0 +1,14 @@
+AnimationsConf(
+    table: {
+        (Character, IdleRifle): ["character_idle_rifle"],
+        (Character, Idle): ["character_idle_rifle"],
+    },
+    parts: {
+        "character_idle_rifle": (
+            filename: "character_idle_rifle",
+            layer: 0.5,
+            framerate: Fix(1),
+        ),
+    },
+    directory: "assets/animations",
+)

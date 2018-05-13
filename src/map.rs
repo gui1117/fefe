@@ -10,11 +10,12 @@ use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
 use specs::World;
 use std::fs::File;
 use std::io::Read;
+use std::path::PathBuf;
 
 pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
     ::util::reset_world(world);
 
-    let mut path = ::CFG.map_directory.clone();
+    let mut path = PathBuf::from("assets/maps");
     path.push(name);
     if !path.is_dir() {
         return Err(format_err!(

@@ -29,7 +29,6 @@ extern crate winit;
 
 pub mod animation;
 mod component;
-pub mod configuration;
 pub mod entity;
 mod force_generator;
 mod map;
@@ -41,7 +40,7 @@ mod game_state;
 mod graphics;
 mod retained_storage;
 
-pub use configuration::CFG;
+pub use resource::Conf;
 
 use game_state::GameState;
 use specs::{DispatcherBuilder, World};
@@ -89,9 +88,11 @@ fn main() {
     world.register::<::component::Damping>();
     world.register::<::component::Turret>();
 
+    let conf = ::resource::Conf::load();
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
-    world.add_resource(::resource::Camera::new(::na::one()));
+    world.add_resource(::resource::Camera::new(::na::one(), conf.zoom));
+    world.add_resource(conf);
     world.maintain();
 
     let mut update_dispatcher = DispatcherBuilder::new()
@@ -103,7 +104,6 @@ fn main() {
         .add(::system::AnimationSystem, "animation", &[])
         .build();
 
-    let frame_duration = Duration::new(0, (1_000_000_000.0 / ::CFG.fps as f32) as u32);
     let mut fps_counter = fps_counter::FPSCounter::new();
     let mut last_frame_instant = Instant::now();
     let mut last_update_instant = Instant::now();
@@ -174,6 +174,10 @@ fn main() {
 
         // Sleep
         let elapsed = last_frame_instant.elapsed();
+        let frame_duration = {
+            let fps = world.read_resource::<::resource::Conf>().fps;
+            Duration::new(0, (1_000_000_000.0 / fps as f32) as u32)
+        };
         if let Some(to_sleep) = frame_duration.checked_sub(elapsed) {
             thread::sleep(to_sleep);
         }
