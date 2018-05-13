@@ -1,6 +1,5 @@
 # TODO
 
-* faire que les createurs ne prennent que &world et non &mut world
 * faire tourelle
 
 * synchronisation turret:
