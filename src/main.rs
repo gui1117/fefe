@@ -1,5 +1,7 @@
 extern crate alga;
 #[macro_use]
+extern crate imgui;
+#[macro_use]
 extern crate derive_deref;
 #[macro_use]
 extern crate failure;
@@ -27,6 +29,7 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 
+mod config_menu;
 pub mod animation;
 mod component;
 pub mod entity;
@@ -49,6 +52,7 @@ use std::time::Duration;
 use std::time::Instant;
 use vulkano::instance::Instance;
 use vulkano_win::VkSurfaceBuild;
+use winit::CursorState;
 
 fn main() {
     ::std::env::set_var("WINIT_UNIX_BACKEND", "x11");
@@ -70,7 +74,8 @@ fn main() {
     try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab)).unwrap();
     window.window().set_cursor(winit::MouseCursor::NoneCursor);
 
-    let mut graphics = graphics::Graphics::new(&window);
+    let mut imgui = ::util::init_imgui();
+    let mut graphics = graphics::Graphics::new(&window, &mut imgui);
 
     let mut world = World::new();
     world.register::<::component::RigidBody>();
@@ -92,6 +97,7 @@ fn main() {
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one(), conf.zoom));
+    world.add_resource(imgui);
     world.add_resource(conf);
     world.maintain();
 
@@ -110,6 +116,8 @@ fn main() {
 
     let mut game_state = Box::new(game_state::Game) as Box<GameState>;
 
+    let mut mouse_down = [false; 5];
+
     ::map::load_map("one".into(), &mut world).unwrap();
 
     'main_loop: loop {
@@ -124,21 +132,19 @@ fn main() {
                     event: winit::WindowEvent::Focused(true),
                     ..
                 } => {
-                    try_multiple_time!(
-                        window.window().set_cursor_state(winit::CursorState::Normal)
-                    ).unwrap();
-                    try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab))
-                        .unwrap();
+                    try_multiple_time!(window.window().set_cursor_state(CursorState::Normal)).unwrap();
+                    try_multiple_time!(window.window().set_cursor_state(CursorState::Grab)).unwrap();
                 }
                 winit::Event::WindowEvent {
                     event: ::winit::WindowEvent::Closed,
                     ..
                 } => {
-                    // FIXME: breaking with ControlFLow::Quit bugs on X11: function never ends
+                    // FIXME: breaking main_loop bugs on X11: function never ends
                     ::std::process::exit(0);
                 }
                 _ => (),
             }
+            ::util::send_event_to_imgui(&ev, &mut world.write_resource(), &mut mouse_down);
             game_state = game_state.winit_event(ev, &mut world);
         }
         while let Some(ev) = gilrs.next_event() {

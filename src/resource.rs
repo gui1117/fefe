@@ -3,6 +3,8 @@ use nphysics2d::object::BodyHandle;
 use specs::Entity;
 use std::fs::File;
 
+pub use imgui::ImGui;
+
 #[derive(Serialize, Deserialize)]
 pub struct Conf {
     pub fps: usize,

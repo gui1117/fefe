@@ -1,5 +1,7 @@
 use retained_storage::Retained;
 use specs::World;
+use winit::{ElementState, Event, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode,
+            WindowEvent};
 
 macro_rules! try_multiple_time {
     ($e:expr) => {{
@@ -72,4 +74,123 @@ pub fn move_toward(isometry: &mut ::na::Isometry2<f32>, angle: f32, distance: f3
 pub fn move_forward(isometry: &mut ::na::Isometry2<f32>, distance: f32) {
     let angle = isometry.rotation.angle();
     move_toward(isometry, angle, distance);
+}
+
+pub fn send_event_to_imgui(event: &::winit::Event, imgui: &mut ::imgui::ImGui, mouse_down: &mut [bool; 5]) {
+    match event {
+        Event::WindowEvent {
+            event: WindowEvent::MouseInput { button, state, .. },
+            ..
+        } => {
+            match button {
+                MouseButton::Left => mouse_down[0] = *state == ElementState::Pressed,
+                MouseButton::Right => mouse_down[1] = *state == ElementState::Pressed,
+                MouseButton::Middle => mouse_down[2] = *state == ElementState::Pressed,
+                MouseButton::Other(0) => {
+                    mouse_down[3] = *state == ElementState::Pressed
+                }
+                MouseButton::Other(1) => {
+                    mouse_down[4] = *state == ElementState::Pressed
+                }
+                MouseButton::Other(_) => (),
+            }
+            imgui.set_mouse_down(&mouse_down);
+        }
+        Event::WindowEvent {
+            event:
+                WindowEvent::CursorMoved {
+                    position: (x, y), ..
+                },
+            ..
+        } => imgui.set_mouse_pos(*x as f32, *y as f32),
+        Event::WindowEvent {
+            event: WindowEvent::KeyboardInput { input, .. },
+            ..
+        } => {
+            let pressed = input.state == ElementState::Pressed;
+            match input.virtual_keycode {
+                Some(VirtualKeyCode::Tab) => imgui.set_key(0, pressed),
+                Some(VirtualKeyCode::Left) => imgui.set_key(1, pressed),
+                Some(VirtualKeyCode::Right) => imgui.set_key(2, pressed),
+                Some(VirtualKeyCode::Up) => imgui.set_key(3, pressed),
+                Some(VirtualKeyCode::Down) => imgui.set_key(4, pressed),
+                Some(VirtualKeyCode::PageUp) => imgui.set_key(5, pressed),
+                Some(VirtualKeyCode::PageDown) => imgui.set_key(6, pressed),
+                Some(VirtualKeyCode::Home) => imgui.set_key(7, pressed),
+                Some(VirtualKeyCode::End) => imgui.set_key(8, pressed),
+                Some(VirtualKeyCode::Delete) => imgui.set_key(9, pressed),
+                Some(VirtualKeyCode::Back) => imgui.set_key(10, pressed),
+                Some(VirtualKeyCode::Return) => imgui.set_key(11, pressed),
+                Some(VirtualKeyCode::Escape) => imgui.set_key(12, pressed),
+                Some(VirtualKeyCode::A) => imgui.set_key(13, pressed),
+                Some(VirtualKeyCode::C) => imgui.set_key(14, pressed),
+                Some(VirtualKeyCode::V) => imgui.set_key(15, pressed),
+                Some(VirtualKeyCode::X) => imgui.set_key(16, pressed),
+                Some(VirtualKeyCode::Y) => imgui.set_key(17, pressed),
+                Some(VirtualKeyCode::Z) => imgui.set_key(18, pressed),
+                Some(VirtualKeyCode::LControl) | Some(VirtualKeyCode::RControl) => {
+                    imgui.set_key_ctrl(pressed)
+                }
+                Some(VirtualKeyCode::LShift) | Some(VirtualKeyCode::RShift) => {
+                    imgui.set_key_shift(pressed)
+                }
+                Some(VirtualKeyCode::LAlt) | Some(VirtualKeyCode::RAlt) => {
+                    imgui.set_key_alt(pressed)
+                }
+                Some(VirtualKeyCode::LWin) | Some(VirtualKeyCode::RWin) => {
+                    imgui.set_key_super(pressed)
+                }
+                _ => (),
+            }
+        }
+        Event::WindowEvent {
+            event:
+                WindowEvent::MouseWheel {
+                    delta,
+                    phase: TouchPhase::Moved,
+                    ..
+                },
+            ..
+        } => {
+            // TODO: does both are send ? does it depend on computer
+            match delta {
+                MouseScrollDelta::LineDelta(_, y) => imgui.set_mouse_wheel(*y),
+                MouseScrollDelta::PixelDelta(_, y) => imgui.set_mouse_wheel(*y),
+            }
+        }
+        Event::WindowEvent {
+            event: WindowEvent::ReceivedCharacter(c),
+            ..
+        } => {
+            imgui.add_input_character(*c);
+        }
+        _ => (),
+    }
+}
+
+pub fn init_imgui() -> ::imgui::ImGui {
+    let mut imgui = ::imgui::ImGui::init();
+    imgui.set_ini_filename(None);
+    imgui.set_log_filename(None);
+    imgui.set_mouse_draw_cursor(true);
+    imgui.set_imgui_key(::imgui::ImGuiKey::Tab, 0);
+    imgui.set_imgui_key(::imgui::ImGuiKey::LeftArrow, 1);
+    imgui.set_imgui_key(::imgui::ImGuiKey::RightArrow, 2);
+    imgui.set_imgui_key(::imgui::ImGuiKey::UpArrow, 3);
+    imgui.set_imgui_key(::imgui::ImGuiKey::DownArrow, 4);
+    imgui.set_imgui_key(::imgui::ImGuiKey::PageUp, 5);
+    imgui.set_imgui_key(::imgui::ImGuiKey::PageDown, 6);
+    imgui.set_imgui_key(::imgui::ImGuiKey::Home, 7);
+    imgui.set_imgui_key(::imgui::ImGuiKey::End, 8);
+    imgui.set_imgui_key(::imgui::ImGuiKey::Delete, 9);
+    imgui.set_imgui_key(::imgui::ImGuiKey::Backspace, 10);
+    imgui.set_imgui_key(::imgui::ImGuiKey::Enter, 11);
+    imgui.set_imgui_key(::imgui::ImGuiKey::Escape, 12);
+    imgui.set_imgui_key(::imgui::ImGuiKey::A, 13);
+    imgui.set_imgui_key(::imgui::ImGuiKey::C, 14);
+    imgui.set_imgui_key(::imgui::ImGuiKey::V, 15);
+    imgui.set_imgui_key(::imgui::ImGuiKey::X, 16);
+    imgui.set_imgui_key(::imgui::ImGuiKey::Y, 17);
+    imgui.set_imgui_key(::imgui::ImGuiKey::Z, 18);
+    imgui
 }

@@ -1,6 +1,6 @@
 # TODO
 
-* faire tourelle
+* terminer imgui
 
 * synchronisation turret:
   when shoot look at each cooldown remaining for all turret sync
