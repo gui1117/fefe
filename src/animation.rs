@@ -40,7 +40,7 @@ pub struct Animations {
 impl Animations {
     fn load() -> Result<Animations, ::failure::Error> {
         let animations_cfg: AnimationsConf =
-            ::ron::de::from_reader(File::open("assets/animation.ron")?)?;
+            ::ron::de::from_reader(File::open("data/animation.ron")?)?;
 
         let mut parts_table = HashMap::new();
         let mut images = vec![];

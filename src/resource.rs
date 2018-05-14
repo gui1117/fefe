@@ -20,7 +20,7 @@ pub struct Conf {
 
 impl Conf {
     pub fn load() -> Self {
-        ::ron::de::from_reader(File::open("assets/configuration.ron").unwrap()).unwrap()
+        ::ron::de::from_reader(File::open("data/configuration.ron").unwrap()).unwrap()
     }
 }
 

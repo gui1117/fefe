@@ -10,5 +10,5 @@ AnimationsConf(
             framerate: Fix(1),
         ),
     },
-    directory: "assets/animations",
+    directory: "data/animations",
 )
