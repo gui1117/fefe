@@ -1,7 +1,5 @@
 # TODO
 
-* terminer imgui
-
 * synchronisation turret:
   when shoot look at each cooldown remaining for all turret sync
   then function of distance and cooldown remaining for each is 
