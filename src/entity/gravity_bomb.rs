@@ -51,7 +51,7 @@ impl Insertable for GravityBomb {
         }
 
         let shape = ShapeHandle::new(Ball::new(self.radius));
-        let body_handle = ::component::RigidBody::safe_insert(
+        let body = ::component::RigidBody::safe_insert(
             entity,
             position,
             shape.inertia(1.0),
@@ -65,7 +65,7 @@ impl Insertable for GravityBomb {
         physic_world.add_collider(
             0.0,
             shape,
-            body_handle,
+            body.0,
             ::na::one(),
             Material::new(0.0, 0.0),
         );

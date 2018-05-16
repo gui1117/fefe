@@ -52,7 +52,7 @@ impl Insertable for Turret {
         physic_world.add_collider(
             0.0,
             shape,
-            body_handle,
+            body_handle.0,
             ::na::one(),
             Material::new(0.0, 0.0),
         );

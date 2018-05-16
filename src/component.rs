@@ -177,7 +177,7 @@ impl RigidBody {
         bodies_handle: &mut WriteStorage<'a, ::component::RigidBody>,
         physic_world: &mut ::resource::PhysicWorld,
         bodies_map: &mut ::resource::BodiesMap,
-    ) -> ::nphysics2d::object::BodyHandle {
+    ) -> Self {
         let body_handle =
             physic_world.add_rigid_body(position, local_inertia, local_center_of_mass);
         {
@@ -190,7 +190,7 @@ impl RigidBody {
         bodies_map.insert(body_handle, entity);
 
         bodies_handle.insert(entity, RigidBody(body_handle));
-        body_handle
+        RigidBody(body_handle)
     }
 
     #[inline]
