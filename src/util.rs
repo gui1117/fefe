@@ -44,6 +44,7 @@ impl ClampFunction {
 pub fn reset_world(world: &mut World) {
     world.maintain();
     world.delete_all();
+    world.write::<::component::RigidBody>().retained();
 
     let ground = world.create_entity().with(::component::Ground).build();
     world.add_resource(::resource::BodiesMap::new(ground));
