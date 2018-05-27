@@ -76,12 +76,11 @@ impl<'a> System<'a> for PhysicSystem {
                 }
                 if let Some(gravity_to_players) = gravities_to_players.get(entity) {
                     let position = body.position().translation.vector;
-                    let mass = gravity_to_players.mass;
                     let powi = gravity_to_players.powi;
 
                     for player_position in &players_position {
                         let mut v = player_position.translation.vector - position;
-                        v *= mass * conf.gravity / v.norm().powi(powi + 1);
+                        v *= gravity_to_players.force / v.norm().powi(powi + 1);
                         force += Force::linear(v);
                     }
                 }

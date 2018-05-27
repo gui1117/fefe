@@ -320,7 +320,6 @@ impl Graphics {
             SamplerAddressMode::ClampToEdge,
             SamplerAddressMode::ClampToEdge,
             SamplerAddressMode::ClampToEdge,
-            // TODO: What values here
             0.0,
             1.0,
             0.0,
@@ -485,7 +484,7 @@ impl Graphics {
             .begin_render_pass(
                 self.framebuffers[image_num].clone(),
                 false,
-                vec![[0.0, 0.0, 1.0, 1.0].into(), 1.0.into()],
+                vec![[0.0, 0.0, 0.0, 1.0].into(), 1.0.into()],
             )
             .unwrap();
 
@@ -539,7 +538,6 @@ impl Graphics {
 
         // Draw physic world
         if true {
-            let mut future = Box::new(now(self.device.clone())) as Box<GpuFuture>;
             let sets = Arc::new(
                 PersistentDescriptorSet::start(self.debug_pipeline.clone(), 0)
                     .add_buffer(view_buffer.clone())
@@ -562,8 +560,15 @@ impl Graphics {
                 })
                 .collect::<Vec<_>>();
 
+            let bodies_map = world.read_resource::<::resource::BodiesMap>();
+            let debug_colors = world.read::<::component::DebugColor>();
             for collider in world.read_resource::<::resource::PhysicWorld>().colliders() {
                 let shape = collider.shape();
+                let color = if let Some(color) = bodies_map.get(&collider.data().body()).and_then(|e| debug_colors.get(*e)) {
+                    color.0
+                } else {
+                    0
+                };
                 let mut vertices = None;
                 if let Some(ball) = shape.as_shape::<shape::Ball<f32>>() {
                     vertices = Some(
@@ -619,13 +624,11 @@ impl Graphics {
                 }
 
                 if let Some(vertices) = vertices {
-                    // TODO: use CpuAccessibleBuffer ?
-                    let (vertex_buffer, vertex_buffer_fut) = ImmutableBuffer::from_iter(
-                        vertices.iter().cloned(),
+                    let vertex_buffer = CpuAccessibleBuffer::from_iter(
+                        self.device.clone(),
                         BufferUsage::vertex_buffer(),
-                        self.queue.clone(),
+                        vertices.iter().cloned(),
                     ).expect("failed to create buffer");
-                    future = Box::new(future.join(vertex_buffer_fut)) as Box<_>;
 
                     command_buffer_builder = command_buffer_builder
                         .draw(
@@ -633,7 +636,9 @@ impl Graphics {
                             screen_dynamic_state.clone(),
                             vec![vertex_buffer],
                             sets.clone(),
-                            (),
+                            debug_fs::ty::Color {
+                                color: color as u32,
+                            },
                         )
                         .unwrap()
                 }
@@ -643,10 +648,12 @@ impl Graphics {
         // Draw configuration menu
         let command_buffer_builder = {
             let mut imgui = world.write_resource::<::resource::ImGui>();
+            // Values are wrong but it is for configuration purpose
+            // so it doesn't matter
             let ui = imgui.frame(
-                (dimensions[0], dimensions[1]), // TODO
-                (dimensions[0], dimensions[1]), // TODO
-                1.0/60.0, // TODO
+                (dimensions[0], dimensions[1]),
+                (dimensions[0], dimensions[1]),
+                1.0/60.0,
             );
 
             ::config_menu::build(&ui, world);
@@ -670,20 +677,9 @@ impl Graphics {
                 ).unwrap();
 
                 let (width, height) = ui.imgui().display_size();
-                // let (scale_width, scale_height) = ui.imgui().display_framebuffer_scale();
 
                 for _cmd in drawlist.cmd_buffer {
-                    // TODO: dynamic scissor
-                    // Scissor {
-                    //     origin: [
-                    //         (cmd.clip_rect.x * scale_width) as i32,
-                    //         ((height - cmd.clip_rect.w) * scale_height) as i32,
-                    //     ],
-                    //     dimensions: [
-                    //         ((cmd.clip_rect.z - cmd.clip_rect.x) * scale_width) as u32,
-                    //         ((cmd.clip_rect.w - cmd.clip_rect.y) * scale_height) as u32,
-                    //     ],
-                    // }
+                    // dynamic scissor should be impl but don't care
 
                     cmd_builder = cmd_builder
                         .draw_indexed(
@@ -836,10 +832,28 @@ mod debug_fs {
     #[src = "
 #version 450
 
+layout(push_constant) uniform Color {
+    uint color;
+} color;
+
 layout(location = 0) out vec4 f_color;
 
 void main() {
-    f_color = vec4(1.0, 0.0, 0.0, 1.0);
+    if (color.color == 0) {
+        f_color = vec4(1.0, 0.0, 0.0, 1.0);
+    } else if (color.color == 1) {
+        f_color = vec4(1.0, 1.0, 0.0, 1.0);
+    } else if (color.color == 2) {
+        f_color = vec4(0.0, 1.0, 0.0, 1.0);
+    } else if (color.color == 3) {
+        f_color = vec4(0.0, 1.0, 1.0, 1.0);
+    } else if (color.color == 4) {
+        f_color = vec4(0.0, 0.0, 1.0, 1.0);
+    } else if (color.color == 5) {
+        f_color = vec4(1.0, 0.0, 1.0, 1.0);
+    } else {
+        f_color = vec4(1.0, 1.0, 1.0, 1.0);
+    }
 }
 "]
     struct _Dummy;

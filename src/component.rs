@@ -7,16 +7,19 @@ use entity::InsertableObject;
 
 #[derive(Default)]
 pub struct Player;
-
 impl Component for Player {
     type Storage = NullStorage<Self>;
 }
 
-pub struct Bomb {
-    pub damage: usize,
-}
-impl Component for Bomb {
+pub struct ContactDamage(pub usize);
+impl Component for ContactDamage {
     type Storage = VecStorage<Self>;
+}
+
+#[derive(Default)]
+pub struct DeadOnContact;
+impl Component for DeadOnContact {
+    type Storage = NullStorage<Self>;
 }
 
 pub struct ControlForce(pub Force<f32>);
@@ -34,11 +37,9 @@ impl Component for Damping {
 
 #[derive(Deref, DerefMut)]
 pub struct Life(pub usize);
-
 impl Component for Life {
     type Storage = VecStorage<Self>;
 }
-
 impl From<usize> for Life {
     fn from(l: usize) -> Self {
         Life(l)
@@ -46,10 +47,9 @@ impl From<usize> for Life {
 }
 
 pub struct GravityToPlayers {
-    pub mass: f32,
+    pub force: f32,
     pub powi: i32,
 }
-
 impl Component for GravityToPlayers {
     type Storage = VecStorage<Self>;
 }
@@ -62,7 +62,6 @@ pub struct ToPlayerInSight {
     closest_in_sight: Option<::na::Vector2<f32>>,
     force: f32,
 }
-
 impl Component for ToPlayerInSight {
     type Storage = VecStorage<Self>;
 }
@@ -74,7 +73,6 @@ pub struct PlayersAimDamping {
     // TODO: maybe use a trait if I want to extend from clamp function too much
     pub processor: ::util::ClampFunction,
 }
-
 impl Component for PlayersAimDamping {
     type Storage = VecStorage<Self>;
 }
@@ -86,7 +84,6 @@ pub struct Turret {
     pub angle: f32,
     pub shoot_distance: f32,
 }
-
 impl Component for Turret {
     type Storage = VecStorage<Self>;
 }
@@ -148,7 +145,6 @@ pub struct Positionned {}
 
 #[derive(Deref, DerefMut)]
 pub struct Aim(pub f32);
-
 impl Component for Aim {
     type Storage = VecStorage<Self>;
 }
@@ -161,7 +157,6 @@ pub struct Weapon {}
 
 #[derive(Clone)]
 pub struct RigidBody(pub ::nphysics2d::object::BodyHandle);
-
 impl Component for RigidBody {
     type Storage = RetainedStorage<Self, VecStorage<Self>>;
 }
@@ -223,7 +218,11 @@ impl Component for Ground {
 
 #[derive(Deref, DerefMut)]
 pub struct Contactor(pub Vec<Entity>);
-
 impl Component for Contactor {
+    type Storage = VecStorage<Self>;
+}
+
+pub struct DebugColor(pub usize);
+impl Component for DebugColor {
     type Storage = VecStorage<Self>;
 }

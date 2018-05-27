@@ -9,7 +9,7 @@ use specs::World;
 pub struct GravityBomb {
     pub animation_specie: AnimationSpecie,
     pub damage: usize,
-    pub mass: f32,
+    pub force: f32,
     pub powi: i32,
     pub players_aim_damping: Option<::util::ClampFunction>,
     pub radius: f32,
@@ -25,11 +25,10 @@ impl Insertable for GravityBomb {
             AnimationName::Idle,
         ));
         world.write().insert(entity, ::component::Life(1));
-        world.write().insert(entity, ::component::Bomb {
-            damage: self.damage,
-        });
+        world.write().insert(entity, ::component::ContactDamage(self.damage));
+        world.write().insert(entity, ::component::DeadOnContact);
         world.write().insert(entity, ::component::GravityToPlayers {
-            mass: self.mass,
+            force: self.force,
             powi: self.powi,
         });
         world.write().insert(entity, ::component::Contactor(vec![]));

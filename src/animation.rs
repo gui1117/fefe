@@ -131,11 +131,9 @@ impl Animations {
 
 #[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum AnimationName {
-    ShootRifle,
-    IdleRifle,
-    TakeRifle,
-    UntakeRifle,
     Idle,
+    Walk,
+    SwordAttack,
 }
 
 #[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]

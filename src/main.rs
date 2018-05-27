@@ -85,13 +85,15 @@ fn main() {
     world.register::<::component::Aim>();
     world.register::<::component::Player>();
     world.register::<::component::GravityToPlayers>();
-    world.register::<::component::Bomb>();
+    world.register::<::component::DeadOnContact>();
+    world.register::<::component::ContactDamage>();
     world.register::<::component::Contactor>();
     world.register::<::component::ControlForce>();
     world.register::<::component::PlayersAimDamping>();
     world.register::<::component::GravityToPlayers>();
     world.register::<::component::Damping>();
     world.register::<::component::Turret>();
+    world.register::<::component::DebugColor>();
 
     let conf = ::resource::Conf::load();
     world.add_resource(::resource::UpdateTime(0.0));
@@ -103,7 +105,8 @@ fn main() {
 
     let mut update_dispatcher = DispatcherBuilder::new()
         .add(::system::PhysicSystem::new(), "physic", &[])
-        .add(::system::BombSystem, "bomb", &[])
+        .add(::system::DeadOnContactSystem, "dead on contact", &[])
+        .add(::system::ContactDamageSystem, "damage", &[])
         .add(::system::LifeSystem, "life", &[])
         .add(::system::TurretSystem, "turret", &[])
         .add_barrier() // Draw barrier

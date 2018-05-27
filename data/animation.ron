@@ -1,11 +1,10 @@
 AnimationsConf(
     table: {
-        (Character, IdleRifle): ["character_idle_rifle"],
-        (Character, Idle): ["character_idle_rifle"],
+        (Character, Idle): ["empty"],
     },
     parts: {
-        "character_idle_rifle": (
-            filename: "character_idle_rifle",
+        "empty": (
+            filename: "empty",
             layer: 0.5,
             framerate: Fix(1),
         ),

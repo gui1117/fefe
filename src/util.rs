@@ -153,7 +153,6 @@ pub fn send_event_to_imgui(event: &::winit::Event, imgui: &mut ::imgui::ImGui, m
                 },
             ..
         } => {
-            // TODO: does both are send ? does it depend on computer
             match delta {
                 MouseScrollDelta::LineDelta(_, y) => imgui.set_mouse_wheel(*y),
                 MouseScrollDelta::PixelDelta(_, y) => imgui.set_mouse_wheel(*y),

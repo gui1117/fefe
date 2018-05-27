@@ -16,7 +16,7 @@ impl Insertable for Player {
 
         world.write().insert(entity, ::component::AnimationState::new(
             AnimationSpecie::Character,
-            AnimationName::IdleRifle,
+            AnimationName::Idle,
         ));
         world.write().insert(entity, ::component::Player);
         world.write().insert(entity, ::component::Aim(position.rotation.angle()));
@@ -26,6 +26,7 @@ impl Insertable for Player {
             linear: conf.player_linear_damping,
             angular: conf.player_angular_damping,
         });
+        world.write().insert(entity, ::component::DebugColor(1));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 

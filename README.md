@@ -15,6 +15,30 @@
 * rustneat
 * faire meilleur prise en charge des erreurs
 
+# gameplay
+
+## DONE
+monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibilité notamment un on l'on ne doit jamais le voir)
+## END DONE
+
+tourelle avec rythme
+tourelle continue avec distance et faire un labyrinthe comme dans un jeu précédent
+monstre glacé qui se réveille aléatoirement en fonction de distance
+monstre qui fait des cercles pour venir
+boule de gravité
+
+monstre qui avance vers héros et font mal au contact (araigné)
+monstre qui sortent de terre
+
+pathfinding ?
+neat ?
+
+armes:
+épée et fusil
+
+monstre: un ver qui avance (boule qui se sépare et avance puis le reste se ramène)
+chaman: spawn des monstres a une certaine frequence jusqua un certain nobre
+
 # ?
 
 pour dessiner le cursor faire avec le truc natif ou redessiner un autre:
