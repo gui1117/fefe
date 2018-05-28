@@ -12,7 +12,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
-pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
+pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
     ::util::reset_world(world);
 
     let mut path = PathBuf::from("data/maps");
@@ -235,22 +235,24 @@ pub fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error>
 }
 
 #[derive(Serialize, Deserialize)]
-struct MapSettings {
-    insert_rules: Vec<Rule<InsertableObject>>,
-    fill_rules: Vec<Rule<FillableObject>>,
-    segment_rules: Vec<Rule<SegmentableObject>>,
+pub struct MapSettings {
+    pub insert_rules: Vec<Rule<InsertableObject>>,
+    pub fill_rules: Vec<Rule<FillableObject>>,
+    pub segment_rules: Vec<Rule<SegmentableObject>>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct Rule<T: Builder> {
-    trigger: String,
-    processor: Processor<T>,
+pub struct Rule<T: Builder> {
+    pub trigger: String,
+    pub processor: Processor<T>,
 }
 
+#[doc(hidden)]
 pub trait TryFromPath: Sized {
     fn try_from_path(value: Path) -> Result<Self, ::failure::Error>;
 }
 
+#[doc(hidden)]
 pub trait Builder {
     type Position: TryFromPath;
     fn build(&self, position: Self::Position, world: &mut World);
@@ -258,7 +260,7 @@ pub trait Builder {
 
 #[derive(Serialize, Deserialize)]
 /// entities are randomized before being processed
-enum Processor<B: Builder> {
+pub enum Processor<B: Builder> {
     BuildEntity(B),
     TakeNPositions(usize, Box<Processor<B>>),
     RandomPositionDispatch(Vec<(u32, Box<Processor<B>>)>),

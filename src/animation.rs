@@ -15,24 +15,24 @@ pub enum Framerate {
 
 #[derive(Serialize, Deserialize)]
 pub struct AnimationsConf {
-    table: HashMap<(AnimationSpecie, AnimationName), Vec<String>>,
-    parts: HashMap<String, AnimationPartConf>,
-    directory: PathBuf,
+    pub table: HashMap<(AnimationSpecie, AnimationName), Vec<String>>,
+    pub parts: HashMap<String, AnimationPartConf>,
+    pub directory: PathBuf,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct AnimationPartConf {
-    filename: String,
-    layer: f32,
-    framerate: Framerate,
+    pub filename: String,
+    pub layer: f32,
+    pub framerate: Framerate,
 }
 
 lazy_static! {
-    pub static ref ANIMATIONS: Animations = Animations::load().unwrap();
+    pub (crate) static ref ANIMATIONS: Animations = Animations::load().unwrap();
 }
 
 /// Animation parts must not be empty
-pub struct Animations {
+pub (crate) struct Animations {
     pub images: Vec<PathBuf>,
     table: HashMap<(AnimationSpecie, AnimationName), CompleteAnimation>,
 }
@@ -143,6 +143,7 @@ pub enum AnimationSpecie {
 }
 
 #[derive(Clone)]
+#[doc(hidden)]
 /// images must not be empty
 pub struct AnimationPart {
     pub layer: f32,
@@ -151,6 +152,7 @@ pub struct AnimationPart {
 }
 
 #[derive(Clone)]
+#[doc(hidden)]
 pub struct CompleteAnimation {
     pub duration: f32,
     pub parts: Vec<AnimationPart>,
@@ -191,6 +193,7 @@ impl AnimationPart {
     }
 }
 
+#[doc(hidden)]
 pub struct AnimationState {
     /// 0 is no walk
     pub distance: f32,
@@ -217,8 +220,10 @@ impl Component for AnimationState {
 }
 
 #[derive(Deref, DerefMut)]
+#[doc(hidden)]
 pub struct AnimationImages(pub Vec<AnimationImage>);
 
+#[doc(hidden)]
 pub struct AnimationImage {
     pub id: usize,
     pub position: ::na::Isometry2<f32>,

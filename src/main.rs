@@ -34,7 +34,7 @@ pub mod animation;
 mod component;
 pub mod entity;
 mod force_generator;
-mod map;
+pub mod map;
 mod resource;
 mod system;
 #[macro_use]

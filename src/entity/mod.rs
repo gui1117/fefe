@@ -9,6 +9,7 @@ use specs::{World, Entity};
 const SEGMENTS_POSITION_FLATTENED_TOLERANCE: f32 = 1.0;
 
 #[derive(Deref, DerefMut)]
+#[doc(hidden)]
 pub struct SegmentsPosition(Vec<[::na::Point2<f32>; 2]>);
 
 impl ::map::TryFromPath for SegmentsPosition {
@@ -74,6 +75,7 @@ Full path after being converted to absolute flattened event path:
 }
 
 #[derive(Deref, DerefMut)]
+#[doc(hidden)]
 pub struct FillPosition(Vec<[::na::Point2<f32>; 3]>);
 
 impl ::map::TryFromPath for FillPosition {
@@ -120,6 +122,7 @@ impl ::map::TryFromPath for FillPosition {
 }
 
 #[derive(Deref, DerefMut)]
+#[doc(hidden)]
 pub struct InsertPosition(::na::Isometry2<f32>);
 
 impl ::map::TryFromPath for InsertPosition {
@@ -168,7 +171,7 @@ macro_rules! object {
             $($v:ident,)*
         }
     ) => (
-        pub trait $t {
+        pub (crate) trait $t {
             fn $f(&self, position: $p, world: &World) $(-> $r)*;
         }
 

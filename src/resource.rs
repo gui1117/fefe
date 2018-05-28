@@ -23,7 +23,7 @@ pub struct Conf {
 }
 
 impl Conf {
-    pub fn load() -> Self {
+    pub (crate) fn load() -> Self {
         ::ron::de::from_reader(File::open("data/configuration.ron").unwrap()).unwrap()
     }
 }
