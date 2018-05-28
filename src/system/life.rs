@@ -5,7 +5,7 @@ pub struct LifeSystem;
 impl<'a> System<'a> for LifeSystem {
     type SystemData = (
         ReadStorage<'a, ::component::Life>,
-        Fetch<'a, ::specs::EntitiesRes>,
+        Fetch<'a, ::resource::EntitiesRes>,
     );
 
     fn run(&mut self, (lives, entities): Self::SystemData) {

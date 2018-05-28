@@ -13,6 +13,7 @@ pub struct GravityBomb {
     pub powi: i32,
     pub players_aim_damping: Option<::util::ClampFunction>,
     pub radius: f32,
+    pub dead_on_contact: bool,
     pub insert_shift: bool,
 }
 
@@ -26,12 +27,15 @@ impl Insertable for GravityBomb {
         ));
         world.write().insert(entity, ::component::Life(1));
         world.write().insert(entity, ::component::ContactDamage(self.damage));
-        world.write().insert(entity, ::component::DeadOnContact);
         world.write().insert(entity, ::component::GravityToPlayers {
             force: self.force,
             powi: self.powi,
         });
         world.write().insert(entity, ::component::Contactor(vec![]));
+
+        if self.dead_on_contact {
+            world.write().insert(entity, ::component::DeadOnContact);
+        }
 
         if let Some(ref players_aim_damping) = self.players_aim_damping {
             world.write::<::component::PlayersAimDamping>().insert(

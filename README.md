@@ -11,48 +11,40 @@
 
   ou alors synchronisatino des tempo alors que le rythme n'est pas sur le tempo. par exemple un rythme de 3/4 essai et essai de synchroniser son tempo avec un rythme de 2/4
 
-* réflechir a propos de synchronisation tempo
-* rustneat
-* faire meilleur prise en charge des erreurs
-
 # gameplay
 
-## DONE
+## TOTEST
 monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibilité notamment un on l'on ne doit jamais le voir)
-## END DONE
+monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
+boule de gravité
+monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
+bouger random: prendre une directino aléatoir dans pendant une durée aléatoire
+## END TOTEST
 
 tourelle avec rythme
-tourelle continue avec distance et faire un labyrinthe comme dans un jeu précédent
-monstre glacé qui se réveille aléatoirement en fonction de distance
-monstre qui fait des cercles pour venir
-boule de gravité
-
-monstre qui avance vers héros et font mal au contact (araigné)
+tourelle continue avec distance et qui tourne et faire un labyrinthe comme dans un jeu précédent
+monstre qui fait des cercles pour venir:
+  faire qu'il faut leur tirer dessus ? -> plus dur
+  faire que si il touche un mur alors il change direction du cercle et sinon change aussi de manière random ?
 monstre qui sortent de terre
+chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
 
-pathfinding ?
-neat ?
+faire des boid qui rebondissent contre les murs
 
-armes:
-épée et fusil
+## réécriture avec tempo:
 
-monstre: un ver qui avance (boule qui se sépare et avance puis le reste se ramène)
-chaman: spawn des monstres a une certaine frequence jusqua un certain nobre
+il existe un tempo style continue qui fait 0.1s et permet de simuler un truc quasi-continue
 
-# ?
+remplacer tout les timer par des timer en rythme
+* faire une partition pour les spawn des uniques spawner
+* idem pour les spawn de chaman ? oui: faire que la loi normale donne le numéro du beat sur lequel il sera spawn
+* idem pour les déplaceents des monstres ? non bof ou alors faire comme chamanspawn: la loi donne le numéro du beat ensuite
+* faire velocitytoplayer avec update en rythme au lieu de update en continue
 
-pour dessiner le cursor faire avec le truc natif ou redessiner un autre:
-le truc natif est surement mieux pour le temps de réponse
-
-# AI
-
-rustneat
-https://github.com/tspooner/rsrl
-https://github.com/milanboers/rurel
+faire un monstre qui change de direction en rythme et fonce toujours vers le héros. comme un velocity to player mais avec update en rythme (generaliser) au lieu de tout le temps
+  il faut pas rester pres de lui sinon on arrive pas a l'esquiver il faut le tuer en passant ou en tirant
 
 # Fefe
-
-* faire recreate swapchain on signal and fence
 
 A game that mix hotline miami and left 4 dead.
 and shoot em up (esquive de balles lentes)
@@ -66,7 +58,7 @@ impl:
   * monster can interact with game up to the limit of loaded cells
   OR maybe not necessary
 
-## Mythology
+## Mythology Graphisme
 
 use essai inkscape ++ pour les forme même si probablement as avec outils calligraphique quoique.
 et faire des applats de couleurs pastel pour les environnements et vifs pour les elements dynamique.
@@ -78,6 +70,8 @@ les décors:
 
 les monstres:
 * vue de dessus
+
+monstre: un ver qui avance (boule qui se sépare et avance puis le reste se ramène)
 
 dessin:
 * contours noir en mode calligraphie ou pas
@@ -143,6 +137,9 @@ TODO: how much does it cost to use a full generated network
 
 ### Neat
 
+https://github.com/tspooner/rsrl
+https://github.com/milanboers/rurel
+
 How do we learn:
 * with a basic AI simulating the player
 
@@ -182,34 +179,6 @@ Every action create sound that can trigger entities around
 ### In Game
 
 * inner people should invoke new players ?
-
-# Specs
-
-* turret do not create entities in there system: too much mutable storages: better to create them with world directly
-
-* faire un trait pour les entité pouvant être créer depuis une tourelle
-
-* auto insert into/remove from physic world can be made through tracked storage
-  insert: physic body need physic world resource to be created. Must be done at the same with `safe_insert`
-  remove: after each maintain consistency is done.
-
-  allow one way inconsistency: some entity can be in physic world but not in specs world
-  so check with is\_alive
-
-# Components
-
-* body
-* life
-* playercontrol
-* gravitytowardsplayers (Formule avec la distance)
-* blade
-* sniper
-* turret
-* vec<animation>: animation can be oriented by body or aim
-
-convention ecrire `life_st` pour `life_storage`
-
-# Graphics
 
 # idea
 
@@ -290,28 +259,20 @@ then
 
 * faire un monstre qui arrive tellement vite quand tu le regarde qu'il faut passer sans le regarder
 
-# moyen age
+# arme
 
-arbalete qui tire mais vitesse =/ oo
+arbalete qui tire mais vitesse =/ oo ou alors oo
 + épée
 
-# TODO:
-
-* Implémenter les oreilles qui retiennent position/date
-* impl les truc qui se déplace vers toi plus ou moins vite en fonction de la distance
-  rigidbody
-  ??? DOES THIS CAN BE DONE WITH GRAVITY ????
-  YES
-* impl les truc qui se déplace vers le son plus ou moins vite en fonction du volume sonore
-
-* then do blind monsters
-  va en direction du son
-  sur un collision longe le mur du coté le mieux incliné
-  si a nouveau obstacle
-
-  ou plutôt faire simplement des longeurs de murs :-)
+dans une même arme: il faut appuier sur shift pour se mettre en mode arbalete
 
 # musique
 
 * utiliser les boid pour faire de la synchro entre canon
 * faire quelque chose en relation avec le fait que chaque note est a une place précise dans la mesure
+
+# note
+
+pour dessiner le cursor faire avec le truc natif ou redessiner un autre:
+le truc natif est surement mieux pour le temps de réponse
+

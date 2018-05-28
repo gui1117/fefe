@@ -215,11 +215,19 @@ object!(
 );
 
 mod gravity_bomb;
-mod player;
-mod wall;
-mod turret;
-
 pub use self::gravity_bomb::GravityBomb;
+
+mod player;
 pub use self::player::Player;
-pub use self::turret::Turret;
+
+mod wall;
 pub use self::wall::Wall;
+
+mod turret;
+pub use self::turret::Turret;
+
+mod unique_spawner;
+pub use self::unique_spawner::UniqueSpawner;
+
+mod charger;
+pub use self::charger::Charger;

@@ -3,6 +3,8 @@ use nphysics2d::object::BodyHandle;
 use specs::Entity;
 use std::fs::File;
 
+pub use specs::LazyUpdate;
+pub use specs::EntitiesRes;
 pub use imgui::ImGui;
 
 #[derive(Serialize, Deserialize)]
@@ -16,6 +18,8 @@ pub struct Conf {
     pub player_radius: f32,
     pub player_linear_damping: f32,
     pub player_angular_damping: f32,
+
+    pub unique_spawner_timer: f32,
 }
 
 impl Conf {

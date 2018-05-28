@@ -1,6 +1,8 @@
 pub use animation::AnimationState;
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyStatus;
+use rand::thread_rng;
+use rand::distributions::{IndependentSample, Range};
 use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 use entity::InsertableObject;
@@ -46,6 +48,31 @@ impl From<usize> for Life {
     }
 }
 
+pub const VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE: f32 = 0.1;
+pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
+// Go to the closest or the last position in memory
+pub struct VelocityToPlayerMemory {
+    pub next_refreash: f32,
+    pub last_closest_in_sight: Option<::na::Vector2<f32>>,
+    pub velocity: f32,
+    _force_use_constructor: (),
+}
+impl Component for VelocityToPlayerMemory {
+    type Storage = VecStorage<Self>;
+}
+
+impl VelocityToPlayerMemory {
+    pub fn new(velocity: f32) -> Self {
+        let next_refreash = Range::new(0.0, VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE).ind_sample(&mut thread_rng());
+        VelocityToPlayerMemory {
+            next_refreash,
+            velocity,
+            last_closest_in_sight: None,
+            _force_use_constructor: (),
+        }
+    }
+}
+
 pub struct GravityToPlayers {
     pub force: f32,
     pub powi: i32,
@@ -54,17 +81,15 @@ impl Component for GravityToPlayers {
     type Storage = VecStorage<Self>;
 }
 
-// TODO: or maybe not
-// If multiple players then the closest in sight
-pub struct ToPlayerInSight {
-    refreash_rate: f32,
-    last_refreash: f32,
-    closest_in_sight: Option<::na::Vector2<f32>>,
-    force: f32,
-}
-impl Component for ToPlayerInSight {
-    type Storage = VecStorage<Self>;
-}
+// TODO?
+// pub struct ToPlayerInSight {
+//     next_refreash: f32,
+//     closest_in_sight: Option<::na::Vector2<f32>>,
+//     force: f32,
+// }
+// impl Component for ToPlayerInSight {
+//     type Storage = VecStorage<Self>;
+// }
 
 pub struct PlayersAimDamping {
     // The processor takes distance with aim in radiant
@@ -75,6 +100,32 @@ pub struct PlayersAimDamping {
 }
 impl Component for PlayersAimDamping {
     type Storage = VecStorage<Self>;
+}
+
+pub const UNIQUE_SPAWNER_TIMER: f32 = 0.1;
+// Spawn an entity if character is in aim at a certain probability function of
+// the distance to the character every UNIQUE_SPAWNER_TIMER seconds
+pub struct UniqueSpawner {
+    pub entity: InsertableObject,
+    // Clamp the distance to characters
+    pub proba: ::util::ClampFunction,
+    pub next_refreash: f32,
+    _force_use_constructor: (),
+}
+impl Component for UniqueSpawner {
+    type Storage = VecStorage<Self>;
+}
+
+impl UniqueSpawner {
+    pub fn new(entity: InsertableObject, proba: ::util::ClampFunction) -> Self {
+        let next_refreash = Range::new(0.0, UNIQUE_SPAWNER_TIMER).ind_sample(&mut thread_rng());
+        UniqueSpawner {
+            entity,
+            proba,
+            next_refreash,
+            _force_use_constructor: (),
+        }
+    }
 }
 
 pub struct Turret {
@@ -226,3 +277,27 @@ pub struct DebugColor(pub usize);
 impl Component for DebugColor {
     type Storage = VecStorage<Self>;
 }
+
+/// Go into random directions
+/// or closest player in sight depending of proba
+pub struct VelocityToPlayerRandom {
+    /// If some then the a random direction with f32 norm is added
+    pub random_weighted: Option<f32>,
+    pub proba: ::util::ClampFunction,
+    /// Normal distribution
+    pub refreash_time: (f64, f64),
+    pub velocity: f32,
+    pub toward_player: bool,
+    pub next_refreash: f32,
+}
+impl Component for VelocityToPlayerRandom {
+    type Storage = VecStorage<Self>;
+}
+
+// TODO:
+// pub struct ChamanSpawner {
+//     pub entity: InsertableObject,
+//     /// Normal distribution
+//     pub spawn_params: (f64, f64),
+//     pub number_of_spawn: usize,
+// }

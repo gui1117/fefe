@@ -94,6 +94,9 @@ fn main() {
     world.register::<::component::Damping>();
     world.register::<::component::Turret>();
     world.register::<::component::DebugColor>();
+    world.register::<::component::UniqueSpawner>();
+    world.register::<::component::VelocityToPlayerMemory>();
+    world.register::<::component::VelocityToPlayerRandom>();
 
     let conf = ::resource::Conf::load();
     world.add_resource(::resource::UpdateTime(0.0));
@@ -107,6 +110,9 @@ fn main() {
         .add(::system::PhysicSystem::new(), "physic", &[])
         .add(::system::DeadOnContactSystem, "dead on contact", &[])
         .add(::system::ContactDamageSystem, "damage", &[])
+        .add(::system::UniqueSpawnerSystem, "unique spawner", &[])
+        .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &[])
+        .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &[])
         .add(::system::LifeSystem, "life", &[])
         .add(::system::TurretSystem, "turret", &[])
         .add_barrier() // Draw barrier
