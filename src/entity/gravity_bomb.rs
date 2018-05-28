@@ -32,6 +32,7 @@ impl Insertable for GravityBomb {
             powi: self.powi,
         });
         world.write().insert(entity, ::component::Contactor(vec![]));
+        world.write().insert(entity, ::component::DebugColor(2));
 
         if self.dead_on_contact {
             world.write().insert(entity, ::component::DeadOnContact);
@@ -44,6 +45,10 @@ impl Insertable for GravityBomb {
                     processor: players_aim_damping.clone(),
                 },
             );
+            world.write().insert(entity, ::component::DebugCircles(vec![
+                players_aim_damping.min_t,
+                players_aim_damping.max_t,
+            ]));
         }
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();

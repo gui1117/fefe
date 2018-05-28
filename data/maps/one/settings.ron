@@ -2,33 +2,33 @@ MapSettings(
     insert_rules: [
         (
             trigger: "#ff0000",
-            processor: TakeNPositions(1, BuildEntity(Turret((
+            processor: BuildEntity(Player(())),
+        ),
+        (
+            trigger: "#808000",
+            processor: BuildEntity(GravityBomb((
                 animation_specie: Character,
-                radius: 1,
-                max_cooldown: 1,
-                insert_shift: true,
-                bullet: GravityBomb((
-                    animation_specie: Character,
-                    damage: 1,
-                    mass: 1,
-                    powi: 1,
-                    radius: 1,
-                    players_aim_damping: None,
-                    insert_shift: true,
+                damage: 1,
+                force: 1,
+                dead_on_contact: false,
+                powi: 1,
+                radius: 10,
+                players_aim_damping: Some((
+                    min_t: 100,
+                    max_t: 1000,
+                    min_value: 1000,
+                    max_value: 1000,
                 )),
-            )))),
-        )
+                insert_shift: true,
+            ))),
+        ),
     ],
     fill_rules: [
-        // (
-        //     trigger: "#00ff00",
-        //     processor: TakeNPositions(1, BuildEntity(Wall(()))),
-        // )
     ],
     segment_rules: [
         (
             trigger: "#00ff00",
-            processor: TakeNPositions(1, BuildEntity(Wall(()))),
-        )
+            processor: BuildEntity(Wall(())),
+        ),
     ],
 )

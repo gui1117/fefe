@@ -274,6 +274,11 @@ impl Component for Contactor {
     type Storage = VecStorage<Self>;
 }
 
+pub struct DebugCircles(pub Vec<f32>);
+impl Component for DebugCircles {
+    type Storage = VecStorage<Self>;
+}
+
 pub struct DebugColor(pub usize);
 impl Component for DebugColor {
     type Storage = VecStorage<Self>;

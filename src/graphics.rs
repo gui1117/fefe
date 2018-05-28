@@ -547,7 +547,7 @@ impl Graphics {
             );
 
             let div = 16;
-            let circle = (0..div + 1)
+            let disk = (0..div + 1)
                 .flat_map(|i| {
                     let a1 = i as f32 * 2.0 * PI / div as f32;
                     let a2 = i as f32 * 2.0 * PI / div as f32;
@@ -560,19 +560,34 @@ impl Graphics {
                 })
                 .collect::<Vec<_>>();
 
+            let circle = (0..div + 1)
+                .flat_map(|i| {
+                    let outer_radius = 1.05;
+                    let inner_radius = 0.95;
+
+                    let a1 = i as f32 * 2.0 * PI / div as f32;
+                    let p1 = ::na::Point2::new(a1.cos(), a1.sin());
+                    let inner_p1 = p1*inner_radius;
+                    let outer_p1 = p1*outer_radius;
+
+                    vec![
+                        outer_p1, inner_p1,
+                    ]
+                })
+                .collect::<Vec<_>>();
+
             let bodies_map = world.read_resource::<::resource::BodiesMap>();
             let debug_colors = world.read::<::component::DebugColor>();
+            let debug_circles = world.read::<::component::DebugCircles>();
             for collider in world.read_resource::<::resource::PhysicWorld>().colliders() {
                 let shape = collider.shape();
-                let color = if let Some(color) = bodies_map.get(&collider.data().body()).and_then(|e| debug_colors.get(*e)) {
-                    color.0
-                } else {
-                    0
-                };
+                let entity_option = bodies_map.get(&collider.data().body());
+                let color = entity_option.and_then(|e| debug_colors.get(*e)).map(|c| c.0).unwrap_or(0);
+
                 let mut vertices = None;
                 if let Some(ball) = shape.as_shape::<shape::Ball<f32>>() {
                     vertices = Some(
-                        circle
+                        disk
                             .iter()
                             .map(|p| *p * ball.radius())
                             .map(|p| {
@@ -620,6 +635,19 @@ impl Graphics {
                                 }
                             })
                             .collect::<Vec<_>>(),
+                    );
+                }
+
+                for &radius in entity_option.and_then(|e| debug_circles.get(*e)).iter().flat_map(|c| c.0.iter()) {
+                    vertices.get_or_insert(vec![]).extend(
+                        circle.iter()
+                            .map(|p| *p * radius)
+                            .map(|p| {
+                                let p = collider.position() * p;
+                                Vertex {
+                                    position: [p[0], -p[1]],
+                                }
+                            })
                     );
                 }
 

@@ -24,6 +24,7 @@ impl Insertable for Chaman {
         world.write().insert(entity, self.velocity_to_player_random.clone());
         world.write::<::component::ChamanSpawner>().insert(entity, self.chaman_spawner.clone().into());
         world.write().insert(entity, ::component::Life(1));
+        world.write().insert(entity, ::component::DebugColor(3));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 

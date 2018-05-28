@@ -100,6 +100,7 @@ fn main() {
     world.register::<::component::ChamanSpawner>();
     world.register::<::component::Boid>();
     world.register::<::component::CircleToPlayer>();
+    world.register::<::component::DebugCircles>();
 
     let conf = ::resource::Conf::load();
     world.add_resource(::resource::UpdateTime(0.0));

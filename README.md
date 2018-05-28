@@ -13,6 +13,9 @@
 
 * changer player damping+force -> kinematic
 
+* faire drawdebug circle avec un vec de radius
+  permet aux unité de mettre leur clamp etc
+
 # gameplay
 
 ## TOTEST

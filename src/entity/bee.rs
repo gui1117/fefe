@@ -31,6 +31,7 @@ impl Insertable for Bee {
         world.write().insert(entity, ::component::ContactDamage(self.damage));
         world.write().insert(entity, ::component::DeadOnContact);
         world.write().insert(entity, ::component::Life(1));
+        world.write().insert(entity, ::component::DebugColor(3));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 

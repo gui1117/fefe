@@ -23,6 +23,7 @@ impl Insertable for Walker {
         world.write().insert(entity, self.velocity_to_player_random.clone());
         world.write().insert(entity, ::component::ContactDamage(self.damage));
         world.write().insert(entity, ::component::Life(1));
+        world.write().insert(entity, ::component::DebugColor(7));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 

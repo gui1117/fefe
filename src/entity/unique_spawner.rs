@@ -21,6 +21,7 @@ impl Insertable for UniqueSpawner {
             AnimationName::Idle,
         ));
         world.write().insert(entity, ::component::UniqueSpawner::new(self.entity.clone(), self.proba.clone()));
+        world.write().insert(entity, ::component::DebugColor(6));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
