@@ -6,6 +6,7 @@ use lyon::svg::parser::svg::{Token, Tokenizer};
 use lyon::svg::parser::FromSpan;
 use lyon::svg::parser::{AttributeId, ElementId};
 use lyon::svg::path::default::Path;
+use rand::{thread_rng, Rng};
 use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
 use specs::World;
 use std::fs::File;
@@ -275,6 +276,7 @@ impl<B: Builder> Processor<B> {
                 .map_err(|e| format_err!("path incompatible with builder: {}", e))?;
             positions.push(position);
         }
+        thread_rng().shuffle(&mut positions);
         self.build_positions(positions, world);
         Ok(())
     }
