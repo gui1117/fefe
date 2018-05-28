@@ -5,7 +5,7 @@ use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
 use rand::thread_rng;
 use rand::distributions::{IndependentSample, Range};
-use specs::World;
+use specs::{World, Entity};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Turret {
@@ -16,7 +16,7 @@ pub struct Turret {
 }
 
 impl Insertable for Turret {
-    fn insert(&self, position: InsertPosition, world: &World) {
+    fn insert(&self, position: InsertPosition, world: &World) -> Entity {
         let mut rng = thread_rng();
 
         let cooldown = Range::new(0.0, self.max_cooldown).ind_sample(&mut rng);
@@ -56,5 +56,7 @@ impl Insertable for Turret {
             ::na::one(),
             Material::new(0.0, 0.0),
         );
+
+        entity
     }
 }

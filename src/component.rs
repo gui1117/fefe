@@ -13,6 +13,7 @@ impl Component for Player {
     type Storage = NullStorage<Self>;
 }
 
+/// Only against players
 pub struct ContactDamage(pub usize);
 impl Component for ContactDamage {
     type Storage = VecStorage<Self>;
@@ -280,6 +281,7 @@ impl Component for DebugColor {
 
 /// Go into random directions
 /// or closest player in sight depending of proba
+#[derive(Serialize, Deserialize, Clone)]
 pub struct VelocityToPlayerRandom {
     /// If some then the a random direction with f32 norm is added
     pub random_weighted: Option<f32>,
@@ -294,10 +296,57 @@ impl Component for VelocityToPlayerRandom {
     type Storage = VecStorage<Self>;
 }
 
-// TODO:
-// pub struct ChamanSpawner {
-//     pub entity: InsertableObject,
-//     /// Normal distribution
-//     pub spawn_params: (f64, f64),
-//     pub number_of_spawn: usize,
-// }
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ChamanSpawnerConf {
+    pub entity: InsertableObject,
+    pub spawn_time: (f64, f64),
+    pub number_of_spawn: usize,
+}
+impl Into<ChamanSpawner> for ChamanSpawnerConf {
+    fn into(self) -> ChamanSpawner {
+        ChamanSpawner {
+            entity: self.entity,
+            spawn_time: self.spawn_time,
+            number_of_spawn: self.number_of_spawn,
+            spawned: vec![],
+            next_spawn: None,
+        }
+    }
+}
+
+pub struct ChamanSpawner {
+    pub entity: InsertableObject,
+    /// Normal distribution
+    pub spawn_time: (f64, f64),
+    pub number_of_spawn: usize,
+    pub spawned: Vec<Entity>,
+    pub next_spawn: Option<f32>,
+}
+impl Component for ChamanSpawner {
+    type Storage = VecStorage<Self>;
+}
+
+pub struct CircleToPlayer {
+    pub circle_velocity: f32,
+    pub direct_velocity: f32,
+    pub dir_shift: bool,
+}
+impl Component for CircleToPlayer {
+    type Storage = VecStorage<Self>;
+}
+
+// TODO: peut être faire qu'il se repoussent un peu
+// peut être aussi faire que pas mis a jour tout le temps
+// c'est peut être plus compliqué de faire un truc bien
+// mais si on les fait apparaitre dans un cadre autour du héros
+// et on les tue si il sorte du cadre ca peut faire un truc
+// bien dans une plaine
+pub struct Boid {
+    pub id: usize,
+    pub clamp: ::util::ClampFunction,
+    pub velocity: f32,
+    pub weight: f32,
+}
+impl Component for Boid {
+    type Storage = VecStorage<Self>;
+}

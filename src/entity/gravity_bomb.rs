@@ -3,7 +3,7 @@ use entity::{InsertPosition, Insertable};
 use ncollide2d::shape::{Ball, ShapeHandle};
 use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
-use specs::World;
+use specs::{World, Entity};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct GravityBomb {
@@ -18,7 +18,7 @@ pub struct GravityBomb {
 }
 
 impl Insertable for GravityBomb {
-    fn insert(&self, position: InsertPosition, world: &World) {
+    fn insert(&self, position: InsertPosition, world: &World) -> Entity {
         let entity = world.entities().create();
 
         world.write().insert(entity, ::component::AnimationState::new(
@@ -72,5 +72,7 @@ impl Insertable for GravityBomb {
             ::na::one(),
             Material::new(0.0, 0.0),
         );
+
+        entity
     }
 }

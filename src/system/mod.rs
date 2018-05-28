@@ -24,3 +24,12 @@ pub use self::velocity_to_player_memory::*;
 
 mod velocity_to_player_random;
 pub use self::velocity_to_player_random::*;
+
+mod chaman_spawner;
+pub use self::chaman_spawner::*;
+
+mod circle_to_player;
+pub use self::circle_to_player::*;
+
+mod boid;
+pub use self::boid::*;

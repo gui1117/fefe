@@ -4,7 +4,7 @@ use lyon::svg::path::iterator::PathIterator;
 use lyon::svg::path::{FlattenedEvent, PathEvent};
 use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
-use specs::World;
+use specs::{World, Entity};
 
 const SEGMENTS_POSITION_FLATTENED_TOLERANCE: f32 = 1.0;
 
@@ -155,21 +155,21 @@ impl From<::na::Isometry2<f32>> for InsertPosition {
 
 macro_rules! object {
     (
-        $t:ident, $f:ident, $p:ident, $o:ident {
+        $t:ident $(-> $r:path)*, $f:ident, $p:ident, $o:ident {
             $($v:ident),*
         }
     ) => (
-        object!($t, $f, $p, $o {
+        object!($t $(-> $r)*, $f, $p, $o {
             $($v,)*
         });
     );
     (
-        $t:ident, $f:ident, $p:ident, $o:ident {
+        $t:ident $(-> $r:path)*, $f:ident, $p:ident, $o:ident {
             $($v:ident,)*
         }
     ) => (
         pub trait $t {
-            fn $f(&self, position: $p, world: &World);
+            fn $f(&self, position: $p, world: &World) $(-> $r)*;
         }
 
         #[derive(Serialize, Deserialize, Clone)]
@@ -178,7 +178,7 @@ macro_rules! object {
         }
 
         impl $t for $o {
-            fn $f(&self, position: $p, world: &World) {
+            fn $f(&self, position: $p, world: &World) $(-> $r)* {
                 match self {
                     $(&$o::$v(ref p) => p.$f(position, world)),*
                 }
@@ -195,7 +195,7 @@ macro_rules! object {
 }
 
 object!(
-    Insertable,
+    Insertable -> Entity,
     insert,
     InsertPosition,
     InsertableObject {
@@ -231,3 +231,12 @@ pub use self::unique_spawner::UniqueSpawner;
 
 mod charger;
 pub use self::charger::Charger;
+
+mod walker;
+pub use self::walker::Walker;
+
+mod chaman;
+pub use self::chaman::Chaman;
+
+mod bee;
+pub use self::bee::Bee;

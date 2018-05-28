@@ -1,42 +1,46 @@
 use animation::{AnimationName, AnimationSpecie};
 use entity::{InsertPosition, Insertable};
 use ncollide2d::shape::{Ball, ShapeHandle};
-use nphysics2d::math::Force;
 use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
+use rand::{thread_rng, Rand};
 use specs::{World, Entity};
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct Player;
+pub struct Bee {
+    pub animation_specie: AnimationSpecie,
+    pub radius: f32,
+    pub velocity: f32,
+    pub damage: usize,
+    pub circle_velocity: f32,
+    pub direct_velocity: f32,
+}
 
-impl Insertable for Player {
+impl Insertable for Bee {
     fn insert(&self, position: InsertPosition, world: &World) -> Entity {
-        let conf = world.read_resource::<::resource::Conf>();
         let entity = world.entities().create();
-
         world.write().insert(entity, ::component::AnimationState::new(
-            AnimationSpecie::Character,
+            self.animation_specie,
             AnimationName::Idle,
         ));
-        world.write().insert(entity, ::component::Player);
-        world.write().insert(entity, ::component::Aim(position.rotation.angle()));
-        world.write().insert(entity, ::component::Life(1));
-        world.write().insert(entity, ::component::ControlForce(Force::zero()));
-        world.write().insert(entity, ::component::Damping {
-            linear: conf.player_linear_damping,
-            angular: conf.player_angular_damping,
+        world.write().insert(entity, ::component::CircleToPlayer {
+            circle_velocity: self.circle_velocity,
+            direct_velocity: self.direct_velocity,
+            dir_shift: bool::rand(&mut thread_rng()),
         });
-        world.write().insert(entity, ::component::DebugColor(1));
+        world.write().insert(entity, ::component::ContactDamage(self.damage));
+        world.write().insert(entity, ::component::DeadOnContact);
+        world.write().insert(entity, ::component::Life(1));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
-        let shape = ShapeHandle::new(Ball::new(conf.player_radius));
+        let shape = ShapeHandle::new(Ball::new(self.radius));
         let body_handle = ::component::RigidBody::safe_insert(
             entity,
             position.0,
             shape.inertia(1.0),
             shape.center_of_mass(),
-            BodyStatus::Dynamic,
+            BodyStatus::Kinematic,
             &mut world.write(),
             &mut physic_world,
             &mut world.write_resource(),

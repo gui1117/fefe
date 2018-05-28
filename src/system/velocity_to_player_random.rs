@@ -29,8 +29,8 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
             vtpr.next_refreash -= update_time.0;
             let position = rigid_body.get(&physic_world).position().translation.vector;
             if vtpr.next_refreash <= 0.0 {
-                let distribution = Normal::new(vtpr.refreash_time.0, vtpr.refreash_time.1);
-                vtpr.next_refreash = distribution.ind_sample(&mut rng) as f32;
+                vtpr.next_refreash = Normal::new(vtpr.refreash_time.0, vtpr.refreash_time.1)
+                    .ind_sample(&mut rng) as f32;
                 let closest_in_sight = players_position.iter()
                     .filter_map(|player_position| {
                         let ray = Ray::new(::na::Point::from_coordinates(position), player_position - position);

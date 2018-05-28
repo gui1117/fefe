@@ -44,7 +44,9 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
                             if players.get(*bodies_map.get(&object.data().body()).unwrap()).is_some() {
                                 entities.delete(entity).unwrap();
                                 let spawn_entity = unique_spawner.entity.clone();
-                                lazy_update.execute(move |world| spawn_entity.insert(position.into(), world));
+                                lazy_update.execute(move |world| {
+                                    spawn_entity.insert(position.into(), world);
+                                });
                             }
                         }
                     }

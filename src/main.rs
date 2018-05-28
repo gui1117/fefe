@@ -97,6 +97,9 @@ fn main() {
     world.register::<::component::UniqueSpawner>();
     world.register::<::component::VelocityToPlayerMemory>();
     world.register::<::component::VelocityToPlayerRandom>();
+    world.register::<::component::ChamanSpawner>();
+    world.register::<::component::Boid>();
+    world.register::<::component::CircleToPlayer>();
 
     let conf = ::resource::Conf::load();
     world.add_resource(::resource::UpdateTime(0.0));
@@ -113,6 +116,9 @@ fn main() {
         .add(::system::UniqueSpawnerSystem, "unique spawner", &[])
         .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &[])
         .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &[])
+        .add(::system::CircleToPlayer, "circle to player", &[])
+        .add(::system::Boid, "boid", &[])
+        .add(::system::ChamanSpawnerSystem, "chaman spawner", &[])
         .add(::system::LifeSystem, "life", &[])
         .add(::system::TurretSystem, "turret", &[])
         .add_barrier() // Draw barrier

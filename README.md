@@ -11,6 +11,8 @@
 
   ou alors synchronisatino des tempo alors que le rythme n'est pas sur le tempo. par exemple un rythme de 3/4 essai et essai de synchroniser son tempo avec un rythme de 2/4
 
+* changer player damping+force -> kinematic
+
 # gameplay
 
 ## TOTEST
@@ -18,18 +20,20 @@ monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibi
 monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
 boule de gravité
 monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
-bouger random: prendre une directino aléatoir dans pendant une durée aléatoire
+chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
+monstre qui fait des cercles pour venir:
 ## END TOTEST
 
-tourelle avec rythme
-tourelle continue avec distance et qui tourne et faire un labyrinthe comme dans un jeu précédent
-monstre qui fait des cercles pour venir:
-  faire qu'il faut leur tirer dessus ? -> plus dur
-  faire que si il touche un mur alors il change direction du cercle et sinon change aussi de manière random ?
-monstre qui sortent de terre
-chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
+faire des boid qui rebondissent contre les murs ou se tue dans un cadre pour simulé une plaine immense
 
-faire des boid qui rebondissent contre les murs
+## bof
+monstre qui sortent de terre: généraliser uniquespawner avec un composant life optionnel ou pas l'animation peut ne pas trop marcher plutot faire unqieuspawnerrandom uniquespwanerdeterminate ou alors les monstres qui sortent de terre sont simplement des uniquespawnerrandom c'est bien aussi de l'aléatoire -> donc bof
+
+## tourelles
+simple bullet (juste sensor avec velocity lorsque creation (+killonproximity?))
+tourelle avec rythme
+tourelle qui tourne et plus complexe
+tourelle continue avec distance et qui tourne et faire un labyrinthe comme dans un jeu précédent
 
 ## réécriture avec tempo:
 
