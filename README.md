@@ -2,7 +2,7 @@
 
 * synchronisation turret:
   when shoot look at each cooldown remaining for all turret sync
-  then function of distance and cooldown remaining for each is 
+  then function of distance and cooldown remaining for each is
   like boid force
   (to do it another system just recompute the condition shoot in another system: easy)
 
@@ -11,7 +11,7 @@
 
   ou alors synchronisatino des tempo alors que le rythme n'est pas sur le tempo. par exemple un rythme de 3/4 essai et essai de synchroniser son tempo avec un rythme de 2/4
 
-* changer player damping+force -> kinematic
+* faire que le cursor est dessiné par l'os
 
 # gameplay
 

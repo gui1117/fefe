@@ -96,6 +96,7 @@ fn main() {
     world.register::<::component::DebugColor>();
     world.register::<::component::UniqueSpawner>();
     world.register::<::component::VelocityToPlayerMemory>();
+    world.register::<::component::VelocityToPlayerInSight>();
     world.register::<::component::VelocityToPlayerRandom>();
     world.register::<::component::ChamanSpawner>();
     world.register::<::component::Boid>();
@@ -116,6 +117,7 @@ fn main() {
         .add(::system::ContactDamageSystem, "damage", &[])
         .add(::system::UniqueSpawnerSystem, "unique spawner", &[])
         .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &[])
+        .add(::system::VelocityToPlayerInSightSystem, "velocity to player in sight", &[])
         .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &[])
         .add(::system::CircleToPlayer, "circle to player", &[])
         .add(::system::Boid, "boid", &[])

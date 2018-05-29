@@ -45,9 +45,10 @@ impl From<usize> for Life {
 }
 
 //////////////////////////////// Velocity ////////////////////////////////
+///
+pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
 
 pub const VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE: f32 = 0.1;
-pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
 /// Go to the closest or the last position in memory
 pub struct VelocityToPlayerMemory {
     pub next_refreash: f32,
@@ -71,11 +72,32 @@ impl VelocityToPlayerMemory {
     }
 }
 
+pub const VELOCITY_TO_PLAYER_IN_SIGHT_REFREASH_RATE: f32 = 0.1;
+pub struct VelocityToPlayerInSight {
+    pub next_refreash: f32,
+    pub velocity: f32,
+    _force_use_constructor: (),
+}
+impl Component for VelocityToPlayerInSight {
+    type Storage = VecStorage<Self>;
+}
+
+impl VelocityToPlayerInSight {
+    pub fn new(velocity: f32) -> Self {
+        let next_refreash = Range::new(0.0, VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE).ind_sample(&mut thread_rng());
+        VelocityToPlayerInSight {
+            next_refreash,
+            velocity,
+            _force_use_constructor: (),
+        }
+    }
+}
+
 /// Go into random directions
 /// or closest player in sight depending of proba
 #[derive(Serialize, Deserialize, Clone)]
 pub struct VelocityToPlayerRandom {
-    /// If some then the a random direction with f32 norm is added
+    /// If some then a random direction with f32 norm is added
     pub random_weighted: Option<f32>,
     // TODO:
     // /// Clamp the proba with distance to characters
@@ -118,14 +140,8 @@ impl Component for Boid {
     type Storage = VecStorage<Self>;
 }
 
-// TODO: velocity damping
-
-// TODO?
-// pub struct VelocityToPlayerInSight {
-//     next_refreash: f32,
-//     closest_in_sight: Option<::na::Vector2<f32>>,
-//     force: f32,
-// }
+// TODO: velocity distance damping
+// TODO: velocity aim damping
 
 //////////////////////////////// Force ////////////////////////////////
 
