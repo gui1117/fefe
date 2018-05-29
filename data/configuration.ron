@@ -2,12 +2,10 @@ Conf(
     fps: 60,
     physic_max_timestep: 1000,
     physic_min_timestep: 0,
-    zoom: 1080,
+    zoom: 108,
 
-    player_velocity: 1000000,
-    player_radius: 10,
-    player_linear_damping: 10000,
-    player_angular_damping: 10000,
+    player_velocity: 20,
+    player_radius: 1,
 
     gravity: 1,
 )

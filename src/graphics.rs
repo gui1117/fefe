@@ -34,11 +34,11 @@ use vulkano;
 use std;
 // TODO: only a bool for whereas draw the cursor or not
 
-const DEBUG_SEGMENT_WIDTH: f32 = 10.0;
+const DEBUG_SEGMENT_WIDTH: f32 = 1.0;
 
 pub struct Camera {
-    position: ::na::Isometry2<f32>,
-    zoom: f32,
+    pub position: ::na::Isometry2<f32>,
+    pub zoom: f32,
 }
 
 impl Camera {

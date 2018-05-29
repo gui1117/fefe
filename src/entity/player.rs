@@ -1,7 +1,6 @@
 use animation::{AnimationName, AnimationSpecie};
 use entity::{InsertPosition, Insertable};
 use ncollide2d::shape::{Ball, ShapeHandle};
-use nphysics2d::math::Force;
 use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
 use specs::{World, Entity};
@@ -21,11 +20,6 @@ impl Insertable for Player {
         world.write().insert(entity, ::component::Player);
         world.write().insert(entity, ::component::Aim(position.rotation.angle()));
         world.write().insert(entity, ::component::Life(1));
-        world.write().insert(entity, ::component::ControlForce(Force::zero()));
-        world.write().insert(entity, ::component::Damping {
-            linear: conf.player_linear_damping,
-            angular: conf.player_angular_damping,
-        });
         world.write().insert(entity, ::component::DebugColor(1));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
@@ -36,7 +30,7 @@ impl Insertable for Player {
             position.0,
             shape.inertia(1.0),
             shape.center_of_mass(),
-            BodyStatus::Dynamic,
+            BodyStatus::Kinematic,
             &mut world.write(),
             &mut physic_world,
             &mut world.write_resource(),

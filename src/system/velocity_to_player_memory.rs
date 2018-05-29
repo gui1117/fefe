@@ -1,4 +1,5 @@
 use specs::{Join, Fetch, FetchMut, ReadStorage, System, WriteStorage};
+use nphysics2d::math::Velocity;
 use ncollide2d::world::CollisionGroups;
 use ncollide2d::query::Ray;
 
@@ -49,7 +50,10 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
             if let Some(last_closest_in_sight) = vtpm.last_closest_in_sight {
                 let d = ::component::VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL;
                 let v = (last_closest_in_sight - position).try_normalize(d).unwrap_or(::na::zero()) * vtpm.velocity;
-                rigid_body.get_mut(&mut physic_world).set_linear_velocity(v);
+                rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
+                    linear: v,
+                    angular: 0.0,
+                });
             }
         }
     }

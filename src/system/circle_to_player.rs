@@ -1,4 +1,5 @@
 use specs::{Join, FetchMut, ReadStorage, System, WriteStorage};
+use nphysics2d::math::Velocity;
 use std::f32::EPSILON;
 
 pub struct CircleToPlayer;
@@ -36,9 +37,10 @@ impl<'a> System<'a> for CircleToPlayer {
                 if circle_to_player.dir_shift {
                     circle_velocity *= -1.0;
                 }
-                rigid_body.get_mut(&mut physic_world).set_linear_velocity(
-                    direct_velocity + circle_velocity
-                );
+                rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
+                    linear: direct_velocity + circle_velocity,
+                    angular: 0.0,
+                });
             }
         }
     }

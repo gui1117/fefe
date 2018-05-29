@@ -1,6 +1,6 @@
-use nphysics2d::math::Force;
 use specs::{Join, World};
 use winit::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
+use nphysics2d::math::Velocity;
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;
@@ -19,7 +19,10 @@ pub trait GameState {
     fn paused(&self) -> bool;
 }
 
-pub struct Game;
+#[derive(Default)]
+pub struct Game {
+    dir_stack: Vec<usize>,
+}
 
 fn square_to_circle(x: f32, y: f32) -> (f32, f32) {
     (
@@ -32,7 +35,7 @@ impl GameState for Game {
     fn update_draw_ui(self: Box<Self>, _world: &mut World) -> Box<GameState> {
         self
     }
-    fn winit_event(self: Box<Self>, event: ::winit::Event, world: &mut World) -> Box<GameState> {
+    fn winit_event(mut self: Box<Self>, event: ::winit::Event, world: &mut World) -> Box<GameState> {
         match event {
             ::winit::Event::WindowEvent {
                 event:
@@ -48,6 +51,54 @@ impl GameState for Game {
                 ..
             } => {
                 ::map::load_map("one".into(), world).unwrap();
+            }
+            ::winit::Event::WindowEvent {
+                event:
+                    WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                state,
+                                virtual_keycode: Some(key),
+                                ..
+                            },
+                        ..
+                    },
+                ..
+            } => {
+                let dir = match key {
+                    VirtualKeyCode::Z => Some(0),
+                    VirtualKeyCode::S => Some(1),
+                    VirtualKeyCode::Q => Some(2),
+                    VirtualKeyCode::D => Some(3),
+                    _ => None,
+                };
+                if let Some(dir) = dir {
+                    self.dir_stack.retain(|&d| d != dir);
+                    if state == ElementState::Pressed {
+                        self.dir_stack.push(dir);
+                    }
+                }
+                let mut velocity = ::na::Vector2::new(0.0, 0.0);
+                for dir in &self.dir_stack {
+                    match dir {
+                        0 => velocity[1] = 1.0,
+                        1 => velocity[1] = -1.0,
+                        2 => velocity[0] = -1.0,
+                        3 => velocity[0] = 1.0,
+                        _ => unreachable!(),
+                    }
+                }
+                let conf = world.read_resource::<::resource::Conf>();
+                for (_, body) in (
+                    &world.read::<::component::Player>(),
+                    &world.read::<::component::RigidBody>(),
+                ).join()
+                {
+                    body.get_mut(&mut world.write_resource()).set_velocity(Velocity {
+                        linear: velocity * conf.player_velocity,
+                        angular: 0.0,
+                    });
+                }
             }
             _ => (),
         }
@@ -80,15 +131,15 @@ impl GameState for Game {
 
         let (px_circle, py_circle) = square_to_circle(px, py);
 
-        for (_, control_force) in (
+        for (_, body) in (
             &world.read::<::component::Player>(),
-            &mut world.write::<::component::ControlForce>(),
+            &world.read::<::component::RigidBody>(),
         ).join()
         {
-            control_force.0 = Force {
+            body.get_mut(&mut world.write_resource()).set_velocity(Velocity {
                 linear: ::na::Vector2::new(px_circle, py_circle) * conf.player_velocity,
-                angular: 10.0,
-            };
+                angular: 0.0,
+            });
         }
 
         let ax = gamepad

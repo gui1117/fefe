@@ -124,13 +124,14 @@ fn main() {
         .add(::system::TurretSystem, "turret", &[])
         .add_barrier() // Draw barrier
         .add(::system::AnimationSystem, "animation", &[])
+        .add(::system::Camera, "camera", &[])
         .build();
 
     let mut fps_counter = fps_counter::FPSCounter::new();
     let mut last_frame_instant = Instant::now();
     let mut last_update_instant = Instant::now();
 
-    let mut game_state = Box::new(game_state::Game) as Box<GameState>;
+    let mut game_state = Box::new(game_state::Game::default()) as Box<GameState>;
 
     let mut mouse_down = [false; 5];
 

@@ -13,9 +13,6 @@
 
 * changer player damping+force -> kinematic
 
-* faire drawdebug circle avec un vec de radius
-  permet aux unité de mettre leur clamp etc
-
 # gameplay
 
 ## TOTEST
@@ -27,6 +24,12 @@ chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et 
 monstre qui fait des cercles pour venir:
 ## END TOTEST
 
+* faire sorte de gravity ball mais avec velocity:
+  une vitesse angulaire qui va dans la direction du héros
+  et ue vitesse linear de norme constante
+  avec angular velocity distance damping et aim damping avec héros
+* faire un proximitydamage comme ça les monstres peuvent s'entrechoquer sans se tuer forcément
+* faire un proximityattack qui sur un proximité lance une attaque et au besoin met la vitesse à 0
 faire des boid qui rebondissent contre les murs ou se tue dans un cadre pour simulé une plaine immense
 
 ## bof

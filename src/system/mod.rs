@@ -33,3 +33,6 @@ pub use self::circle_to_player::*;
 
 mod boid;
 pub use self::boid::*;
+
+mod camera;
+pub use self::camera::*;

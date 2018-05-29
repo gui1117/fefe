@@ -1,6 +1,7 @@
 use specs::{Join, Fetch, FetchMut, ReadStorage, System, WriteStorage};
 use ncollide2d::world::CollisionGroups;
 use ncollide2d::query::Ray;
+use nphysics2d::math::Velocity;
 use rand::{thread_rng, Rand};
 use rand::distributions::{IndependentSample, Range, Normal};
 use std::f32::EPSILON;
@@ -71,7 +72,10 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
                     }
                 }).unwrap_or_else(|| ::na::Vector2::rand(&mut rng));
 
-                rigid_body.get_mut(&mut physic_world).set_linear_velocity(direction.normalize() * vtpr.velocity);
+                rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
+                    linear: direction.normalize() * vtpr.velocity,
+                    angular: 0.0,
+                });
             }
         }
     }
