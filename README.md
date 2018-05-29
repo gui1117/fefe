@@ -28,8 +28,12 @@ monstre qui fait des cercles pour venir:
   une vitesse angulaire qui va dans la direction du héros
   et ue vitesse linear de norme constante
   avec angular velocity distance damping et aim damping avec héros
+  --> généraliser les velocity to machin mettent vélocité et ensuite d'autre syteme s'occupent de dampé cette vitesse
+  avec velocitydamping qui contient aim: option(clampfunction), et distance: option(clampfunction)!!!!!!
 * faire un proximitydamage comme ça les monstres peuvent s'entrechoquer sans se tuer forcément
 * faire un proximityattack qui sur un proximité lance une attaque et au besoin met la vitesse à 0
+* faire un velocity to player in sight pour remplacer gravity to player
+  et avec dist_damping et aim_damping enfin sorte de puisque c'est juste la vitesse qui est clamp
 faire des boid qui rebondissent contre les murs ou se tue dans un cadre pour simulé une plaine immense
 
 ## bof
@@ -46,6 +50,7 @@ tourelle continue avec distance et qui tourne et faire un labyrinthe comme dans 
 il existe un tempo style continue qui fait 0.1s et permet de simuler un truc quasi-continue
 
 remplacer tout les timer par des timer en rythme
+* circle_to_player faire chgt régulier en tempo
 * faire une partition pour les spawn des uniques spawner
 * idem pour les spawn de chaman ? oui: faire que la loi normale donne le numéro du beat sur lequel il sera spawn
 * idem pour les déplaceents des monstres ? non bof ou alors faire comme chamanspawn: la loi donne le numéro du beat ensuite
