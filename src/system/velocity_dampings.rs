@@ -28,9 +28,9 @@ impl<'a> System<'a> for VelocityDampingsSystem {
             // TODO: we probably want the mean when there will be multiple players
             let position = body.position().translation.vector;
             for &(player_aim, ref player_position) in &players_aim {
-                let mut v = player_position - position;
+                let mut v = position - player_position;
                 let angle = v[1].atan2(v[0]);
-                let mut angle_distance = (angle - player_aim).abs() % 2.0 * PI;
+                let mut angle_distance = (angle - player_aim).abs();
                 if angle_distance >= PI {
                     angle_distance = 2.0 * PI - angle_distance;
                 }

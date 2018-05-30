@@ -114,6 +114,7 @@ fn main() {
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one(), conf.zoom));
+    world.add_resource(::resource::WindowSize(window.window().get_inner_size().unwrap()));
     world.add_resource(imgui);
     world.add_resource(conf);
     world.maintain();
@@ -172,6 +173,12 @@ fn main() {
                     ..
                 } => {
                     try_multiple_time!(window.window().set_cursor_state(CursorState::Grab)).unwrap();
+                }
+                winit::Event::WindowEvent {
+                    event: winit::WindowEvent::Resized(x, y),
+                    ..
+                } => {
+                    world.write_resource::<::resource::WindowSize>().0 = (x, y);
                 }
                 winit::Event::WindowEvent {
                     event: ::winit::WindowEvent::CloseRequested,

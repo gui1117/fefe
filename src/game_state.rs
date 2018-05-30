@@ -53,6 +53,26 @@ impl GameState for Game {
             }
             ::winit::Event::WindowEvent {
                 event:
+                    WindowEvent::CursorMoved {
+                        position: (mut x, mut y),
+                        ..
+                    },
+                ..
+            } => {
+                let size = world.read_resource::<::resource::WindowSize>().0;
+                x -= size.0 as f64/2.0;
+                y -= size.1 as f64/2.0;
+                let angle = y.atan2(x) as f32;
+                for (_, aim) in (
+                    &world.read::<::component::Player>(),
+                    &mut world.write::<::component::Aim>(),
+                ).join()
+                {
+                    aim.0 = angle;
+                }
+            }
+            ::winit::Event::WindowEvent {
+                event:
                     WindowEvent::KeyboardInput {
                         input:
                             KeyboardInput {

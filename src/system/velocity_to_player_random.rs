@@ -57,7 +57,8 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
                     .min_by_key(|(_, distance)| (distance.norm() * ::CMP_PRECISION) as usize);
 
                 vtpr.current_direction = closest_in_sight.and_then(|(aim, distance)| {
-                    let angle = distance[1].atan2(distance[0]);
+                    let v = -distance;
+                    let angle = v[1].atan2(v[0]);
                     let mut angle_distance = (angle - aim.0).abs() % 2.0 * PI;
                     if angle_distance >= PI {
                         angle_distance = 2.0 * PI - angle_distance;

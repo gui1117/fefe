@@ -7,6 +7,8 @@ pub use specs::LazyUpdate;
 pub use specs::EntitiesRes;
 pub use imgui::ImGui;
 
+pub struct WindowSize(pub (u32, u32));
+
 #[derive(Serialize, Deserialize)]
 pub struct Conf {
     pub fps: usize,

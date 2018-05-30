@@ -31,9 +31,14 @@ impl Insertable for Charger {
         world.write().insert(entity, ::component::Life(self.life));
         world.write().insert(entity, ::component::DebugColor(5));
 
+        let mut debug_circles = vec![];
         if let Some(dist_damping) = self.dist_damping.clone() {
+            debug_circles.push(dist_damping.min_t);
+            debug_circles.push(dist_damping.max_t);
             world.write().insert(entity, ::component::VelocityDistanceDamping(dist_damping));
         }
+        world.write().insert(entity, ::component::DebugCircles(debug_circles));
+
         if let Some(aim_damping) = self.aim_damping.clone() {
             world.write().insert(entity, ::component::VelocityAimDamping(aim_damping));
         }
