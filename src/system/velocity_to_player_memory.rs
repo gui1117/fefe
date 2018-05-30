@@ -29,10 +29,14 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
                 let closest_in_sight = players_position.iter()
                     .filter_map(|player_position| {
                         let ray = Ray::new(::na::Point::from_coordinates(position), player_position - position);
-                        // TODO: collision groups
-                        let collision_groups = CollisionGroups::new();
-                        let mut interferences = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups);
-                        if let Some((object, _)) = interferences.next() {
+                        let mut collision_groups = CollisionGroups::new();
+                        collision_groups.set_whitelist(&[
+                            ::entity::Group::Wall as usize,
+                            ::entity::Group::Player as usize,
+                        ]);
+                        let interference = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups)
+                            .min_by_key(|(_, intersection)| (intersection.toi * ::CMP_PRECISION) as isize);
+                        if let Some((object, _)) = interference {
                             if players.get(*bodies_map.get(&object.data().body()).unwrap()).is_some() {
                                 Some(object.position().translation.vector)
                             } else {
@@ -42,7 +46,7 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
                             None
                         }
                     })
-                    .min_by_key(|vector| vector.norm() as usize);
+                    .min_by_key(|vector| (vector.norm() * ::CMP_PRECISION) as isize);
 
                 if vtpm.memory {
                     vtpm.last_closest_in_sight = closest_in_sight.or(vtpm.last_closest_in_sight);

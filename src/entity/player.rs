@@ -40,13 +40,16 @@ impl Insertable for Player {
             &mut world.write_resource(),
         );
 
-        physic_world.add_collider(
+        let collider = physic_world.add_collider(
             0.0,
             shape,
             body_handle.0,
             ::na::one(),
             Material::new(0.0, 0.0),
         );
+        let mut groups = ::ncollide2d::world::CollisionGroups::new();
+        groups.set_membership(&[super::Group::Player as usize]);
+        physic_world.collision_world_mut().set_collision_groups(collider, groups);
 
         entity
     }

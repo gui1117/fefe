@@ -6,6 +6,13 @@ use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
 use specs::{World, Entity};
 
+#[repr(usize)]
+pub enum Group {
+    Player,
+    Wall,
+    Monster,
+}
+
 const SEGMENTS_POSITION_FLATTENED_TOLERANCE: f32 = 1.0;
 
 #[derive(Deref, DerefMut)]
@@ -203,8 +210,7 @@ object!(
     InsertPosition,
     InsertableObject {
         Player,
-        GravityBomb,
-        Turret,
+        Charger,
     }
 );
 

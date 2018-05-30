@@ -37,10 +37,14 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
                     let dist_vector = player_position - pos_vector;
                     if range_0_1.ind_sample(&mut rng) <= unique_spawner.proba.compute(dist_vector.norm()) {
                         let ray = Ray::new(::na::Point::from_coordinates(pos_vector), dist_vector);
-                        // TODO: collision groups
-                        let collision_groups = CollisionGroups::new();
-                        let mut interferences = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups);
-                        if let Some((object, _)) = interferences.next() {
+                        let mut collision_groups = CollisionGroups::new();
+                        collision_groups.set_whitelist(&[
+                            ::entity::Group::Wall as usize,
+                            ::entity::Group::Player as usize,
+                        ]);
+                        let interference = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups)
+                            .min_by_key(|(_, intersection)| (intersection.toi * ::CMP_PRECISION) as isize);
+                        if let Some((object, _)) = interference {
                             if players.get(*bodies_map.get(&object.data().body()).unwrap()).is_some() {
                                 entities.delete(entity).unwrap();
                                 let spawn_entity = unique_spawner.entity.clone();

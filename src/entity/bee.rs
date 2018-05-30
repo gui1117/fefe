@@ -41,7 +41,7 @@ impl Insertable for Bee {
             position.0,
             shape.inertia(1.0),
             shape.center_of_mass(),
-            BodyStatus::Kinematic,
+            BodyStatus::Dynamic,
             &mut world.write(),
             &mut physic_world,
             &mut world.write_resource(),

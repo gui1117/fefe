@@ -191,6 +191,11 @@ pub const UNIQUE_SPAWNER_TIMER: f32 = 0.1;
 /// the distance to the character every UNIQUE_SPAWNER_TIMER seconds
 pub struct UniqueSpawner {
     pub entity: InsertableObject,
+    // // TODO:
+    // /// Clamp the proba with distance to characters
+    // pub dist_proba_clamp: ::util::ClampFunction,
+    // /// Clamp the proba with aim of the characters
+    // pub aim_proba_clamp: ::util::ClampFunction,
     /// Clamp the distance to characters
     pub proba: ::util::ClampFunction,
     pub next_refreash: f32,

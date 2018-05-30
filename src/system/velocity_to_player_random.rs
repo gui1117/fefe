@@ -37,10 +37,14 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
                 let closest_in_sight = players_position.iter()
                     .filter_map(|player_position| {
                         let ray = Ray::new(::na::Point::from_coordinates(position), player_position - position);
-                        // TODO: collision groups
-                        let collision_groups = CollisionGroups::new();
-                        let mut interferences = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups);
-                        if let Some((object, _)) = interferences.next() {
+                        let mut collision_groups = CollisionGroups::new();
+                        collision_groups.set_whitelist(&[
+                            ::entity::Group::Wall as usize,
+                            ::entity::Group::Player as usize,
+                        ]);
+                        let interference = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups)
+                            .min_by_key(|(_, intersection)| (intersection.toi * ::CMP_PRECISION) as isize);
+                        if let Some((object, _)) = interference {
                             let collided_entity = *bodies_map.get(&object.data().body()).unwrap();
                             match (players.get(collided_entity), aims.get(collided_entity)) {
                                 (Some(_), Some(aim)) => Some((aim, object.position().translation.vector-position)),
@@ -50,7 +54,7 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
                             None
                         }
                     })
-                    .min_by_key(|(_, distance)| distance.norm() as usize);
+                    .min_by_key(|(_, distance)| (distance.norm() * ::CMP_PRECISION) as usize);
 
                 vtpr.current_direction = closest_in_sight.and_then(|(aim, distance)| {
                     let angle = distance[1].atan2(distance[0]);

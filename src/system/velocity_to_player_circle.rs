@@ -27,7 +27,7 @@ impl<'a> System<'a> for VelocityToPlayerCircleSystem {
             let position = rigid_body.get(&physic_world).position().translation.vector;
             let direction = players_position.iter()
                 .map(|p| (p-position))
-                .min_by_key(|p| (p.norm() * 10.0) as usize)
+                .min_by_key(|p| (p.norm() * ::CMP_PRECISION) as isize)
                 .and_then(|p| p.try_normalize(EPSILON));
 
             if let Some(direction) = direction {

@@ -6,15 +6,17 @@ MapSettings(
         ),
         (
             trigger: "#808000",
-            processor: BuildEntity(GravityBomb((
+            processor: BuildEntity(Charger((
                 animation_specie: Character,
                 damage: 0,
                 force: 1,
-                dead_on_contact: false,
-                powi: 0,
+                life: 1,
                 radius: 1,
-                players_aim_damping: None,
-                insert_shift: true,
+                aim_damping: None,
+                distance_damping: None,
+                velocity: 20,
+                density: 1,
+                memory: true,
             ))),
         ),
     ],

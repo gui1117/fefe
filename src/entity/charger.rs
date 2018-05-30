@@ -10,7 +10,12 @@ pub struct Charger {
     pub animation_specie: AnimationSpecie,
     pub radius: f32,
     pub velocity: f32,
+    pub memory: bool,
+    pub life: usize,
     pub damage: usize,
+    pub density: f32,
+    pub dist_damping: Option<::util::ClampFunction>,
+    pub aim_damping: Option<::util::ClampFunction>,
 }
 
 impl Insertable for Charger {
@@ -20,11 +25,18 @@ impl Insertable for Charger {
             self.animation_specie,
             AnimationName::Idle,
         ));
-        world.write().insert(entity, ::component::VelocityToPlayerMemory::new(self.velocity, true));
+        world.write().insert(entity, ::component::VelocityToPlayerMemory::new(self.velocity, self.memory));
         world.write().insert(entity, ::component::ContactDamage(self.damage));
         world.write().insert(entity, ::component::DeadOnContact);
-        world.write().insert(entity, ::component::Life(1));
+        world.write().insert(entity, ::component::Life(self.life));
         world.write().insert(entity, ::component::DebugColor(5));
+
+        if let Some(dist_damping) = self.dist_damping.clone() {
+            world.write().insert(entity, ::component::VelocityDistanceDamping(dist_damping));
+        }
+        if let Some(aim_damping) = self.aim_damping.clone() {
+            world.write().insert(entity, ::component::VelocityAimDamping(aim_damping));
+        }
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
@@ -32,21 +44,24 @@ impl Insertable for Charger {
         let body_handle = ::component::RigidBody::safe_insert(
             entity,
             position.0,
-            shape.inertia(1.0),
+            shape.inertia(self.density),
             shape.center_of_mass(),
-            BodyStatus::Kinematic,
+            BodyStatus::Dynamic,
             &mut world.write(),
             &mut physic_world,
             &mut world.write_resource(),
         );
 
-        physic_world.add_collider(
+        let collider = physic_world.add_collider(
             0.0,
             shape,
             body_handle.0,
             ::na::one(),
             Material::new(0.0, 0.0),
         );
+        let mut groups = ::ncollide2d::world::CollisionGroups::new();
+        groups.set_membership(&[super::Group::Monster as usize]);
+        physic_world.collision_world_mut().set_collision_groups(collider, groups);
 
         entity
     }

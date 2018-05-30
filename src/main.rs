@@ -54,6 +54,8 @@ use vulkano::instance::Instance;
 use vulkano_win::VkSurfaceBuild;
 use winit::CursorState;
 
+const CMP_PRECISION: f32 = 100.0;
+
 fn main() {
     ::std::env::set_var("WINIT_UNIX_BACKEND", "x11");
 
