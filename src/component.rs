@@ -123,12 +123,12 @@ impl Component for VelocityToPlayerRandom {
     type Storage = VecStorage<Self>;
 }
 
-pub struct CircleToPlayer {
+pub struct VelocityToPlayerCircle {
     pub circle_velocity: f32,
     pub direct_velocity: f32,
     pub dir_shift: bool,
 }
-impl Component for CircleToPlayer {
+impl Component for VelocityToPlayerCircle {
     type Storage = VecStorage<Self>;
 }
 
@@ -148,9 +148,25 @@ impl Component for Boid {
     type Storage = VecStorage<Self>;
 }
 
+/// The processor takes distance with player aim in radiant
+/// The velocity is multiplied by the result
+#[derive(Deref)]
+pub struct VelocityDistanceDamping(pub ::util::ClampFunction);
+impl Component for VelocityDistanceDamping {
+    type Storage = VecStorage<Self>;
+}
+
+/// The processor takes distance with player
+/// The velocity is multiplied by the result
+#[derive(Deref)]
+pub struct VelocityAimDamping(pub ::util::ClampFunction);
+impl Component for VelocityAimDamping {
+    type Storage = VecStorage<Self>;
+}
+
 //////////////////////////////// Force ////////////////////////////////
 
-/// The processor takes distance with aim in radiant
+/// The processor takes distance with player aim in radiant
 /// The final damping is divided by the result
 #[derive(Deref)]
 pub struct PlayersAimDamping(pub ::util::ClampFunction);

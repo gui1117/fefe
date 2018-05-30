@@ -2,14 +2,14 @@ use specs::{Join, FetchMut, ReadStorage, System, WriteStorage};
 use nphysics2d::math::Velocity;
 use std::f32::EPSILON;
 
-pub struct CircleToPlayer;
+pub struct VelocityToPlayerCircleSystem;
 
-impl<'a> System<'a> for CircleToPlayer {
+impl<'a> System<'a> for VelocityToPlayerCircleSystem {
     type SystemData = (
         ReadStorage<'a, ::component::Player>,
         ReadStorage<'a, ::component::RigidBody>,
         ReadStorage<'a, ::component::Contactor>,
-        WriteStorage<'a, ::component::CircleToPlayer>,
+        WriteStorage<'a, ::component::VelocityToPlayerCircle>,
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 

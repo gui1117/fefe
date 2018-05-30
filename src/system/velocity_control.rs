@@ -1,9 +1,9 @@
 use specs::{Join, FetchMut, ReadStorage, System};
 use nphysics2d::math::Velocity;
 
-pub struct VelocityControl;
+pub struct VelocityControlSystem;
 
-impl<'a> System<'a> for VelocityControl {
+impl<'a> System<'a> for VelocityControlSystem {
     type SystemData = (
         ReadStorage<'a, ::component::RigidBody>,
         ReadStorage<'a, ::component::VelocityControl>,

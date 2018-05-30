@@ -15,27 +15,6 @@
 
 # gameplay
 
-### aaaaah chgt
-
-* faire que controlforce soit struct de norm et direction
-* faire que les system velocity change les directions
-* aussi corriger les problème de rotation involontaire avec un damping de rotation un peut fort pour tout ?
-  peut être est-ce plus compliquer et il vaut mieux faire un truc général avec vitesse max de rotation et time to reach vrotmax et appliquer la force un peu devant
-  l'alternative est soit on fix
-  it actually works !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  regarder se qu'il se passe si on met la velocity tout les frame fasse a objet lourd !!!!!!!!!!
-  si OK alors partir là dessus
-  ouiiiiiiiiiiii tout semble parfait !!!
-  alors faire un player avec control pour mettre la vitesse a chque update et changer tout !!!
-
-on peut pas utiliser kinematic:
-* regarder si on peut initialiser la vitesse d'une manière ou d'une autre
-  sinon les bullet devrons être des kinematic avec proximity
-* changer les velocity en control et utiliser controlforce peut eux
-* faire des calculs précis pour le damping et la force pour les avoir en fonction de la masse, le temps a 90% et la vitesse max
-* faire des calculs pour que le aim et distance damping soit bien une diminution de x% de la vitesse 
-  (damping de 0.5 diminue la vitesse (max) par 2)
-
 ## TOTEST
 monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibilité notamment un on l'on ne doit jamais le voir)
 monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
@@ -43,20 +22,16 @@ boule de gravité
 monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
 chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
 monstre qui fait des cercles pour venir:
+aim/distance dampings velocity
+faire un velocity to player in sight pour remplacer gravity to player
 ## END TOTEST
 
 * faire sorte de gravity ball mais avec velocity:
   une vitesse angulaire qui va dans la direction du héros
   et ue vitesse linear de norme constante
-  avec angular velocity distance damping et aim damping avec héros
-  --> généraliser les velocity to machin mettent vélocité et ensuite d'autre syteme s'occupent de dampé cette vitesse
-  avec velocitydamping qui contient aim: option(clampfunction), et distance: option(clampfunction)!!!!!!
 * faire un proximitydamage comme ça les monstres peuvent s'entrechoquer sans se tuer forcément
 * faire un proximityattack qui sur un proximité lance une attaque et au besoin met la vitesse à 0
-* faire un velocity to player in sight pour remplacer gravity to player
-  et avec dist_damping et aim_damping enfin sorte de puisque c'est juste la vitesse qui est clamp
 
-* faire velocitydistancedamping et velocityaimdamping
 faire des boid qui rebondissent contre les murs ou se tue dans un cadre pour simulé une plaine immense
 
 ## bof

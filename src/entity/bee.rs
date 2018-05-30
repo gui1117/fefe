@@ -23,7 +23,7 @@ impl Insertable for Bee {
             self.animation_specie,
             AnimationName::Idle,
         ));
-        world.write().insert(entity, ::component::CircleToPlayer {
+        world.write().insert(entity, ::component::VelocityToPlayerCircle {
             circle_velocity: self.circle_velocity,
             direct_velocity: self.direct_velocity,
             dir_shift: bool::rand(&mut thread_rng()),

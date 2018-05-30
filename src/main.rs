@@ -102,9 +102,12 @@ fn main() {
     world.register::<::component::VelocityToPlayerMemory>();
     world.register::<::component::VelocityToPlayerInSight>();
     world.register::<::component::VelocityToPlayerRandom>();
+    world.register::<::component::VelocityToPlayerCircle>();
     world.register::<::component::VelocityControl>();
+    world.register::<::component::VelocityAimDamping>();
+    world.register::<::component::VelocityDistanceDamping>();
+    world.register::<::component::VelocityToPlayerCircle>();
     world.register::<::component::Boid>();
-    world.register::<::component::CircleToPlayer>();
 
     let conf = ::resource::Conf::load();
     world.add_resource(::resource::UpdateTime(0.0));
@@ -122,9 +125,17 @@ fn main() {
         .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &[])
         .add(::system::VelocityToPlayerInSightSystem, "velocity to player in sight", &[])
         .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &[])
-        .add(::system::VelocityControl, "velocity control", &[])
-        .add(::system::CircleToPlayer, "circle to player", &[])
+        .add(::system::VelocityToPlayerCircleSystem, "velocity to player circle", &[])
+        .add(::system::VelocityControlSystem, "velocity control", &[])
         .add(::system::Boid, "boid", &[])
+        .add(::system::VelocityDampingsSystem, "velocity dampings", &[
+             "velocity to player memory",
+             "velocity to player in sight",
+             "velocity to player random",
+             "velocity to player circle",
+             "velocity control",
+             "boid",
+        ])
         .add(::system::ChamanSpawnerSystem, "chaman spawner", &[])
         .add(::system::LifeSystem, "life", &[])
         .add(::system::TurretSystem, "turret", &[])

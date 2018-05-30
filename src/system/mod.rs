@@ -31,8 +31,8 @@ pub use self::velocity_to_player_random::*;
 mod chaman_spawner;
 pub use self::chaman_spawner::*;
 
-mod circle_to_player;
-pub use self::circle_to_player::*;
+mod velocity_to_player_circle;
+pub use self::velocity_to_player_circle::*;
 
 mod boid;
 pub use self::boid::*;
@@ -42,3 +42,6 @@ pub use self::camera::*;
 
 mod velocity_control;
 pub use self::velocity_control::*;
+
+mod velocity_dampings;
+pub use self::velocity_dampings::*;
