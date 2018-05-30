@@ -5,6 +5,8 @@ use ncollide2d::query::Ray;
 
 pub struct VelocityToPlayerMemorySystem;
 
+// IDEA: maybe use the last seen rotation or just current velocity 
+//       and continue on the path a little
 impl<'a> System<'a> for VelocityToPlayerMemorySystem {
     type SystemData = (
         ReadStorage<'a, ::component::Player>,
@@ -36,9 +38,9 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
                         ]);
                         let interference = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups)
                             .min_by_key(|(_, intersection)| (intersection.toi * ::CMP_PRECISION) as isize);
-                        if let Some((object, _)) = interference {
+                        if let Some((object, intersection)) = interference {
                             if players.get(*bodies_map.get(&object.data().body()).unwrap()).is_some() {
-                                Some(object.position().translation.vector)
+                                Some((object.position().translation.vector, intersection.toi))
                             } else {
                                 None
                             }
@@ -46,7 +48,8 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
                             None
                         }
                     })
-                    .min_by_key(|vector| (vector.norm() * ::CMP_PRECISION) as isize);
+                    .min_by_key(|(_, toi)| (toi * ::CMP_PRECISION) as isize)
+                    .map(|(object_position, _)| object_position);
 
                 if vtpm.memory {
                     vtpm.last_closest_in_sight = closest_in_sight.or(vtpm.last_closest_in_sight);
@@ -55,14 +58,22 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
                 }
             }
 
-            if let Some(last_closest_in_sight) = vtpm.last_closest_in_sight {
+            let direction = if let Some(last_closest_in_sight) = vtpm.last_closest_in_sight.clone() {
                 let d = ::component::VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL;
-                let v = (last_closest_in_sight - position).try_normalize(d).unwrap_or(::na::zero()) * vtpm.velocity;
-                rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
-                    linear: v,
-                    angular: 0.0,
-                });
-            }
+                if let Some(direction) = (last_closest_in_sight - position).try_normalize(d) {
+                    direction
+                } else {
+                    vtpm.last_closest_in_sight = None;
+                    ::na::zero()
+                }
+            } else {
+                ::na::zero()
+            };
+            rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
+                linear: direction * vtpm.velocity,
+                angular: 0.0,
+            });
+
         }
     }
 }

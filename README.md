@@ -25,6 +25,10 @@ monstre qui fait des cercles pour venir:
 aim/distance dampings velocity
 ## END TOTEST
 
+* peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent
+  sisi c'est bien, on peut faire juste qu'il continue met un boolean a true et contine deux metre plus loin
+  si il ne voit rien avec le boolean a true alors il s'arrete vraiment
+  mieux encores: la cible est toujours la position du character+ sa vitesse * 1 ou 2m !!!!!!!!!!!!!!!!!!!!!
 * faire sorte de gravity ball mais avec velocity:
   une vitesse angulaire qui va dans la direction du héros
   et ue vitesse linear de norme constante

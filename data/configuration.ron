@@ -4,6 +4,6 @@ Conf(
     physic_min_timestep: 0,
     zoom: 108,
 
-    player_velocity: 20,
+    player_velocity: 80,
     player_radius: 1,
 )
