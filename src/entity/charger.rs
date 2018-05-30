@@ -20,7 +20,7 @@ impl Insertable for Charger {
             self.animation_specie,
             AnimationName::Idle,
         ));
-        world.write().insert(entity, ::component::VelocityToPlayerMemory::new(self.velocity));
+        world.write().insert(entity, ::component::VelocityToPlayerMemory::new(self.velocity, true));
         world.write().insert(entity, ::component::ContactDamage(self.damage));
         world.write().insert(entity, ::component::DeadOnContact);
         world.write().insert(entity, ::component::Life(1));

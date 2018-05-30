@@ -5,12 +5,14 @@ use nphysics2d::math::Velocity;
 use rand::{thread_rng, Rand};
 use rand::distributions::{IndependentSample, Range, Normal};
 use std::f32::EPSILON;
+use std::f32::consts::PI;
 
 pub struct VelocityToPlayerRandomSystem;
 
 impl<'a> System<'a> for VelocityToPlayerRandomSystem {
     type SystemData = (
         ReadStorage<'a, ::component::Player>,
+        ReadStorage<'a, ::component::Aim>,
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::VelocityToPlayerRandom>,
         Fetch<'a, ::resource::UpdateTime>,
@@ -18,7 +20,7 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-    fn run(&mut self, (players, rigid_bodies, mut vtprs, update_time, bodies_map, mut physic_world): Self::SystemData) {
+    fn run(&mut self, (players, aims, rigid_bodies, mut vtprs, update_time, bodies_map, mut physic_world): Self::SystemData) {
         let mut rng = thread_rng();
         let range_0_1 = Range::new(0.0, 1.0);
         let players_position = (&players, &rigid_bodies)
@@ -39,44 +41,51 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
                         let collision_groups = CollisionGroups::new();
                         let mut interferences = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups);
                         if let Some((object, _)) = interferences.next() {
-                            if players.get(*bodies_map.get(&object.data().body()).unwrap()).is_some() {
-                                Some(object.position().translation.vector)
-                            } else {
-                                None
+                            let collided_entity = *bodies_map.get(&object.data().body()).unwrap();
+                            match (players.get(collided_entity), aims.get(collided_entity)) {
+                                (Some(_), Some(aim)) => Some((aim, object.position().translation.vector-position)),
+                                _ => None
                             }
                         } else {
                             None
                         }
                     })
-                    .min_by_key(|vector| vector.norm() as usize);
+                    .min_by_key(|(_, distance)| distance.norm() as usize);
 
-                let direction = closest_in_sight.and_then(|closest_in_sight| {
-                    let direction = closest_in_sight - position;
+                vtpr.current_direction = closest_in_sight.and_then(|(aim, distance)| {
+                    let angle = distance[1].atan2(distance[0]);
+                    let mut angle_distance = (angle - aim.0).abs() % 2.0 * PI;
+                    if angle_distance >= PI {
+                        angle_distance = 2.0 * PI - angle_distance;
+                    }
+                    let final_proba = vtpr.dist_proba_clamp.compute(distance.norm())*vtpr.aim_proba_clamp.compute(angle_distance);
 
-                    if range_0_1.ind_sample(&mut rng) <= vtpr.proba.compute(direction.norm()) {
-                        let mut final_direction = direction
+                    if range_0_1.ind_sample(&mut rng) <= final_proba {
+                        let mut direction = distance
                             .try_normalize(EPSILON)
                             .unwrap_or(::na::zero());
 
                         if vtpr.toward_player {
-                            final_direction *= -1.0;
+                            direction *= -1.0;
                         }
 
                         if let Some(weight) = vtpr.random_weighted {
-                            final_direction += ::na::Vector2::rand(&mut rng).normalize()*weight;
-                            final_direction.normalize();
+                            direction += ::na::Vector2::rand(&mut rng).normalize()*weight;
+                            direction.normalize();
                         }
-                        Some(final_direction)
+                        Some(direction)
                     } else {
                         None
                     }
-                }).unwrap_or_else(|| ::na::Vector2::rand(&mut rng));
-
-                rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
-                    linear: direction.normalize() * vtpr.velocity,
-                    angular: 0.0,
-                });
+                }).unwrap_or_else(|| ::na::Vector2::rand(&mut rng))
+                    .try_normalize(EPSILON)
+                    .unwrap_or(::na::zero()).into();
             }
+
+            rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
+                linear: ::na::Vector2::from_row_slice(&vtpr.current_direction) * vtpr.velocity,
+                angular: 0.0,
+            });
         }
     }
 }

@@ -31,6 +31,7 @@ faire un velocity to player in sight pour remplacer gravity to player
   et ue vitesse linear de norme constante
 * faire un proximitydamage comme ça les monstres peuvent s'entrechoquer sans se tuer forcément
 * faire un proximityattack qui sur un proximité lance une attaque et au besoin met la vitesse à 0
+* faire que les velocityto.... utilise le velocitycontrol pour que celle ci soit mis a chaque update
 
 faire des boid qui rebondissent contre les murs ou se tue dans un cadre pour simulé une plaine immense
 

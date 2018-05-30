@@ -100,7 +100,6 @@ fn main() {
     world.register::<::component::ChamanSpawner>();
     world.register::<::component::DebugCircles>();
     world.register::<::component::VelocityToPlayerMemory>();
-    world.register::<::component::VelocityToPlayerInSight>();
     world.register::<::component::VelocityToPlayerRandom>();
     world.register::<::component::VelocityToPlayerCircle>();
     world.register::<::component::VelocityControl>();
@@ -123,14 +122,12 @@ fn main() {
         .add(::system::ContactDamageSystem, "damage", &[])
         .add(::system::UniqueSpawnerSystem, "unique spawner", &[])
         .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &[])
-        .add(::system::VelocityToPlayerInSightSystem, "velocity to player in sight", &[])
         .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &[])
         .add(::system::VelocityToPlayerCircleSystem, "velocity to player circle", &[])
         .add(::system::VelocityControlSystem, "velocity control", &[])
         .add(::system::Boid, "boid", &[])
         .add(::system::VelocityDampingsSystem, "velocity dampings", &[
              "velocity to player memory",
-             "velocity to player in sight",
              "velocity to player random",
              "velocity to player circle",
              "velocity control",

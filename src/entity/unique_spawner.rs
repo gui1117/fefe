@@ -24,6 +24,10 @@ impl Insertable for UniqueSpawner {
         world.write().insert(entity, ::component::DebugColor(6));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
+        world.write().insert(entity, ::component::DebugCircles(vec![
+            self.proba.min_t,
+            self.proba.max_t,
+        ]));
 
         let shape = ShapeHandle::new(Ball::new(self.radius));
         let body_handle = ::component::RigidBody::safe_insert(

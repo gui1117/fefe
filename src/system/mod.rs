@@ -22,9 +22,6 @@ pub use self::unique_spawner::*;
 mod velocity_to_player_memory;
 pub use self::velocity_to_player_memory::*;
 
-mod velocity_to_player_in_sight;
-pub use self::velocity_to_player_in_sight::*;
-
 mod velocity_to_player_random;
 pub use self::velocity_to_player_random::*;
 

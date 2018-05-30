@@ -44,7 +44,11 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
                     })
                     .min_by_key(|vector| vector.norm() as usize);
 
-                vtpm.last_closest_in_sight = closest_in_sight.or(vtpm.last_closest_in_sight);
+                if vtpm.memory {
+                    vtpm.last_closest_in_sight = closest_in_sight.or(vtpm.last_closest_in_sight);
+                } else {
+                    vtpm.last_closest_in_sight = closest_in_sight;
+                }
             }
 
             if let Some(last_closest_in_sight) = vtpm.last_closest_in_sight {

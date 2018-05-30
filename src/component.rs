@@ -62,6 +62,8 @@ pub struct VelocityToPlayerMemory {
     pub next_refreash: f32,
     pub last_closest_in_sight: Option<::na::Vector2<f32>>,
     pub velocity: f32,
+    /// If false it is equivalent to go to player in sight
+    pub memory: bool,
     _force_use_constructor: (),
 }
 impl Component for VelocityToPlayerMemory {
@@ -69,33 +71,13 @@ impl Component for VelocityToPlayerMemory {
 }
 
 impl VelocityToPlayerMemory {
-    pub fn new(velocity: f32) -> Self {
+    pub fn new(velocity: f32, memory: bool) -> Self {
         let next_refreash = Range::new(0.0, VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE).ind_sample(&mut thread_rng());
         VelocityToPlayerMemory {
+            memory,
             next_refreash,
             velocity,
             last_closest_in_sight: None,
-            _force_use_constructor: (),
-        }
-    }
-}
-
-pub const VELOCITY_TO_PLAYER_IN_SIGHT_REFREASH_RATE: f32 = 0.1;
-pub struct VelocityToPlayerInSight {
-    pub next_refreash: f32,
-    pub velocity: f32,
-    _force_use_constructor: (),
-}
-impl Component for VelocityToPlayerInSight {
-    type Storage = VecStorage<Self>;
-}
-
-impl VelocityToPlayerInSight {
-    pub fn new(velocity: f32) -> Self {
-        let next_refreash = Range::new(0.0, VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE).ind_sample(&mut thread_rng());
-        VelocityToPlayerInSight {
-            next_refreash,
-            velocity,
             _force_use_constructor: (),
         }
     }
@@ -107,17 +89,16 @@ impl VelocityToPlayerInSight {
 pub struct VelocityToPlayerRandom {
     /// If some then a random direction with f32 norm is added
     pub random_weighted: Option<f32>,
-    // TODO:
-    // /// Clamp the proba with distance to characters
-    // pub dist_proba_clamp: ::util::ClampFunction,
-    // /// Clamp the proba with aim of the characters
-    // pub aim_proba_clamp: ::util::ClampFunction,
-    pub proba: ::util::ClampFunction,
+    /// Clamp the proba with distance to characters
+    pub dist_proba_clamp: ::util::ClampFunction,
+    /// Clamp the proba with aim of the characters
+    pub aim_proba_clamp: ::util::ClampFunction,
     /// Normal distribution
     pub refreash_time: (f64, f64),
     pub velocity: f32,
     pub toward_player: bool,
     pub next_refreash: f32,
+    pub current_direction: [f32; 2],
 }
 impl Component for VelocityToPlayerRandom {
     type Storage = VecStorage<Self>;
@@ -210,11 +191,6 @@ pub const UNIQUE_SPAWNER_TIMER: f32 = 0.1;
 /// the distance to the character every UNIQUE_SPAWNER_TIMER seconds
 pub struct UniqueSpawner {
     pub entity: InsertableObject,
-    // TODO:
-    // /// Clamp the proba with distance to characters
-    // pub dist_proba_clamp: ::util::ClampFunction,
-    // /// Clamp the proba with aim of the characters
-    // pub aim_proba_clamp: ::util::ClampFunction,
     /// Clamp the distance to characters
     pub proba: ::util::ClampFunction,
     pub next_refreash: f32,
