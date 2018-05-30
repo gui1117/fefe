@@ -67,12 +67,13 @@ fn main() {
 
     let mut events_loop = winit::EventsLoop::new();
     let window = winit::WindowBuilder::new()
-        // .with_fullscreen(winit::get_primary_monitor())
+        .with_fullscreen(Some(events_loop.get_primary_monitor()))
         .build_vk_surface(&events_loop, instance.clone())
         .unwrap();
 
     try_multiple_time!(window.window().set_cursor_state(winit::CursorState::Grab)).unwrap();
     window.window().set_cursor(winit::MouseCursor::NoneCursor);
+    window.window().set_title("fefe");
 
     let mut imgui = ::util::init_imgui();
     let mut graphics = graphics::Graphics::new(&window, &mut imgui);
@@ -90,18 +91,19 @@ fn main() {
     world.register::<::component::Contactor>();
     world.register::<::component::ControlForce>();
     world.register::<::component::PlayersAimDamping>();
+    world.register::<::component::PlayersDistanceDamping>();
     world.register::<::component::GravityToPlayers>();
     world.register::<::component::Damping>();
     world.register::<::component::Turret>();
     world.register::<::component::DebugColor>();
     world.register::<::component::UniqueSpawner>();
+    world.register::<::component::ChamanSpawner>();
+    world.register::<::component::DebugCircles>();
     world.register::<::component::VelocityToPlayerMemory>();
     world.register::<::component::VelocityToPlayerInSight>();
     world.register::<::component::VelocityToPlayerRandom>();
-    world.register::<::component::ChamanSpawner>();
     world.register::<::component::Boid>();
     world.register::<::component::CircleToPlayer>();
-    world.register::<::component::DebugCircles>();
 
     let conf = ::resource::Conf::load();
     world.add_resource(::resource::UpdateTime(0.0));
@@ -148,18 +150,22 @@ fn main() {
         for ev in evs {
             match ev {
                 winit::Event::WindowEvent {
-                    event: winit::WindowEvent::Focused(true),
+                    event: winit::WindowEvent::Focused(false),
                     ..
                 } => {
                     try_multiple_time!(window.window().set_cursor_state(CursorState::Normal)).unwrap();
+                }
+                winit::Event::WindowEvent {
+                    event: winit::WindowEvent::CursorEntered { .. },
+                    ..
+                } => {
                     try_multiple_time!(window.window().set_cursor_state(CursorState::Grab)).unwrap();
                 }
                 winit::Event::WindowEvent {
-                    event: ::winit::WindowEvent::Closed,
+                    event: ::winit::WindowEvent::CloseRequested,
                     ..
                 } => {
-                    // FIXME: breaking main_loop bugs on X11: function never ends
-                    ::std::process::exit(0);
+                    break 'main_loop;
                 }
                 _ => (),
             }

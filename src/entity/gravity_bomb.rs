@@ -42,9 +42,7 @@ impl Insertable for GravityBomb {
         if let Some(ref players_aim_damping) = self.players_aim_damping {
             world.write::<::component::PlayersAimDamping>().insert(
                 entity,
-                ::component::PlayersAimDamping {
-                    processor: players_aim_damping.clone(),
-                },
+                ::component::PlayersAimDamping(players_aim_damping.clone()),
             );
             world.write().insert(entity, ::component::DebugCircles(vec![
                 players_aim_damping.min_t,
@@ -63,7 +61,7 @@ impl Insertable for GravityBomb {
         let body = ::component::RigidBody::safe_insert(
             entity,
             position,
-            shape.inertia(1.0),
+            shape.inertia(100000.0),
             shape.center_of_mass(),
             BodyStatus::Dynamic,
             &mut world.write(),

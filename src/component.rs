@@ -45,7 +45,7 @@ impl From<usize> for Life {
 }
 
 //////////////////////////////// Velocity ////////////////////////////////
-///
+
 pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
 
 pub const VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE: f32 = 0.1;
@@ -140,17 +140,21 @@ impl Component for Boid {
     type Storage = VecStorage<Self>;
 }
 
-// TODO: velocity distance damping
-// TODO: velocity aim damping
-
 //////////////////////////////// Force ////////////////////////////////
 
-pub struct PlayersAimDamping {
-    /// The processor takes distance with aim in radiant
-    /// It should output the damping associated
-    pub processor: ::util::ClampFunction,
-}
+/// The processor takes distance with aim in radiant
+/// The final damping is divided by the result
+#[derive(Deref)]
+pub struct PlayersAimDamping(pub ::util::ClampFunction);
 impl Component for PlayersAimDamping {
+    type Storage = VecStorage<Self>;
+}
+
+/// The processor takes distance with player
+/// The final damping is divided by the result
+#[derive(Deref)]
+pub struct PlayersDistanceDamping(pub ::util::ClampFunction);
+impl Component for PlayersDistanceDamping {
     type Storage = VecStorage<Self>;
 }
 

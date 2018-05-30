@@ -3,6 +3,7 @@ use specs::World;
 use winit::{ElementState, Event, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode,
             WindowEvent};
 
+#[allow(unused)]
 macro_rules! try_multiple_time {
     ($e:expr) => {{
         let mut error_timer = 0;
@@ -193,4 +194,11 @@ pub fn init_imgui() -> ::imgui::ImGui {
     imgui.set_imgui_key(::imgui::ImGuiKey::Y, 17);
     imgui.set_imgui_key(::imgui::ImGuiKey::Z, 18);
     imgui
+}
+
+#[allow(unused)]
+pub fn force_damping(mass: f32, time_to_reach_percent_velocity: f32, percent: f32, velocity: f32) -> (f32, f32) {
+    let damping = mass / time_to_reach_percent_velocity * (1.0 - percent).ln();
+    let force = damping * velocity;
+    (force, damping)
 }

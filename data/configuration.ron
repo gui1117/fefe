@@ -6,6 +6,4 @@ Conf(
 
     player_velocity: 20,
     player_radius: 1,
-
-    gravity: 1,
 )

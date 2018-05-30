@@ -15,6 +15,25 @@
 
 # gameplay
 
+### aaaaah chgt
+
+* faire que controlforce soit struct de norm et direction
+* faire que les system velocity change les directions
+* aussi corriger les problème de rotation involontaire avec un damping de rotation un peut fort pour tout ?
+  peut être est-ce plus compliquer et il vaut mieux faire un truc général avec vitesse max de rotation et time to reach vrotmax et appliquer la force un peu devant
+  l'alternative est soit on fix
+  it actually works !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  regarder se qu'il se passe si on met la velocity tout les frame fasse a objet lourd !!!!!!!!!!
+  si OK alors partir là dessus
+
+on peut pas utiliser kinematic:
+* regarder si on peut initialiser la vitesse d'une manière ou d'une autre
+  sinon les bullet devrons être des kinematic avec proximity
+* changer les velocity en control et utiliser controlforce peut eux
+* faire des calculs précis pour le damping et la force pour les avoir en fonction de la masse, le temps a 90% et la vitesse max
+* faire des calculs pour que le aim et distance damping soit bien une diminution de x% de la vitesse 
+  (damping de 0.5 diminue la vitesse (max) par 2)
+
 ## TOTEST
 monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibilité notamment un on l'on ne doit jamais le voir)
 monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue

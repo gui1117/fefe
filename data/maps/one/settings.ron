@@ -8,7 +8,7 @@ MapSettings(
             trigger: "#808000",
             processor: BuildEntity(GravityBomb((
                 animation_specie: Character,
-                damage: 1,
+                damage: 0,
                 force: 1,
                 dead_on_contact: false,
                 powi: 0,
@@ -19,6 +19,10 @@ MapSettings(
         ),
     ],
     fill_rules: [
+        // (
+        //     trigger: "#00ff00",
+        //     processor: TakeNPositions(1, BuildEntity(Wall(()))),
+        // )
     ],
     segment_rules: [
         (

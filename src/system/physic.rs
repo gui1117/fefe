@@ -25,6 +25,7 @@ impl<'a> System<'a> for PhysicSystem {
         ReadStorage<'a, ::component::Damping>,
         ReadStorage<'a, ::component::GravityToPlayers>,
         ReadStorage<'a, ::component::PlayersAimDamping>,
+        ReadStorage<'a, ::component::PlayersDistanceDamping>,
         WriteStorage<'a, ::component::Contactor>,
         Fetch<'a, ::resource::UpdateTime>,
         Fetch<'a, ::specs::EntitiesRes>,
@@ -44,6 +45,7 @@ impl<'a> System<'a> for PhysicSystem {
             dampings,
             gravities_to_players,
             players_aim_dampings,
+            players_distance_dampings,
             mut contactors,
             update_time,
             entities,
@@ -101,7 +103,14 @@ impl<'a> System<'a> for PhysicSystem {
                         if angle_distance >= PI {
                             angle_distance = 2.0 * PI - angle_distance;
                         }
-                        linear_damping += player_aim_damping.processor.compute(angle_distance);
+                        linear_damping /= player_aim_damping.compute(angle_distance);
+                    }
+                }
+                if let Some(player_distance_damping) = players_distance_dampings.get(entity) {
+                    // TODO: we probably want the mean when there will be multiple players
+                    let position = body.position().translation.vector;
+                    for &(_, ref player_position) in &players_aim {
+                        linear_damping /= player_distance_damping.compute((player_position - position).norm());
                     }
                 }
 
