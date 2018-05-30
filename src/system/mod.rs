@@ -39,3 +39,6 @@ pub use self::boid::*;
 
 mod camera;
 pub use self::camera::*;
+
+mod velocity_control;
+pub use self::velocity_control::*;

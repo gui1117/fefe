@@ -102,6 +102,7 @@ fn main() {
     world.register::<::component::VelocityToPlayerMemory>();
     world.register::<::component::VelocityToPlayerInSight>();
     world.register::<::component::VelocityToPlayerRandom>();
+    world.register::<::component::VelocityControl>();
     world.register::<::component::Boid>();
     world.register::<::component::CircleToPlayer>();
 
@@ -121,6 +122,7 @@ fn main() {
         .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &[])
         .add(::system::VelocityToPlayerInSightSystem, "velocity to player in sight", &[])
         .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &[])
+        .add(::system::VelocityControl, "velocity control", &[])
         .add(::system::CircleToPlayer, "circle to player", &[])
         .add(::system::Boid, "boid", &[])
         .add(::system::ChamanSpawnerSystem, "chaman spawner", &[])

@@ -61,7 +61,7 @@ impl Insertable for GravityBomb {
         let body = ::component::RigidBody::safe_insert(
             entity,
             position,
-            shape.inertia(100000.0),
+            shape.inertia(1.0),
             shape.center_of_mass(),
             BodyStatus::Dynamic,
             &mut world.write(),

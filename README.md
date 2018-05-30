@@ -25,6 +25,8 @@
   it actually works !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   regarder se qu'il se passe si on met la velocity tout les frame fasse a objet lourd !!!!!!!!!!
   si OK alors partir là dessus
+  ouiiiiiiiiiiii tout semble parfait !!!
+  alors faire un player avec control pour mettre la vitesse a chque update et changer tout !!!
 
 on peut pas utiliser kinematic:
 * regarder si on peut initialiser la vitesse d'une manière ou d'une autre
@@ -53,6 +55,8 @@ monstre qui fait des cercles pour venir:
 * faire un proximityattack qui sur un proximité lance une attaque et au besoin met la vitesse à 0
 * faire un velocity to player in sight pour remplacer gravity to player
   et avec dist_damping et aim_damping enfin sorte de puisque c'est juste la vitesse qui est clamp
+
+* faire velocitydistancedamping et velocityaimdamping
 faire des boid qui rebondissent contre les murs ou se tue dans un cadre pour simulé une plaine immense
 
 ## bof

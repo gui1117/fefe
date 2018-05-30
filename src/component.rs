@@ -10,7 +10,7 @@ use entity::InsertableObject;
 #[derive(Default)]
 pub struct Player;
 impl Component for Player {
-    type Storage = NullStorage<Self>;
+    type Storage = VecStorage<Self>;
 }
 
 #[derive(Deref, DerefMut)]
@@ -45,6 +45,14 @@ impl From<usize> for Life {
 }
 
 //////////////////////////////// Velocity ////////////////////////////////
+
+pub struct VelocityControl {
+    pub velocity: f32,
+    pub direction: ::na::Vector2<f32>,
+}
+impl Component for VelocityControl {
+    type Storage = VecStorage<Self>;
+}
 
 pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
 

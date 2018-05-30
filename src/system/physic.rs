@@ -70,7 +70,7 @@ impl<'a> System<'a> for PhysicSystem {
 
             self.step_forces_cache.clear();
             for (body, entity) in (&rigid_bodies, &*entities).join() {
-                let body = body.get(&physic_world);
+                let body = body.get_mut(&mut physic_world);
 
                 let mut force = Force::zero();
                 if let Some(control_force) = control_forces.get(entity) {

@@ -1,6 +1,5 @@
 use specs::{Join, World};
 use winit::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
-use nphysics2d::math::Velocity;
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;
@@ -88,16 +87,12 @@ impl GameState for Game {
                         _ => unreachable!(),
                     }
                 }
-                let conf = world.read_resource::<::resource::Conf>();
-                for (_, body) in (
+                for (_, velocity_control) in (
                     &world.read::<::component::Player>(),
-                    &world.read::<::component::RigidBody>(),
+                    &mut world.write::<::component::VelocityControl>(),
                 ).join()
                 {
-                    body.get_mut(&mut world.write_resource()).set_velocity(Velocity {
-                        linear: velocity * conf.player_velocity,
-                        angular: 0.0,
-                    });
+                    velocity_control.direction = velocity;
                 }
             }
             _ => (),
@@ -119,7 +114,6 @@ impl GameState for Game {
         gamepad: &::gilrs::Gamepad,
         world: &mut World,
     ) -> Box<GameState> {
-        let conf = world.read_resource::<::resource::Conf>();
         let px = gamepad
             .axis_data(::gilrs::Axis::LeftStickX)
             .map(|e| e.value())
@@ -131,15 +125,12 @@ impl GameState for Game {
 
         let (px_circle, py_circle) = square_to_circle(px, py);
 
-        for (_, body) in (
+        for (_, velocity_control) in (
             &world.read::<::component::Player>(),
-            &world.read::<::component::RigidBody>(),
+            &mut world.write::<::component::VelocityControl>(),
         ).join()
         {
-            body.get_mut(&mut world.write_resource()).set_velocity(Velocity {
-                linear: ::na::Vector2::new(px_circle, py_circle) * conf.player_velocity,
-                angular: 0.0,
-            });
+            velocity_control.direction = ::na::Vector2::new(px_circle, py_circle);
         }
 
         let ax = gamepad

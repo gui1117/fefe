@@ -21,6 +21,10 @@ impl Insertable for Player {
         world.write().insert(entity, ::component::Aim(position.rotation.angle()));
         world.write().insert(entity, ::component::Life(1));
         world.write().insert(entity, ::component::DebugColor(1));
+        world.write().insert(entity, ::component::VelocityControl {
+            direction: ::na::zero(),
+            velocity: conf.player_velocity,
+        });
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
