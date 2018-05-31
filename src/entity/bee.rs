@@ -28,6 +28,7 @@ impl Insertable for Bee {
             self.animation_specie,
             AnimationName::Idle,
         ));
+        println!("toto");
         world.write().insert(entity, ::component::VelocityToPlayerCircle {
             circle_velocity: self.circle_velocity,
             direct_velocity: self.direct_velocity,
@@ -37,6 +38,7 @@ impl Insertable for Bee {
         });
         world.write().insert(entity, ::component::ContactDamage(self.damage));
         world.write().insert(entity, ::component::DeadOnContact);
+        world.write().insert(entity, ::component::Contactor(vec![]));
         world.write().insert(entity, ::component::Life(self.life));
         world.write().insert(entity, ::component::DebugColor(3));
 
