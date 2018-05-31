@@ -13,16 +13,21 @@
 
 * faire que le cursor est dessiné par l'os
 
+* pour la doc arreter de mettre des pub (crate partout juste faire un module doc avec reexport
+
+* faire un derive macro pour les composant pour faire des entité juste avec des conf de composant
+
 # gameplay
 
 * [x] boule de gravité
 * [x] monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibilité notamment un on l'on ne doit jamais le voir)
 * [x] aim/distance dampings velocity
 * [x] monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
-* [ ] monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
+* [x] monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
 * [ ] chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
-* [ ] monstre qui fait des cercles pour venir:
+* [ ] monstre qui fait des cercles pour venir
 
+## Maybe
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent
   sisi c'est bien, on peut faire juste qu'il continue met un boolean a true et contine deux metre plus loin
   si il ne voit rien avec le boolean a true alors il s'arrete vraiment

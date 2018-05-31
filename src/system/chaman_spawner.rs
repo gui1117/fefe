@@ -34,7 +34,7 @@ impl<'a> System<'a> for ChamanSpawnerSystem {
                 }
             } else {
                 chaman_spawner.spawned.retain(|spawned| entities.is_alive(*spawned));
-                if chaman_spawner.spawned.len() <= chaman_spawner.number_of_spawn {
+                if chaman_spawner.spawned.len() < chaman_spawner.number_of_spawn {
                     Some(Normal::new(chaman_spawner.spawn_time.0, chaman_spawner.spawn_time.1).ind_sample(&mut thread_rng()) as f32)
                 } else {
                     None

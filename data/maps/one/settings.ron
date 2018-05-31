@@ -6,6 +6,58 @@ MapSettings(
         ),
         (
             trigger: "#808000",
+            processor: BuildEntity(Chaman((
+                animation_specie: Character,
+                radius: 1,
+                life: 1,
+                density: 1,
+                aim_damping: None,
+                dist_damping: None,
+                velocity_to_player_random: (
+                    random_weighted: None,
+                    dist_proba_clamp: (
+                        min_value: 1.0,
+                        max_value: 0.0,
+                        min_t: 50,
+                        max_t: 100,
+                    ),
+                    aim_proba_clamp: (
+                        min_value: 1.0,
+                        max_value: 1.0,
+                        min_t: 50,
+                        max_t: 100,
+                    ),
+                    refreash_time: (1.0, 0.1),
+                    velocity: 10,
+                    toward_player: false,
+                    next_refreash: 0,
+                    current_direction: (0, 0),
+                ),
+                chaman_spawner: (
+                    spawn_time: (1, 0.1),
+                    number_of_spawn: 3,
+                    entity: Charger((
+                        animation_specie: Character,
+                        damage: 0,
+                        force: 1,
+                        life: 1,
+                        radius: 1,
+                        aim_damping: Some((
+                            min_value: 1.0,
+                            max_value: 0.0,
+                            min_t: 1.14,
+                            max_t: 1.14,
+                        )),
+                        dist_damping: None,
+                        velocity: 20,
+                        density: 1,
+                        memory: true,
+                    ))
+                ),
+            ))),
+        ),
+        (
+            trigger: "#808800",
             processor: BuildEntity(Walker((
                 animation_specie: Character,
                 radius: 1,

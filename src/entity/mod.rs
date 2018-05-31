@@ -7,6 +7,7 @@ use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers
 use specs::{World, Entity};
 
 pub use component::VelocityToPlayerRandom;
+pub use component::ChamanSpawnerConf;
 
 #[repr(usize)]
 pub enum Group {
@@ -215,6 +216,7 @@ object!(
         Charger,
         UniqueSpawner,
         Walker,
+        Chaman,
     }
 );
 
