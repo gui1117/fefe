@@ -83,11 +83,11 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
                     }
                 }).unwrap_or_else(|| ::util::random_normalized(&mut rng))
                     .try_normalize(EPSILON)
-                    .unwrap_or(::na::zero()).into();
+                    .unwrap_or(::na::zero());
             }
 
             rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
-                linear: ::na::Vector2::from_row_slice(&vtpr.current_direction) * vtpr.velocity,
+                linear: vtpr.current_direction * vtpr.velocity,
                 angular: 0.0,
             });
         }

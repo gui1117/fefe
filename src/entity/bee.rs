@@ -7,6 +7,7 @@ use rand::{thread_rng, Rand};
 use specs::{World, Entity};
 
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Bee {
     pub animation_specie: AnimationSpecie,
     pub radius: f32,
@@ -28,7 +29,6 @@ impl Insertable for Bee {
             self.animation_specie,
             AnimationName::Idle,
         ));
-        println!("toto");
         world.write().insert(entity, ::component::VelocityToPlayerCircle {
             circle_velocity: self.circle_velocity,
             direct_velocity: self.direct_velocity,

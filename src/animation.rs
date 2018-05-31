@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use std::fs::File;
 
 #[derive(Deserialize, Clone, Copy)]
+#[serde(deny_unknown_fields)]
 pub enum Framerate {
     /// Distance for one loop
     Walk(f32),
@@ -14,6 +15,7 @@ pub enum Framerate {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AnimationsConf {
     pub table: HashMap<(AnimationSpecie, AnimationName), Vec<String>>,
     pub parts: HashMap<String, AnimationPartConf>,
@@ -21,6 +23,7 @@ pub struct AnimationsConf {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AnimationPartConf {
     pub filename: String,
     pub layer: f32,
@@ -130,6 +133,7 @@ impl Animations {
 }
 
 #[derive(Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
+#[serde(deny_unknown_fields)]
 pub enum AnimationName {
     Idle,
     Walk,
@@ -137,6 +141,7 @@ pub enum AnimationName {
 }
 
 #[derive(Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
+#[serde(deny_unknown_fields)]
 pub enum AnimationSpecie {
     Character,
     Bomb,

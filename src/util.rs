@@ -24,6 +24,7 @@ macro_rules! try_multiple_time {
 }
 
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct ClampFunction {
     pub min_value: f32,
     pub max_value: f32,
@@ -45,7 +46,7 @@ impl ClampFunction {
     }
 }
 
-pub (crate) fn reset_world(world: &mut World) {
+pub fn reset_world(world: &mut World) {
     world.maintain();
     world.delete_all();
     world.write::<::component::RigidBody>().retained();
@@ -58,7 +59,7 @@ pub (crate) fn reset_world(world: &mut World) {
     world.add_resource(physic_world);
 }
 
-pub (crate) fn safe_maintain(world: &mut World) {
+pub fn safe_maintain(world: &mut World) {
     world.maintain();
     let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
     let retained = world
@@ -71,17 +72,17 @@ pub (crate) fn safe_maintain(world: &mut World) {
 }
 
 #[inline]
-pub (crate) fn move_toward(isometry: &mut ::na::Isometry2<f32>, angle: f32, distance: f32) {
+pub fn move_toward(isometry: &mut ::na::Isometry2<f32>, angle: f32, distance: f32) {
     isometry.translation.vector += ::na::Vector2::new(angle.cos(), angle.sin())*distance;
 }
 
 #[inline]
-pub (crate) fn move_forward(isometry: &mut ::na::Isometry2<f32>, distance: f32) {
+pub fn move_forward(isometry: &mut ::na::Isometry2<f32>, distance: f32) {
     let angle = isometry.rotation.angle();
     move_toward(isometry, angle, distance);
 }
 
-pub (crate) fn send_event_to_imgui(event: &::winit::Event, imgui: &mut ::imgui::ImGui, mouse_down: &mut [bool; 5]) {
+pub fn send_event_to_imgui(event: &::winit::Event, imgui: &mut ::imgui::ImGui, mouse_down: &mut [bool; 5]) {
     match event {
         Event::WindowEvent {
             event: WindowEvent::MouseInput { button, state, .. },
@@ -172,7 +173,7 @@ pub (crate) fn send_event_to_imgui(event: &::winit::Event, imgui: &mut ::imgui::
     }
 }
 
-pub (crate) fn init_imgui() -> ::imgui::ImGui {
+pub fn init_imgui() -> ::imgui::ImGui {
     let mut imgui = ::imgui::ImGui::init();
     imgui.set_ini_filename(None);
     imgui.set_log_filename(None);
@@ -200,13 +201,18 @@ pub (crate) fn init_imgui() -> ::imgui::ImGui {
 }
 
 #[allow(unused)]
-pub (crate) fn force_damping(mass: f32, time_to_reach_percent_velocity: f32, percent: f32, velocity: f32) -> (f32, f32) {
+pub fn force_damping(mass: f32, time_to_reach_percent_velocity: f32, percent: f32, velocity: f32) -> (f32, f32) {
     let damping = mass / time_to_reach_percent_velocity * (1.0 - percent).ln();
     let force = damping * velocity;
     (force, damping)
 }
 
-pub (crate) fn random_normalized(rng: &mut ThreadRng) -> ::na::Vector2<f32> {
+pub fn random_normalized(rng: &mut ThreadRng) -> ::na::Vector2<f32> {
     let angle = Range::new(0.0, 2.0*PI).ind_sample(rng);
     ::na::Vector2::new(angle.cos(), angle.sin())
 }
+
+pub fn vector_zero() -> ::na::Vector2<f32> {
+    ::na::zero()
+}
+

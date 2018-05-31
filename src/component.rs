@@ -1,4 +1,6 @@
+#[doc(hidden)]
 pub use animation::AnimationState;
+
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyStatus;
 use rand::thread_rng;
@@ -7,13 +9,15 @@ use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 use entity::InsertableObject;
 
-#[derive(Default)]
+#[derive(Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
 pub struct Player;
 impl Component for Player {
     type Storage = VecStorage<Self>;
 }
 
-#[derive(Deref, DerefMut)]
+#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[serde(deny_unknown_fields)]
 pub struct Aim(pub f32);
 impl Component for Aim {
     type Storage = VecStorage<Self>;
@@ -22,32 +26,35 @@ impl Component for Aim {
 //////////////////////////////// Life ////////////////////////////////
 
 /// Only against players
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct ContactDamage(pub usize);
 impl Component for ContactDamage {
     type Storage = VecStorage<Self>;
 }
 
-#[derive(Default)]
+#[derive(Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
 pub struct DeadOnContact;
 impl Component for DeadOnContact {
     type Storage = NullStorage<Self>;
 }
 
-#[derive(Deref, DerefMut)]
+#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[serde(deny_unknown_fields)]
 pub struct Life(pub usize);
 impl Component for Life {
     type Storage = VecStorage<Self>;
 }
-impl From<usize> for Life {
-    fn from(l: usize) -> Self {
-        Life(l)
-    }
-}
 
 //////////////////////////////// Velocity ////////////////////////////////
 
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct VelocityControl {
     pub velocity: f32,
+    #[serde(skip)]
+    #[serde(default = "::util::vector_zero")]
     pub direction: ::na::Vector2<f32>,
 }
 impl Component for VelocityControl {
@@ -58,27 +65,32 @@ pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
 
 pub const VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE: f32 = 0.1;
 /// Go to the closest or the last position in memory
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct VelocityToPlayerMemory {
+    #[serde(skip)]
+    #[serde(default = "VelocityToPlayerMemory::random_next_refreash")]
     pub next_refreash: f32,
+    #[serde(skip)]
     pub last_closest_in_sight: Option<::na::Vector2<f32>>,
     pub velocity: f32,
     /// If false it is equivalent to go to player in sight
     pub memory: bool,
-    _force_use_constructor: (),
 }
 impl Component for VelocityToPlayerMemory {
     type Storage = VecStorage<Self>;
 }
 
 impl VelocityToPlayerMemory {
+    pub fn random_next_refreash() -> f32 {
+        Range::new(0.0, VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE).ind_sample(&mut thread_rng())
+    }
     pub fn new(velocity: f32, memory: bool) -> Self {
-        let next_refreash = Range::new(0.0, VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE).ind_sample(&mut thread_rng());
         VelocityToPlayerMemory {
             memory,
-            next_refreash,
+            next_refreash: Self::random_next_refreash(),
             velocity,
             last_closest_in_sight: None,
-            _force_use_constructor: (),
         }
     }
 }
@@ -86,6 +98,7 @@ impl VelocityToPlayerMemory {
 /// Go into random directions
 /// or closest player in sight depending of proba
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct VelocityToPlayerRandom {
     /// If some then a random direction with f32 norm is added
     pub random_weighted: Option<f32>,
@@ -97,19 +110,26 @@ pub struct VelocityToPlayerRandom {
     pub refreash_time: (f64, f64),
     pub velocity: f32,
     pub toward_player: bool,
+    #[serde(skip)]
     pub next_refreash: f32,
-    pub current_direction: [f32; 2],
+    #[serde(skip)]
+    #[serde(default = "::util::vector_zero")]
+    pub current_direction: ::na::Vector2<f32>,
 }
 impl Component for VelocityToPlayerRandom {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct VelocityToPlayerCircle {
     pub circle_velocity: f32,
     pub direct_velocity: f32,
     /// Normal distribution
     pub shift_time: (f64, f64),
+    #[serde(skip)]
     pub next_shift: f32,
+    #[serde(default)]
     pub dir_shift: bool,
 }
 impl Component for VelocityToPlayerCircle {
@@ -134,7 +154,8 @@ impl Component for Boid {
 
 /// The processor takes distance with player aim in radiant
 /// The velocity is multiplied by the result
-#[derive(Deref)]
+#[derive(Deserialize, Clone, Deref)]
+#[serde(deny_unknown_fields)]
 pub struct VelocityDistanceDamping(pub ::util::ClampFunction);
 impl Component for VelocityDistanceDamping {
     type Storage = VecStorage<Self>;
@@ -142,7 +163,8 @@ impl Component for VelocityDistanceDamping {
 
 /// The processor takes distance with player
 /// The velocity is multiplied by the result
-#[derive(Deref)]
+#[derive(Deserialize, Clone, Deref)]
+#[serde(deny_unknown_fields)]
 pub struct VelocityAimDamping(pub ::util::ClampFunction);
 impl Component for VelocityAimDamping {
     type Storage = VecStorage<Self>;
@@ -152,7 +174,8 @@ impl Component for VelocityAimDamping {
 
 /// The processor takes distance with player aim in radiant
 /// The final damping is divided by the result
-#[derive(Deref)]
+#[derive(Deserialize, Clone, Deref)]
+#[serde(deny_unknown_fields)]
 pub struct PlayersAimDamping(pub ::util::ClampFunction);
 impl Component for PlayersAimDamping {
     type Storage = VecStorage<Self>;
@@ -160,12 +183,15 @@ impl Component for PlayersAimDamping {
 
 /// The processor takes distance with player
 /// The final damping is divided by the result
-#[derive(Deref)]
+#[derive(Deserialize, Clone, Deref)]
+#[serde(deny_unknown_fields)]
 pub struct PlayersDistanceDamping(pub ::util::ClampFunction);
 impl Component for PlayersDistanceDamping {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct GravityToPlayers {
     pub force: f32,
     pub powi: i32,
@@ -179,6 +205,8 @@ impl Component for ControlForce {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Damping {
     pub linear: f32,
     pub angular: f32,
@@ -192,28 +220,31 @@ impl Component for Damping {
 pub const UNIQUE_SPAWNER_TIMER: f32 = 0.1;
 /// Spawn an entity if character is in aim at a certain probability function of
 /// the distance to the character every UNIQUE_SPAWNER_TIMER seconds
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct UniqueSpawner {
     pub entity: InsertableObject,
     /// Clamp the proba with distance to characters
     pub dist_proba_clamp: Option<::util::ClampFunction>,
     /// Clamp the proba with aim of the characters
     pub aim_proba_clamp: Option<::util::ClampFunction>,
+    #[serde(default = "UniqueSpawner::random_next_refreash")]
     pub next_refreash: f32,
-    _force_use_constructor: (),
 }
 impl Component for UniqueSpawner {
     type Storage = VecStorage<Self>;
 }
 
 impl UniqueSpawner {
+    pub fn random_next_refreash() -> f32 {
+        Range::new(0.0, UNIQUE_SPAWNER_TIMER).ind_sample(&mut thread_rng())
+    }
     pub fn new(entity: InsertableObject, dist_proba_clamp: Option<::util::ClampFunction>, aim_proba_clamp: Option<::util::ClampFunction>) -> Self {
-        let next_refreash = Range::new(0.0, UNIQUE_SPAWNER_TIMER).ind_sample(&mut thread_rng());
         UniqueSpawner {
             entity,
             dist_proba_clamp,
             aim_proba_clamp,
-            next_refreash,
-            _force_use_constructor: (),
+            next_refreash: Self::random_next_refreash(),
         }
     }
 }
@@ -230,6 +261,7 @@ impl Component for Turret {
 }
 
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct ChamanSpawnerConf {
     pub entity: InsertableObject,
     pub spawn_time: (f64, f64),
@@ -247,12 +279,16 @@ impl Into<ChamanSpawner> for ChamanSpawnerConf {
     }
 }
 
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct ChamanSpawner {
     pub entity: InsertableObject,
     /// Normal distribution
     pub spawn_time: (f64, f64),
     pub number_of_spawn: usize,
+    #[serde(skip)]
     pub spawned: Vec<Entity>,
+    #[serde(skip)]
     pub next_spawn: Option<f32>,
 }
 impl Component for ChamanSpawner {
@@ -330,11 +366,15 @@ impl Component for Contactor {
 
 //////////////////////////////// Debug ////////////////////////////////
 
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct DebugCircles(pub Vec<f32>);
 impl Component for DebugCircles {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct DebugColor(pub usize);
 impl Component for DebugColor {
     type Storage = VecStorage<Self>;

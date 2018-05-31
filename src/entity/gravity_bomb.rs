@@ -6,6 +6,7 @@ use nphysics2d::volumetric::Volumetric;
 use specs::{World, Entity};
 
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 // TODO: ajouter player_dis_damping
 pub struct GravityBomb {
     pub animation_specie: AnimationSpecie,

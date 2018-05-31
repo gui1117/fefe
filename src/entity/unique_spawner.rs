@@ -6,6 +6,7 @@ use nphysics2d::volumetric::Volumetric;
 use specs::{World, Entity};
 
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct UniqueSpawner {
     pub entity: InsertableObject,
     pub animation_specie: AnimationSpecie,

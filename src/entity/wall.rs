@@ -4,6 +4,7 @@ use nphysics2d::object::{BodyHandle, Material};
 use specs::World;
 
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Wall;
 
 impl Fillable for Wall {

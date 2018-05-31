@@ -8,6 +8,7 @@ use rand::distributions::{IndependentSample, Range};
 use specs::{World, Entity};
 
 #[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct Turret {
     pub bullet: InsertableObject,
     pub animation_specie: AnimationSpecie,

@@ -236,6 +236,7 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapSettings {
     pub insert_rules: Vec<Rule<InsertableObject>>,
     pub fill_rules: Vec<Rule<FillableObject>>,
@@ -243,6 +244,7 @@ pub struct MapSettings {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Rule<T: Builder> {
     pub trigger: String,
     pub processor: Processor<T>,
@@ -260,6 +262,7 @@ pub trait Builder {
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 /// entities are randomized before being processed
 pub enum Processor<B: Builder> {
     BuildEntity(B),

@@ -6,6 +6,26 @@ MapSettings(
         ),
         (
             trigger: "#808000",
+            processor: BuildEntity(Meta((
+                animation_specie: Character,
+                radius: 1,
+                density: 1,
+                insert_shift: false,
+                groups: [Monster],
+                components: [
+                    ContactDamage((1)),
+                    Life((1)),
+                    VelocityToPlayerCircle((
+                        circle_velocity: 10,
+                        direct_velocity: 5,
+                        shift_time: (1, 0.1),
+                    )),
+                    DeadOnContact(()),
+                ],
+            ))),
+        ),
+        (
+            trigger: "#808008",
             processor: BuildEntity(Bee((
                 animation_specie: Character,
                 radius: 1,
@@ -46,8 +66,6 @@ MapSettings(
                     refreash_time: (1.0, 0.1),
                     velocity: 10,
                     toward_player: false,
-                    next_refreash: 0,
-                    current_direction: (0, 0),
                 ),
                 chaman_spawner: (
                     spawn_time: (1, 0.1),
@@ -55,7 +73,6 @@ MapSettings(
                     entity: Charger((
                         animation_specie: Character,
                         damage: 0,
-                        force: 1,
                         life: 1,
                         radius: 1,
                         aim_damping: Some((
@@ -99,8 +116,6 @@ MapSettings(
                     refreash_time: (1.0, 0.1),
                     velocity: 10,
                     toward_player: false,
-                    next_refreash: 0,
-                    current_direction: (0, 0),
                 ),
             ))),
         ),
@@ -124,7 +139,6 @@ MapSettings(
                 entity: Charger((
                     animation_specie: Character,
                     damage: 0,
-                    force: 1,
                     life: 1,
                     radius: 1,
                     aim_damping: Some((

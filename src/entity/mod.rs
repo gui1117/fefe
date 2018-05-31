@@ -6,9 +6,8 @@ use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
 use specs::{World, Entity};
 
-pub use component::VelocityToPlayerRandom;
-pub use component::ChamanSpawnerConf;
-
+#[derive(Deserialize, Clone, Copy)]
+#[serde(deny_unknown_fields)]
 #[repr(usize)]
 pub enum Group {
     Player,
@@ -186,6 +185,7 @@ macro_rules! object {
         }
 
         #[derive(Deserialize, Clone)]
+        #[serde(deny_unknown_fields)]
         pub enum $o {
             $($v(Box<$v>),)*
         }
@@ -218,6 +218,7 @@ object!(
         Walker,
         Chaman,
         Bee,
+        Meta,
     }
 );
 
@@ -256,3 +257,7 @@ pub use self::chaman::Chaman;
 
 mod bee;
 pub use self::bee::Bee;
+
+mod meta;
+pub use self::meta::Meta;
+pub use self::meta::MetaComponent;

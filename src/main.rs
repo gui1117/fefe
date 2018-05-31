@@ -31,18 +31,19 @@ extern crate winit;
 
 mod config_menu;
 pub mod animation;
-mod component;
+pub mod component;
 pub mod entity;
 mod force_generator;
 pub mod map;
 mod resource;
 mod system;
 #[macro_use]
-pub mod util;
+mod util;
 mod game_state;
 mod graphics;
 mod retained_storage;
 
+pub use util::ClampFunction;
 pub use resource::Conf;
 
 use game_state::GameState;
