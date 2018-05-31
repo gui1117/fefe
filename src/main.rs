@@ -38,7 +38,7 @@ pub mod map;
 mod resource;
 mod system;
 #[macro_use]
-mod util;
+pub mod util;
 mod game_state;
 mod graphics;
 mod retained_storage;

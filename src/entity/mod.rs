@@ -211,6 +211,7 @@ object!(
     InsertableObject {
         Player,
         Charger,
+        UniqueSpawner,
     }
 );
 

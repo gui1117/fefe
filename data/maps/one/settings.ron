@@ -6,22 +6,38 @@ MapSettings(
         ),
         (
             trigger: "#808000",
-            processor: BuildEntity(Charger((
+            processor: BuildEntity(UniqueSpawner((
                 animation_specie: Character,
-                damage: 0,
-                force: 1,
-                life: 1,
                 radius: 1,
-                aim_damping: Some((
+                dist_proba_clamp: Some((
                     min_value: 1.0,
-                    max_value: 0.0,
-                    min_t: 1.14,
-                    max_t: 1.14,
+                    max_value: 1.0,
+                    min_t: 50,
+                    max_t: 100,
                 )),
-                dist_damping: None,
-                velocity: 20,
-                density: 1,
-                memory: true,
+                aim_proba_clamp: Some((
+                    min_value: 1.0,
+                    max_value: 1.0,
+                    min_t: 1.57,
+                    max_t: 3.14,
+                )),
+                entity: Charger((
+                    animation_specie: Character,
+                    damage: 0,
+                    force: 1,
+                    life: 1,
+                    radius: 1,
+                    aim_damping: Some((
+                        min_value: 1.0,
+                        max_value: 0.0,
+                        min_t: 1.14,
+                        max_t: 1.14,
+                    )),
+                    dist_damping: None,
+                    velocity: 20,
+                    density: 1,
+                    memory: true,
+                ))
             ))),
         ),
     ],

@@ -15,15 +15,14 @@
 
 # gameplay
 
-## TOTEST
-monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibilité notamment un on l'on ne doit jamais le voir)
-monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
-boule de gravité
-monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
-chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
-monstre qui fait des cercles pour venir:
-aim/distance dampings velocity
-## END TOTEST
+* [x] boule de gravité
+* [x] monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibilité notamment un on l'on ne doit jamais le voir)
+* [x] aim/distance dampings velocity
+    // TODO PROBA HERE
+* [ ] monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
+* [ ] monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
+* [ ] chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
+* [ ] monstre qui fait des cercles pour venir:
 
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent
   sisi c'est bien, on peut faire juste qu'il continue met un boolean a true et contine deux metre plus loin

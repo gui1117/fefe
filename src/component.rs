@@ -191,13 +191,10 @@ pub const UNIQUE_SPAWNER_TIMER: f32 = 0.1;
 /// the distance to the character every UNIQUE_SPAWNER_TIMER seconds
 pub struct UniqueSpawner {
     pub entity: InsertableObject,
-    // // TODO:
-    // /// Clamp the proba with distance to characters
-    // pub dist_proba_clamp: ::util::ClampFunction,
-    // /// Clamp the proba with aim of the characters
-    // pub aim_proba_clamp: ::util::ClampFunction,
-    /// Clamp the distance to characters
-    pub proba: ::util::ClampFunction,
+    /// Clamp the proba with distance to characters
+    pub dist_proba_clamp: Option<::util::ClampFunction>,
+    /// Clamp the proba with aim of the characters
+    pub aim_proba_clamp: Option<::util::ClampFunction>,
     pub next_refreash: f32,
     _force_use_constructor: (),
 }
@@ -206,11 +203,12 @@ impl Component for UniqueSpawner {
 }
 
 impl UniqueSpawner {
-    pub fn new(entity: InsertableObject, proba: ::util::ClampFunction) -> Self {
+    pub fn new(entity: InsertableObject, dist_proba_clamp: Option<::util::ClampFunction>, aim_proba_clamp: Option<::util::ClampFunction>) -> Self {
         let next_refreash = Range::new(0.0, UNIQUE_SPAWNER_TIMER).ind_sample(&mut thread_rng());
         UniqueSpawner {
             entity,
-            proba,
+            dist_proba_clamp,
+            aim_proba_clamp,
             next_refreash,
             _force_use_constructor: (),
         }

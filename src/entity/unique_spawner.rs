@@ -10,7 +10,8 @@ pub struct UniqueSpawner {
     pub entity: InsertableObject,
     pub animation_specie: AnimationSpecie,
     pub radius: f32,
-    pub proba: ::util::ClampFunction,
+    pub dist_proba_clamp: Option<::util::ClampFunction>,
+    pub aim_proba_clamp: Option<::util::ClampFunction>,
 }
 
 impl Insertable for UniqueSpawner {
@@ -20,14 +21,16 @@ impl Insertable for UniqueSpawner {
             self.animation_specie,
             AnimationName::Idle,
         ));
-        world.write().insert(entity, ::component::UniqueSpawner::new(self.entity.clone(), self.proba.clone()));
+        world.write().insert(entity, ::component::UniqueSpawner::new(self.entity.clone(), self.dist_proba_clamp.clone(), self.aim_proba_clamp.clone()));
         world.write().insert(entity, ::component::DebugColor(6));
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
-        world.write().insert(entity, ::component::DebugCircles(vec![
-            self.proba.min_t,
-            self.proba.max_t,
-        ]));
+        if let Some(ref dist_proba_clamp) = self.dist_proba_clamp {
+            world.write().insert(entity, ::component::DebugCircles(vec![
+                dist_proba_clamp.min_t,
+                dist_proba_clamp.max_t,
+            ]));
+        }
 
         let shape = ShapeHandle::new(Ball::new(self.radius));
         let body_handle = ::component::RigidBody::safe_insert(
@@ -41,13 +44,16 @@ impl Insertable for UniqueSpawner {
             &mut world.write_resource(),
         );
 
-        physic_world.add_collider(
+        let collider = physic_world.add_collider(
             0.0,
             shape,
             body_handle.0,
             ::na::one(),
             Material::new(0.0, 0.0),
         );
+        let mut groups = ::ncollide2d::world::CollisionGroups::new();
+        groups.set_membership(&[super::Group::Monster as usize]);
+        physic_world.collision_world_mut().set_collision_groups(collider, groups);
 
         entity
     }
