@@ -5,7 +5,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::fs::File;
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Deserialize, Clone, Copy)]
 pub enum Framerate {
     /// Distance for one loop
     Walk(f32),
@@ -13,14 +13,14 @@ pub enum Framerate {
     Fix(f32),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct AnimationsConf {
     pub table: HashMap<(AnimationSpecie, AnimationName), Vec<String>>,
     pub parts: HashMap<String, AnimationPartConf>,
     pub directory: PathBuf,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct AnimationPartConf {
     pub filename: String,
     pub layer: f32,
@@ -129,14 +129,14 @@ impl Animations {
     }
 }
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum AnimationName {
     Idle,
     Walk,
     SwordAttack,
 }
 
-#[derive(Serialize, Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(Deserialize, Hash, PartialEq, Eq, Clone, Copy, Debug)]
 pub enum AnimationSpecie {
     Character,
     Bomb,

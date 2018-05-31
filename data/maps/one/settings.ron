@@ -6,6 +6,22 @@ MapSettings(
         ),
         (
             trigger: "#808000",
+            processor: BuildEntity(Bee((
+                animation_specie: Character,
+                radius: 1,
+                damage: 1,
+                life: 1,
+                density: 1,
+                aim_damping: None,
+                dist_damping: None,
+                circle_velocity: 10,
+                direct_velocity: 5,
+                shift_time: (1, 0.1),
+                dir_shift: None,
+            ))),
+        ),
+        (
+            trigger: "#800000",
             processor: BuildEntity(Chaman((
                 animation_specie: Character,
                 radius: 1,

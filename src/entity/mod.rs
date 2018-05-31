@@ -185,7 +185,7 @@ macro_rules! object {
             fn $f(&self, position: $p, world: &World) $(-> $r)*;
         }
 
-        #[derive(Serialize, Deserialize, Clone)]
+        #[derive(Deserialize, Clone)]
         pub enum $o {
             $($v(Box<$v>),)*
         }
@@ -217,6 +217,7 @@ object!(
         UniqueSpawner,
         Walker,
         Chaman,
+        Bee,
     }
 );
 

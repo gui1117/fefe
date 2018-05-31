@@ -23,7 +23,7 @@ macro_rules! try_multiple_time {
     }};
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct ClampFunction {
     pub min_value: f32,
     pub max_value: f32,

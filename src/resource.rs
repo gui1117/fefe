@@ -9,7 +9,7 @@ pub use imgui::ImGui;
 
 pub struct WindowSize(pub (u32, u32));
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct Conf {
     pub fps: usize,
     pub physic_max_timestep: f32,

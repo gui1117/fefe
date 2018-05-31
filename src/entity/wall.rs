@@ -3,7 +3,7 @@ use ncollide2d::shape::{Segment, ShapeHandle};
 use nphysics2d::object::{BodyHandle, Material};
 use specs::World;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct Wall;
 
 impl Fillable for Wall {

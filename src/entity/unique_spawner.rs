@@ -5,7 +5,7 @@ use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
 use specs::{World, Entity};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct UniqueSpawner {
     pub entity: InsertableObject,
     pub animation_specie: AnimationSpecie,

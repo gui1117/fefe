@@ -7,7 +7,7 @@ use rand::thread_rng;
 use rand::distributions::{IndependentSample, Range};
 use specs::{World, Entity};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct Turret {
     pub bullet: InsertableObject,
     pub animation_specie: AnimationSpecie,

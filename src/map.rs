@@ -235,14 +235,14 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
     Ok(())
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct MapSettings {
     pub insert_rules: Vec<Rule<InsertableObject>>,
     pub fill_rules: Vec<Rule<FillableObject>>,
     pub segment_rules: Vec<Rule<SegmentableObject>>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct Rule<T: Builder> {
     pub trigger: String,
     pub processor: Processor<T>,
@@ -259,7 +259,7 @@ pub trait Builder {
     fn build(&self, position: Self::Position, world: &mut World);
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 /// entities are randomized before being processed
 pub enum Processor<B: Builder> {
     BuildEntity(B),

@@ -24,8 +24,9 @@
 * [x] aim/distance dampings velocity
 * [x] monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
 * [x] monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
-* [ ] chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
+* [x] chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
 * [ ] monstre qui fait des cercles pour venir
+* [ ] faire un trait impl par les composant qui permet de les inséréer ce trait avec une méthode default peut être override pour rajouter des truc (comme le rigid_body par example et uniquement ?) car les force use contructor actuel sont vraiment peut interessant et facilement contournable (une fonction a la création qui randomise). aussi il seront peut être enlevé avec les tempo. si on arrive a le faire tel quel on peut faire du hot reloading facile ? osef
 
 ## Maybe
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent

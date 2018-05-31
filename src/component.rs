@@ -85,7 +85,7 @@ impl VelocityToPlayerMemory {
 
 /// Go into random directions
 /// or closest player in sight depending of proba
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct VelocityToPlayerRandom {
     /// If some then a random direction with f32 norm is added
     pub random_weighted: Option<f32>,
@@ -107,6 +107,9 @@ impl Component for VelocityToPlayerRandom {
 pub struct VelocityToPlayerCircle {
     pub circle_velocity: f32,
     pub direct_velocity: f32,
+    /// Normal distribution
+    pub shift_time: (f64, f64),
+    pub next_shift: f32,
     pub dir_shift: bool,
 }
 impl Component for VelocityToPlayerCircle {
@@ -226,7 +229,7 @@ impl Component for Turret {
     type Storage = VecStorage<Self>;
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct ChamanSpawnerConf {
     pub entity: InsertableObject,
     pub spawn_time: (f64, f64),
