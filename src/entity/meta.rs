@@ -71,7 +71,16 @@ impl Insertable for Meta {
             let component = component.clone();
             component.insert(entity, world);
         }
+
         // TODO: debug circles for components
+
+        if self.components.iter().any(|c| match c {
+            MetaComponent::ContactDamage(_) |
+            MetaComponent::VelocityToPlayerCircle(_) => true,
+            _ => false,
+        }) {
+            world.write().insert(entity, ::component::Contactor(vec![]));
+        }
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
