@@ -18,8 +18,7 @@
 * [x] boule de gravité
 * [x] monstre tuable ou pas attiré et +- figé lorsque visé (faire toute les possibilité notamment un on l'on ne doit jamais le voir)
 * [x] aim/distance dampings velocity
-    // TODO PROBA HERE
-* [ ] monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
+* [x] monstre glacé qui se réveille aléatoirement en fonction de distance: et fonce simplement en direction du héros pour lequel il a été réveillé. si il rencontre un mur alors il s'arrete et attend de voir quand y'en a un en ligne de mire ou va jusqu'a la dernière position ou il l'a vue
 * [ ] monstre qui avance vers héros et font mal au contact (araigné) sinon bouge random
 * [ ] chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
 * [ ] monstre qui fait des cercles pour venir:
@@ -53,7 +52,7 @@ remplacer tout les timer par des timer en rythme
 * circle_to_player faire chgt régulier en tempo
 * faire une partition pour les spawn des uniques spawner
 * idem pour les spawn de chaman ? oui: faire que la loi normale donne le numéro du beat sur lequel il sera spawn
-* idem pour les déplaceents des monstres ? non bof ou alors faire comme chamanspawn: la loi donne le numéro du beat ensuite
+* idem pour les déplaceents des monstres ? non bof ou alors faire comme chamanspawn: la loi donne le numéro du beat ensuite ça marche bien
 * faire velocitytoplayer avec update en rythme au lieu de update en continue
 
 faire un monstre qui change de direction en rythme et fonce toujours vers le héros. comme un velocity to player mais avec update en rythme (generaliser) au lieu de tout le temps

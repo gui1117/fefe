@@ -11,6 +11,10 @@ pub struct Walker {
     pub radius: f32,
     pub damage: usize,
     pub velocity_to_player_random: ::component::VelocityToPlayerRandom,
+    pub life: usize,
+    pub density: f32,
+    pub dist_damping: Option<::util::ClampFunction>,
+    pub aim_damping: Option<::util::ClampFunction>,
 }
 
 impl Insertable for Walker {
@@ -22,8 +26,22 @@ impl Insertable for Walker {
         ));
         world.write().insert(entity, self.velocity_to_player_random.clone());
         world.write().insert(entity, ::component::ContactDamage(self.damage));
-        world.write().insert(entity, ::component::Life(1));
+        world.write().insert(entity, ::component::Life(self.life));
         world.write().insert(entity, ::component::DebugColor(7));
+
+        let mut debug_circles = vec![];
+        debug_circles.push(self.velocity_to_player_random.dist_proba_clamp.min_t);
+        debug_circles.push(self.velocity_to_player_random.dist_proba_clamp.max_t);
+        if let Some(dist_damping) = self.dist_damping.clone() {
+            debug_circles.push(dist_damping.min_t);
+            debug_circles.push(dist_damping.max_t);
+            world.write().insert(entity, ::component::VelocityDistanceDamping(dist_damping));
+        }
+        world.write().insert(entity, ::component::DebugCircles(debug_circles));
+
+        if let Some(aim_damping) = self.aim_damping.clone() {
+            world.write().insert(entity, ::component::VelocityAimDamping(aim_damping));
+        }
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
@@ -31,7 +49,7 @@ impl Insertable for Walker {
         let body_handle = ::component::RigidBody::safe_insert(
             entity,
             position.0,
-            shape.inertia(1.0),
+            shape.inertia(self.density),
             shape.center_of_mass(),
             BodyStatus::Dynamic,
             &mut world.write(),
@@ -39,13 +57,16 @@ impl Insertable for Walker {
             &mut world.write_resource(),
         );
 
-        physic_world.add_collider(
+        let collider = physic_world.add_collider(
             0.0,
             shape,
             body_handle.0,
             ::na::one(),
             Material::new(0.0, 0.0),
         );
+        let mut groups = ::ncollide2d::world::CollisionGroups::new();
+        groups.set_membership(&[super::Group::Monster as usize]);
+        physic_world.collision_world_mut().set_collision_groups(collider, groups);
 
         entity
     }

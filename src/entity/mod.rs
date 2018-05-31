@@ -6,6 +6,8 @@ use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
 use specs::{World, Entity};
 
+pub use component::VelocityToPlayerRandom;
+
 #[repr(usize)]
 pub enum Group {
     Player,
@@ -212,6 +214,7 @@ object!(
         Player,
         Charger,
         UniqueSpawner,
+        Walker,
     }
 );
 

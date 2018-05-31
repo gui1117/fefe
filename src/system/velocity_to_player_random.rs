@@ -2,7 +2,7 @@ use specs::{Join, Fetch, FetchMut, ReadStorage, System, WriteStorage};
 use ncollide2d::world::CollisionGroups;
 use ncollide2d::query::Ray;
 use nphysics2d::math::Velocity;
-use rand::{thread_rng, Rand};
+use rand::thread_rng;
 use rand::distributions::{IndependentSample, Range, Normal};
 use std::f32::EPSILON;
 use std::f32::consts::PI;
@@ -57,8 +57,7 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
                     .min_by_key(|(_, distance)| (distance.norm() * ::CMP_PRECISION) as usize);
 
                 vtpr.current_direction = closest_in_sight.and_then(|(aim, distance)| {
-                    let v = -distance;
-                    let angle = v[1].atan2(v[0]);
+                    let angle = distance[1].atan2(distance[0]);
                     let mut angle_distance = (angle - aim.0).abs() % 2.0 * PI;
                     if angle_distance >= PI {
                         angle_distance = 2.0 * PI - angle_distance;
@@ -75,14 +74,14 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
                         }
 
                         if let Some(weight) = vtpr.random_weighted {
-                            direction += ::na::Vector2::rand(&mut rng).normalize()*weight;
+                            direction += ::util::random_normalized(&mut rng)*weight;
                             direction.normalize();
                         }
                         Some(direction)
                     } else {
                         None
                     }
-                }).unwrap_or_else(|| ::na::Vector2::rand(&mut rng))
+                }).unwrap_or_else(|| ::util::random_normalized(&mut rng))
                     .try_normalize(EPSILON)
                     .unwrap_or(::na::zero()).into();
             }

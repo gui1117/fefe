@@ -2,6 +2,9 @@ use retained_storage::Retained;
 use specs::World;
 use winit::{ElementState, Event, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode,
             WindowEvent};
+use rand::ThreadRng;
+use rand::distributions::{IndependentSample, Range};
+use std::f32::consts::PI;
 
 #[allow(unused)]
 macro_rules! try_multiple_time {
@@ -201,4 +204,9 @@ pub (crate) fn force_damping(mass: f32, time_to_reach_percent_velocity: f32, per
     let damping = mass / time_to_reach_percent_velocity * (1.0 - percent).ln();
     let force = damping * velocity;
     (force, damping)
+}
+
+pub (crate) fn random_normalized(rng: &mut ThreadRng) -> ::na::Vector2<f32> {
+    let angle = Range::new(0.0, 2.0*PI).ind_sample(rng);
+    ::na::Vector2::new(angle.cos(), angle.sin())
 }
