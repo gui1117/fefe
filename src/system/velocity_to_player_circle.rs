@@ -9,19 +9,20 @@ impl<'a> System<'a> for VelocityToPlayerCircleSystem {
     type SystemData = (
         ReadStorage<'a, ::component::Player>,
         ReadStorage<'a, ::component::RigidBody>,
+        ReadStorage<'a, ::component::Activator>,
         ReadStorage<'a, ::component::Contactor>,
         WriteStorage<'a, ::component::VelocityToPlayerCircle>,
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-    fn run(&mut self, (players, rigid_bodies, contactors, mut circle_to_players, mut physic_world): Self::SystemData) {
+    fn run(&mut self, (players, rigid_bodies, activators, contactors, mut circle_to_players, mut physic_world): Self::SystemData) {
         let players_position = (&players, &rigid_bodies)
             .join()
             .map(|(_, body)| body.get(&physic_world).position().translation.vector)
             .collect::<Vec<_>>();
 
-        for (circle_to_player, rigid_body, contactor) in (&mut circle_to_players, &rigid_bodies, &contactors).join() {
-            if !contactor.0.is_empty() {
+        for (circle_to_player, rigid_body, contactor, activator) in (&mut circle_to_players, &rigid_bodies, &contactors, &activators).join() {
+            if !contactor.0.is_empty() || activator.activated {
                 circle_to_player.dir_shift = !circle_to_player.dir_shift;
             }
 

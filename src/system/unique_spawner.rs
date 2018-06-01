@@ -10,18 +10,18 @@ pub struct UniqueSpawnerSystem;
 
 impl<'a> System<'a> for UniqueSpawnerSystem {
     type SystemData = (
+        ReadStorage<'a, ::component::Activator>,
         ReadStorage<'a, ::component::Aim>,
         ReadStorage<'a, ::component::Player>,
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::UniqueSpawner>,
         Fetch<'a, ::resource::PhysicWorld>,
-        Fetch<'a, ::resource::UpdateTime>,
         Fetch<'a, ::resource::LazyUpdate>,
         Fetch<'a, ::resource::EntitiesRes>,
         Fetch<'a, ::resource::BodiesMap>,
     );
 
-    fn run(&mut self, (aims, players, bodies, mut unique_spawners, physic_world, update_time, lazy_update, entities, bodies_map): Self::SystemData) {
+    fn run(&mut self, (activators, aims, players, bodies, mut unique_spawners, physic_world, lazy_update, entities, bodies_map): Self::SystemData) {
         let mut rng = thread_rng();
         let range_0_1 = Range::new(0.0, 1.0);
 
@@ -32,10 +32,8 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
             })
             .collect::<Vec<_>>();
 
-        for (unique_spawner, body, entity) in (&mut unique_spawners, &bodies, &*entities).join() {
-            unique_spawner.next_refreash -= update_time.0;
-            if unique_spawner.next_refreash <= 0.0 {
-                unique_spawner.next_refreash = ::component::UNIQUE_SPAWNER_TIMER;
+        for (unique_spawner, body, activator, entity) in (&mut unique_spawners, &bodies, &activators, &*entities).join() {
+            if activator.activated {
                 let position = body.get(&physic_world).position().clone();
                 let pos_vector = position.translation.vector;
                 for &(player_aim, ref player_position) in &players_aim {

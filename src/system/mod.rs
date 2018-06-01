@@ -42,3 +42,6 @@ pub use self::velocity_control::*;
 
 mod velocity_dampings;
 pub use self::velocity_dampings::*;
+
+mod activator;
+pub use self::activator::*;

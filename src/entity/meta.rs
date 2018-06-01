@@ -47,6 +47,7 @@ component_list!{
     ChamanSpawner,
     DebugColor,
     DebugCircles,
+    Activator,
 }
 
 #[derive(Deserialize, Clone)]

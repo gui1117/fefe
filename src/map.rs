@@ -12,6 +12,7 @@ use specs::World;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
+use std::collections::HashMap;
 
 pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
     ::util::reset_world(world);
@@ -174,6 +175,8 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
     }
 
     // Insert entities to world
+    let mut insertables = world.read_resource::<::resource::Conf>().insertables.clone();
+    insertables.extend(settings.insertables);
     for (insert_rule, insert_rule_entities) in settings
         .insert_rules
         .drain(..)
@@ -182,7 +185,7 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
         let rule_trigger = insert_rule.trigger;
         insert_rule
             .processor
-            .build(insert_rule_entities, world)
+            .build(insert_rule_entities, &insertables, world)
             .map_err(|e| {
                 format_err!(
                     "\"{}\": insert rule \"{}\": {}",
@@ -194,6 +197,8 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
     }
 
     // Fill entities to world
+    let mut fillables = world.read_resource::<::resource::Conf>().fillables.clone();
+    fillables.extend(settings.fillables);
     for (fill_rule, fill_rule_entities) in settings
         .fill_rules
         .drain(..)
@@ -202,7 +207,7 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
         let rule_trigger = fill_rule.trigger;
         fill_rule
             .processor
-            .build(fill_rule_entities, world)
+            .build(fill_rule_entities, &fillables, world)
             .map_err(|e| {
                 format_err!(
                     "\"{}\": fill rule \"{}\": {}",
@@ -214,6 +219,8 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
     }
 
     // Segment entities to world
+    let mut segmentables = world.read_resource::<::resource::Conf>().segmentables.clone();
+    segmentables.extend(settings.segmentables);
     for (segment_rule, segment_rule_entities) in settings
         .segment_rules
         .drain(..)
@@ -222,7 +229,7 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
         let rule_trigger = segment_rule.trigger;
         segment_rule
             .processor
-            .build(segment_rule_entities, world)
+            .build(segment_rule_entities, &segmentables, world)
             .map_err(|e| {
                 format_err!(
                     "\"{}\": segment rule \"{}\": {}",
@@ -238,16 +245,20 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MapSettings {
-    pub insert_rules: Vec<Rule<InsertableObject>>,
-    pub fill_rules: Vec<Rule<FillableObject>>,
-    pub segment_rules: Vec<Rule<SegmentableObject>>,
+    pub insert_rules: Vec<Rule>,
+    pub fill_rules: Vec<Rule>,
+    pub segment_rules: Vec<Rule>,
+
+    pub insertables: HashMap<String, InsertableObject>,
+    pub fillables: HashMap<String, FillableObject>,
+    pub segmentables: HashMap<String, SegmentableObject>,
 }
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Rule<T: Builder> {
+pub struct Rule {
     pub trigger: String,
-    pub processor: Processor<T>,
+    pub processor: Processor,
 }
 
 #[doc(hidden)]
@@ -264,15 +275,15 @@ pub trait Builder {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 /// entities are randomized before being processed
-pub enum Processor<B: Builder> {
-    BuildEntity(B),
-    TakeNPositions(usize, Box<Processor<B>>),
-    RandomPositionDispatch(Vec<(u32, Box<Processor<B>>)>),
-    OrdonatePositionDispatch(Vec<Box<Processor<B>>>),
+pub enum Processor {
+    Build(String),
+    TakeNPositions(usize, Box<Processor>),
+    RandomPositionDispatch(Vec<(u32, Box<Processor>)>),
+    OrdonatePositionDispatch(Vec<Box<Processor>>),
 }
 
-impl<B: Builder> Processor<B> {
-    fn build(self, entities: Vec<Path>, world: &mut World) -> Result<(), ::failure::Error> {
+impl Processor {
+    fn build<B: Builder>(self, entities: Vec<Path>, defs: &HashMap<String, B>, world: &mut World) -> Result<(), ::failure::Error> {
         let mut positions = vec![];
         for entity in entities {
             let position = B::Position::try_from_path(entity)
@@ -280,19 +291,24 @@ impl<B: Builder> Processor<B> {
             positions.push(position);
         }
         thread_rng().shuffle(&mut positions);
-        self.build_positions(positions, world);
-        Ok(())
+        self.build_positions(positions, defs, world)
     }
 
-    fn build_positions(self, mut entities: Vec<B::Position>, world: &mut World) {
+    fn build_positions<B: Builder>(self, mut positions: Vec<B::Position>, defs: &HashMap<String, B>, world: &mut World) -> Result<(), ::failure::Error> {
         use self::Processor::*;
         match self {
-            BuildEntity(builder) => for entity in entities {
-                builder.build(entity, world);
+            Build(def_name) => {
+                let def = defs.get(&def_name)
+                    .ok_or(::failure::err_msg(format!("unknown entity: {}", def_name)))?;
+                for position in positions {
+
+                    def.build(position, world);
+                }
+                Ok(())
             },
             TakeNPositions(n, processor) => {
-                entities.truncate(n);
-                processor.build_positions(entities, world);
+                positions.truncate(n);
+                processor.build_positions(positions, defs, world)
             }
             RandomPositionDispatch(weighted_processors) => {
                 let mut rng = ::rand::thread_rng();
@@ -307,25 +323,27 @@ impl<B: Builder> Processor<B> {
                     .collect::<Vec<_>>();
                 let choices = WeightedChoice::new(&mut items);
 
-                for entity in entities {
+                for position in positions {
                     let i = choices.ind_sample(&mut rng);
-                    processors_entities[i].push(entity);
+                    processors_entities[i].push(position);
                 }
                 for (_, processor) in weighted_processors {
-                    processor.build_positions(processors_entities.remove(0), world)
+                    processor.build_positions(processors_entities.remove(0), defs, world)?
                 }
+                Ok(())
             }
             OrdonatePositionDispatch(inserters) => {
                 let mut processors_entities = inserters.iter().map(|_| vec![]).collect::<Vec<_>>();
                 let mut i = 0;
-                for entity in entities {
-                    processors_entities[i].push(entity);
+                for position in positions {
+                    processors_entities[i].push(position);
                     i += 1;
                     i %= processors_entities.len();
                 }
                 for processor in inserters {
-                    processor.build_positions(processors_entities.remove(0), world)
+                    processor.build_positions(processors_entities.remove(0), defs, world)?
                 }
+                Ok(())
             }
         }
     }

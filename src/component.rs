@@ -3,8 +3,6 @@ pub use animation::AnimationState;
 
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyStatus;
-use rand::thread_rng;
-use rand::distributions::{IndependentSample, Range};
 use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 use entity::InsertableObject;
@@ -20,6 +18,18 @@ impl Component for Player {
 #[serde(deny_unknown_fields)]
 pub struct Aim(pub f32);
 impl Component for Aim {
+    type Storage = VecStorage<Self>;
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct Activator {
+    pub tempo: usize,
+    pub partition: Vec<bool>,
+    #[serde(skip)]
+    pub activated: bool,
+}
+impl Component for Activator {
     type Storage = VecStorage<Self>;
 }
 
@@ -63,14 +73,10 @@ impl Component for VelocityControl {
 
 pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
 
-pub const VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE: f32 = 0.1;
 /// Go to the closest or the last position in memory
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct VelocityToPlayerMemory {
-    #[serde(skip)]
-    #[serde(default = "VelocityToPlayerMemory::random_next_refreash")]
-    pub next_refreash: f32,
     #[serde(skip)]
     pub last_closest_in_sight: Option<::na::Vector2<f32>>,
     pub velocity: f32,
@@ -81,22 +87,10 @@ impl Component for VelocityToPlayerMemory {
     type Storage = VecStorage<Self>;
 }
 
-impl VelocityToPlayerMemory {
-    pub fn random_next_refreash() -> f32 {
-        Range::new(0.0, VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE).ind_sample(&mut thread_rng())
-    }
-    pub fn new(velocity: f32, memory: bool) -> Self {
-        VelocityToPlayerMemory {
-            memory,
-            next_refreash: Self::random_next_refreash(),
-            velocity,
-            last_closest_in_sight: None,
-        }
-    }
-}
-
 /// Go into random directions
 /// or closest player in sight depending of proba
+///
+// TODO: maybe make change of direction random when activated
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct VelocityToPlayerRandom {
@@ -106,12 +100,8 @@ pub struct VelocityToPlayerRandom {
     pub dist_proba_clamp: ::util::ClampFunction,
     /// Clamp the proba with aim of the characters
     pub aim_proba_clamp: ::util::ClampFunction,
-    /// Normal distribution
-    pub refreash_time: (f64, f64),
     pub velocity: f32,
     pub toward_player: bool,
-    #[serde(skip)]
-    pub next_refreash: f32,
     #[serde(skip)]
     #[serde(default = "::util::vector_zero")]
     pub current_direction: ::na::Vector2<f32>,
@@ -217,9 +207,8 @@ impl Component for Damping {
 
 //////////////////////////////// Spawner ////////////////////////////////
 
-pub const UNIQUE_SPAWNER_TIMER: f32 = 0.1;
 /// Spawn an entity if character is in aim at a certain probability function of
-/// the distance to the character every UNIQUE_SPAWNER_TIMER seconds
+/// the distance to the character every time activated
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct UniqueSpawner {
@@ -228,25 +217,9 @@ pub struct UniqueSpawner {
     pub dist_proba_clamp: Option<::util::ClampFunction>,
     /// Clamp the proba with aim of the characters
     pub aim_proba_clamp: Option<::util::ClampFunction>,
-    #[serde(default = "UniqueSpawner::random_next_refreash")]
-    pub next_refreash: f32,
 }
 impl Component for UniqueSpawner {
     type Storage = VecStorage<Self>;
-}
-
-impl UniqueSpawner {
-    pub fn random_next_refreash() -> f32 {
-        Range::new(0.0, UNIQUE_SPAWNER_TIMER).ind_sample(&mut thread_rng())
-    }
-    pub fn new(entity: InsertableObject, dist_proba_clamp: Option<::util::ClampFunction>, aim_proba_clamp: Option<::util::ClampFunction>) -> Self {
-        UniqueSpawner {
-            entity,
-            dist_proba_clamp,
-            aim_proba_clamp,
-            next_refreash: Self::random_next_refreash(),
-        }
-    }
 }
 
 pub struct Turret {
@@ -262,34 +235,12 @@ impl Component for Turret {
 
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
-pub struct ChamanSpawnerConf {
-    pub entity: InsertableObject,
-    pub spawn_time: (f64, f64),
-    pub number_of_spawn: usize,
-}
-impl Into<ChamanSpawner> for ChamanSpawnerConf {
-    fn into(self) -> ChamanSpawner {
-        ChamanSpawner {
-            entity: self.entity,
-            spawn_time: self.spawn_time,
-            number_of_spawn: self.number_of_spawn,
-            spawned: vec![],
-            next_spawn: None,
-        }
-    }
-}
-
-#[derive(Deserialize, Clone)]
-#[serde(deny_unknown_fields)]
+// TODO: maybe make spawn in an random of beat when activated
 pub struct ChamanSpawner {
     pub entity: InsertableObject,
-    /// Normal distribution
-    pub spawn_time: (f64, f64),
     pub number_of_spawn: usize,
     #[serde(skip)]
     pub spawned: Vec<Entity>,
-    #[serde(skip)]
-    pub next_spawn: Option<f32>,
 }
 impl Component for ChamanSpawner {
     type Storage = VecStorage<Self>;

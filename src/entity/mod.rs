@@ -211,15 +211,7 @@ object!(
     Insertable -> Entity,
     insert,
     InsertPosition,
-    InsertableObject {
-        Player,
-        Charger,
-        UniqueSpawner,
-        Walker,
-        Chaman,
-        Bee,
-        Meta,
-    }
+    InsertableObject { Meta }
 );
 
 object!(Fillable, fill, FillPosition, FillableObject { Wall });
@@ -231,32 +223,11 @@ object!(
     SegmentableObject { Wall }
 );
 
-mod gravity_bomb;
-pub use self::gravity_bomb::GravityBomb;
-
-mod player;
-pub use self::player::Player;
-
 mod wall;
 pub use self::wall::Wall;
 
 mod turret;
 pub use self::turret::Turret;
-
-mod unique_spawner;
-pub use self::unique_spawner::UniqueSpawner;
-
-mod charger;
-pub use self::charger::Charger;
-
-mod walker;
-pub use self::walker::Walker;
-
-mod chaman;
-pub use self::chaman::Chaman;
-
-mod bee;
-pub use self::bee::Bee;
 
 mod meta;
 pub use self::meta::Meta;

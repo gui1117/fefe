@@ -1,3 +1,10 @@
+# faire example pour les autres
+
+contient
+* le storage et safe_maintain pour physic
+* la facon particulière de gérer les forces non constantes
+* contactor et bodies map parce que c'est une bonne idée
+
 # TODO
 
 * synchronisation turret:
@@ -13,7 +20,8 @@
 
 * faire que le cursor est dessiné par l'os
 
-* pour la doc arreter de mettre des pub (crate partout juste faire un module doc avec reexport
+* pour la doc arreter de mettre des pub (crate) partout juste faire un module doc avec reexport
+  je sais pas
 
 # gameplay
 
@@ -25,9 +33,16 @@
 * [x] chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
 * [x] monstre qui fait des cercles pour venir
 * [x] faire un trait impl par les composant qui permet de les inséréer ce trait avec une méthode default peut être override pour rajouter des truc (comme le rigid_body par example et uniquement ?) car les force use contructor actuel sont vraiment peut interessant et facilement contournable (une fonction a la création qui randomise). aussi il seront peut être enlevé avec les tempo. si on arrive a le faire tel quel on peut faire du hot reloading facile ? osef
-      almost done: faire le contactor:
-        est-ce qu'on le met dans automatiquement en fonction des autres -- OUI
-        on demande a le mettre quand il faut -- NON
+* [ ] réécriture tempo
+* [ ] refaire les unité en meta
+  * [ ] bee.rs
+  * [ ] chaman.rs
+  * [ ] charger.rs
+  * [ ] gravity_bomb.rs
+  * [ ] player.rs
+  * [ ] unique_spawner.rs
+  * [ ] walker.rs
+
 
 ## Maybe
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent
@@ -37,10 +52,7 @@
 * faire sorte de gravity ball mais avec velocity:
   une vitesse angulaire qui va dans la direction du héros
   et ue vitesse linear de norme constante
-* faire un proximitydamage comme ça les monstres peuvent s'entrechoquer sans se tuer forcément
-* faire un proximityattack qui sur un proximité lance une attaque et au besoin met la vitesse à 0
-
-faire des boid qui rebondissent contre les murs ou se tue dans un cadre pour simulé une plaine immense
+* faire des boid qui rebondissent contre les murs ou se tue dans un cadre pour simulé une plaine immense
 
 ## bof
 monstre qui sortent de terre: généraliser uniquespawner avec un composant life optionnel ou pas l'animation peut ne pas trop marcher plutot faire unqieuspawnerrandom uniquespwanerdeterminate ou alors les monstres qui sortent de terre sont simplement des uniquespawnerrandom c'est bien aussi de l'aléatoire -> donc bof
@@ -56,14 +68,12 @@ tourelle continue avec distance et qui tourne et faire un labyrinthe comme dans 
 il existe un tempo style continue qui fait 0.1s et permet de simuler un truc quasi-continue
 
 remplacer tout les timer par des timer en rythme
-* circle_to_player faire chgt régulier en tempo
-* faire une partition pour les spawn des uniques spawner
-* idem pour les spawn de chaman ? oui: faire que la loi normale donne le numéro du beat sur lequel il sera spawn
-* idem pour les déplaceents des monstres ? non bof ou alors faire comme chamanspawn: la loi donne le numéro du beat ensuite ça marche bien
-* faire velocitytoplayer avec update en rythme au lieu de update en continue
-
-faire un monstre qui change de direction en rythme et fonce toujours vers le héros. comme un velocity to player mais avec update en rythme (generaliser) au lieu de tout le temps
-  il faut pas rester pres de lui sinon on arrive pas a l'esquiver il faut le tuer en passant ou en tirant
+* [x] circle_to_player faire chgt régulier en tempo
+* [x] faire une partition pour les spawn des uniques spawner
+* [x] idem pour les spawn de chaman ? oui: faire que la loi normale donne le numéro du beat sur lequel il sera spawn
+* [x] faire velocitytoplayer avec update en rythme au lieu de update en continue
+* [x] faire un monstre qui change de direction en rythme et fonce toujours vers le héros. comme un velocity to player mais avec update en rythme (generaliser) au lieu de tout le temps
+      il faut pas rester pres de lui sinon on arrive pas a l'esquiver il faut le tuer en passant ou en tirant
 
 # Fefe
 

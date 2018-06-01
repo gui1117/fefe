@@ -4,6 +4,48 @@ Conf(
     physic_min_timestep: 0,
     zoom: 108,
 
-    player_velocity: 80,
-    player_radius: 1,
+    insertables: {
+        "player": Meta((
+            animation_specie: Character,
+            radius: 1,
+            density: 1,
+            insert_shift: false,
+            groups: [Player],
+            components: [
+                Life((1)),
+                Player(()),
+                Aim((0)),
+                DebugColor((1)),
+                VelocityControl((
+                    velocity: 20
+                )),
+            ],
+        )),
+        // "foo": Meta((
+        //     animation_specie: Character,
+        //     radius: 1,
+        //     density: 1,
+        //     insert_shift: false,
+        //     groups: [Monster],
+        //     components: [
+        //         ContactDamage((1)),
+        //         Life((1)),
+        //         Activator((
+        //             tempo: 0,
+        //             partition: [true, false, false, false]
+        //         )),
+        //         UniqueSpawner((
+        //             entity: Player(()),
+        //             dist_proba_clamp: None,
+        //             aim_proba_clamp: None,
+        //         )),
+        //         DeadOnContact(()),
+        //     ],
+        // )),
+    },
+    fillables: {
+    },
+    segmentables: {
+        "wall": Wall(())
+    }
 )

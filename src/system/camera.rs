@@ -1,8 +1,8 @@
 use specs::{Join, Fetch, FetchMut, ReadStorage, System};
 
-pub struct Camera;
+pub struct CameraSystem;
 
-impl<'a> System<'a> for Camera {
+impl<'a> System<'a> for CameraSystem {
     type SystemData = (
         ReadStorage<'a, ::component::RigidBody>,
         ReadStorage<'a, ::component::Player>,

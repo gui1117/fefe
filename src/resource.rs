@@ -2,12 +2,32 @@ use fnv::FnvHashMap;
 use nphysics2d::object::BodyHandle;
 use specs::Entity;
 use std::fs::File;
+use std::collections::HashMap;
+use entity::{FillableObject, InsertableObject, SegmentableObject};
 
 pub use specs::LazyUpdate;
 pub use specs::EntitiesRes;
 pub use imgui::ImGui;
 
 pub struct WindowSize(pub (u32, u32));
+
+#[derive(Deref, DerefMut)]
+pub struct Tempos(pub Vec<Tempo>);
+pub struct Tempo {
+    pub time: f32,
+    pub next_beat_time: f32,
+    pub beat: usize,
+}
+
+impl Tempo {
+    pub fn new(time: f32) -> Self {
+        Tempo {
+            time,
+            next_beat_time: 0.0,
+            beat: 0,
+        }
+    }
+}
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -17,8 +37,9 @@ pub struct Conf {
     pub physic_min_timestep: f32,
     pub zoom: f32,
 
-    pub player_velocity: f32,
-    pub player_radius: f32,
+    pub insertables: HashMap<String, InsertableObject>,
+    pub fillables: HashMap<String, FillableObject>,
+    pub segmentables: HashMap<String, SegmentableObject>,
 }
 
 impl Conf {

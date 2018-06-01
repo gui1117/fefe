@@ -3,7 +3,7 @@ use ncollide2d::world::CollisionGroups;
 use ncollide2d::query::Ray;
 use nphysics2d::math::Velocity;
 use rand::thread_rng;
-use rand::distributions::{IndependentSample, Range, Normal};
+use rand::distributions::{IndependentSample, Range};
 use std::f32::EPSILON;
 use std::f32::consts::PI;
 
@@ -14,13 +14,13 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
         ReadStorage<'a, ::component::Player>,
         ReadStorage<'a, ::component::Aim>,
         ReadStorage<'a, ::component::RigidBody>,
+        ReadStorage<'a, ::component::Activator>,
         WriteStorage<'a, ::component::VelocityToPlayerRandom>,
-        Fetch<'a, ::resource::UpdateTime>,
         Fetch<'a, ::resource::BodiesMap>,
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-    fn run(&mut self, (players, aims, rigid_bodies, mut vtprs, update_time, bodies_map, mut physic_world): Self::SystemData) {
+    fn run(&mut self, (players, aims, rigid_bodies, activators, mut vtprs, bodies_map, mut physic_world): Self::SystemData) {
         let mut rng = thread_rng();
         let range_0_1 = Range::new(0.0, 1.0);
         let players_position = (&players, &rigid_bodies)
@@ -28,12 +28,9 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
             .map(|(_, body)| body.get(&physic_world).position().translation.vector)
             .collect::<Vec<_>>();
 
-        for (vtpr, rigid_body) in (&mut vtprs, &rigid_bodies).join() {
-            vtpr.next_refreash -= update_time.0;
+        for (vtpr, rigid_body, activator) in (&mut vtprs, &rigid_bodies, &activators).join() {
             let position = rigid_body.get(&physic_world).position().translation.vector;
-            if vtpr.next_refreash <= 0.0 {
-                vtpr.next_refreash = Normal::new(vtpr.refreash_time.0, vtpr.refreash_time.1)
-                    .ind_sample(&mut rng) as f32;
+            if activator.activated {
                 let closest_in_sight = players_position.iter()
                     .filter_map(|player_position| {
                         let ray = Ray::new(::na::Point::from_coordinates(position), player_position - position);

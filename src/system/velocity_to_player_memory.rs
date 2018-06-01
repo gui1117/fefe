@@ -5,29 +5,28 @@ use ncollide2d::query::Ray;
 
 pub struct VelocityToPlayerMemorySystem;
 
-// IDEA: maybe use the last seen rotation or just current velocity 
+// IDEA: maybe use the last seen rotation or just current velocity
 //       and continue on the path a little
 impl<'a> System<'a> for VelocityToPlayerMemorySystem {
     type SystemData = (
         ReadStorage<'a, ::component::Player>,
+        ReadStorage<'a, ::component::Activator>,
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::VelocityToPlayerMemory>,
-        Fetch<'a, ::resource::UpdateTime>,
         Fetch<'a, ::resource::BodiesMap>,
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-    fn run(&mut self, (players, rigid_bodies, mut vtpms, update_time, bodies_map, mut physic_world): Self::SystemData) {
+    fn run(&mut self, (players, activators, rigid_bodies, mut vtpms, bodies_map, mut physic_world): Self::SystemData) {
         let players_position = (&players, &rigid_bodies)
             .join()
             .map(|(_, body)| body.get(&physic_world).position().translation.vector)
             .collect::<Vec<_>>();
 
-        for (vtpm, rigid_body) in (&mut vtpms, &rigid_bodies).join() {
-            vtpm.next_refreash -= update_time.0;
+        for (vtpm, rigid_body, activator) in (&mut vtpms, &rigid_bodies, &activators).join() {
             let position = rigid_body.get(&physic_world).position().translation.vector;
-            if vtpm.next_refreash <= 0.0 {
-                vtpm.next_refreash = ::component::VELOCITY_TO_PLAYER_MEMORY_REFREASH_RATE;
+
+            if activator.activated {
                 let closest_in_sight = players_position.iter()
                     .filter_map(|player_position| {
                         let ray = Ray::new(::na::Point::from_coordinates(position), player_position - position);
@@ -69,11 +68,11 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
             } else {
                 ::na::zero()
             };
+
             rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
                 linear: direction * vtpm.velocity,
                 angular: 0.0,
             });
-
         }
     }
 }

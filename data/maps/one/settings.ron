@@ -2,169 +2,26 @@ MapSettings(
     insert_rules: [
         (
             trigger: "#ff0000",
-            processor: BuildEntity(Player(())),
+            processor: Build("player"),
         ),
-        (
-            trigger: "#808000",
-            processor: BuildEntity(Meta((
-                animation_specie: Character,
-                radius: 1,
-                density: 1,
-                insert_shift: false,
-                groups: [Monster],
-                components: [
-                    ContactDamage((1)),
-                    Life((1)),
-                    VelocityToPlayerCircle((
-                        circle_velocity: 10,
-                        direct_velocity: 5,
-                        shift_time: (1, 0.1),
-                    )),
-                    DeadOnContact(()),
-                ],
-            ))),
-        ),
-        (
-            trigger: "#808008",
-            processor: BuildEntity(Bee((
-                animation_specie: Character,
-                radius: 1,
-                damage: 1,
-                life: 1,
-                density: 1,
-                aim_damping: None,
-                dist_damping: None,
-                circle_velocity: 10,
-                direct_velocity: 5,
-                shift_time: (1, 0.1),
-                dir_shift: None,
-            ))),
-        ),
-        (
-            trigger: "#800000",
-            processor: BuildEntity(Chaman((
-                animation_specie: Character,
-                radius: 1,
-                life: 1,
-                density: 1,
-                aim_damping: None,
-                dist_damping: None,
-                velocity_to_player_random: (
-                    random_weighted: None,
-                    dist_proba_clamp: (
-                        min_value: 1.0,
-                        max_value: 0.0,
-                        min_t: 50,
-                        max_t: 100,
-                    ),
-                    aim_proba_clamp: (
-                        min_value: 1.0,
-                        max_value: 1.0,
-                        min_t: 50,
-                        max_t: 100,
-                    ),
-                    refreash_time: (1.0, 0.1),
-                    velocity: 10,
-                    toward_player: false,
-                ),
-                chaman_spawner: (
-                    spawn_time: (1, 0.1),
-                    number_of_spawn: 3,
-                    entity: Charger((
-                        animation_specie: Character,
-                        damage: 0,
-                        life: 1,
-                        radius: 1,
-                        aim_damping: Some((
-                            min_value: 1.0,
-                            max_value: 0.0,
-                            min_t: 1.14,
-                            max_t: 1.14,
-                        )),
-                        dist_damping: None,
-                        velocity: 20,
-                        density: 1,
-                        memory: true,
-                    ))
-                ),
-            ))),
-        ),
-        (
-            trigger: "#808800",
-            processor: BuildEntity(Walker((
-                animation_specie: Character,
-                radius: 1,
-                damage: 1,
-                life: 1,
-                density: 1,
-                aim_damping: None,
-                dist_damping: None,
-                velocity_to_player_random: (
-                    random_weighted: None,
-                    dist_proba_clamp: (
-                        min_value: 1.0,
-                        max_value: 0.0,
-                        min_t: 50,
-                        max_t: 100,
-                    ),
-                    aim_proba_clamp: (
-                        min_value: 1.0,
-                        max_value: 1.0,
-                        min_t: 50,
-                        max_t: 100,
-                    ),
-                    refreash_time: (1.0, 0.1),
-                    velocity: 10,
-                    toward_player: false,
-                ),
-            ))),
-        ),
-        (
-            trigger: "#888000",
-            processor: BuildEntity(UniqueSpawner((
-                animation_specie: Character,
-                radius: 1,
-                dist_proba_clamp: Some((
-                    min_value: 1.0,
-                    max_value: 1.0,
-                    min_t: 50,
-                    max_t: 100,
-                )),
-                aim_proba_clamp: Some((
-                    min_value: 1.0,
-                    max_value: 1.0,
-                    min_t: 1.57,
-                    max_t: 3.14,
-                )),
-                entity: Charger((
-                    animation_specie: Character,
-                    damage: 0,
-                    life: 1,
-                    radius: 1,
-                    aim_damping: Some((
-                        min_value: 1.0,
-                        max_value: 0.0,
-                        min_t: 1.14,
-                        max_t: 1.14,
-                    )),
-                    dist_damping: None,
-                    velocity: 20,
-                    density: 1,
-                    memory: true,
-                ))
-            ))),
-        ),
+        // (
+        //     trigger: "#808000",
+        //     processor: Build("foo"),
+        // ),
     ],
     fill_rules: [
-        // (
-        //     trigger: "#00ff00",
-        //     processor: TakeNPositions(1, BuildEntity(Wall(()))),
-        // )
     ],
     segment_rules: [
         (
             trigger: "#00ff00",
-            processor: BuildEntity(Wall(())),
+            processor: Build("wall"),
         ),
     ],
+
+    insertables: {
+    },
+    fillables: {
+    },
+    segmentables: {
+    }
 )

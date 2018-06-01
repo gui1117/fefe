@@ -109,6 +109,7 @@ fn main() {
     world.register::<::component::VelocityAimDamping>();
     world.register::<::component::VelocityDistanceDamping>();
     world.register::<::component::VelocityToPlayerCircle>();
+    world.register::<::component::Activator>();
     world.register::<::component::Boid>();
 
     let conf = ::resource::Conf::load();
@@ -118,16 +119,22 @@ fn main() {
     world.add_resource(::resource::WindowSize(window.window().get_inner_size().unwrap()));
     world.add_resource(imgui);
     world.add_resource(conf);
+    world.add_resource(::resource::Tempos(vec![::resource::Tempo::new(1.0)]));
     world.maintain();
 
+    // Things to check:
+    // * all system checking for activator must depends on it system
+    // * velocity dampings must depends on all system setting velcoity
     let mut update_dispatcher = DispatcherBuilder::new()
+        .add(::system::ActivatorSystem, "activator", &[])
         .add(::system::PhysicSystem::new(), "physic", &[])
         .add(::system::DeadOnContactSystem, "dead on contact", &[])
         .add(::system::ContactDamageSystem, "damage", &[])
-        .add(::system::UniqueSpawnerSystem, "unique spawner", &[])
-        .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &[])
-        .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &[])
-        .add(::system::VelocityToPlayerCircleSystem, "velocity to player circle", &[])
+        .add(::system::UniqueSpawnerSystem, "unique spawner", &["activator"])
+        .add(::system::ChamanSpawnerSystem, "chaman spawner", &["activator"])
+        .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &["activator"])
+        .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &["activator"])
+        .add(::system::VelocityToPlayerCircleSystem, "velocity to player circle", &["activator"])
         .add(::system::VelocityControlSystem, "velocity control", &[])
         .add(::system::Boid, "boid", &[])
         .add(::system::VelocityDampingsSystem, "velocity dampings", &[
@@ -137,12 +144,11 @@ fn main() {
              "velocity control",
              "boid",
         ])
-        .add(::system::ChamanSpawnerSystem, "chaman spawner", &[])
         .add(::system::LifeSystem, "life", &[])
         .add(::system::TurretSystem, "turret", &[])
         .add_barrier() // Draw barrier
         .add(::system::AnimationSystem, "animation", &[])
-        .add(::system::Camera, "camera", &[])
+        .add(::system::CameraSystem, "camera", &[])
         .build();
 
     let mut fps_counter = fps_counter::FPSCounter::new();
