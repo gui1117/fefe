@@ -33,16 +33,27 @@ contient
 * [x] chaman: spawn des monstres a une certaine frequence jusqua un certain nombre et se ballade random
 * [x] monstre qui fait des cercles pour venir
 * [x] faire un trait impl par les composant qui permet de les inséréer ce trait avec une méthode default peut être override pour rajouter des truc (comme le rigid_body par example et uniquement ?) car les force use contructor actuel sont vraiment peut interessant et facilement contournable (une fonction a la création qui randomise). aussi il seront peut être enlevé avec les tempo. si on arrive a le faire tel quel on peut faire du hot reloading facile ? osef
-* [ ] réécriture tempo
+* [x] réécriture tempo
+  * [x] circle_to_player faire chgt régulier en tempo
+  * [x] faire une partition pour les spawn des uniques spawner
+  * [x] idem pour les spawn de chaman ? oui: faire que la loi normale donne le numéro du beat sur lequel il sera spawn
+  * [x] faire velocitytoplayer avec update en rythme au lieu de update en continue
+  * [x] faire un monstre qui change de direction en rythme et fonce toujours vers le héros. comme un velocity to player mais avec update en rythme (generaliser) au lieu de tout le temps
+        il faut pas rester pres de lui sinon on arrive pas a l'esquiver il faut le tuer en passant ou en tirant
+* [ ] ¿¿¿¿ faire que les spawner prennent des String au lieu de insertable ????
+* [ ] faire que le chaman puisse avoir plusieurs insertableobjects
 * [ ] refaire les unité en meta
   * [ ] bee.rs
   * [ ] chaman.rs
   * [ ] charger.rs
   * [ ] gravity_bomb.rs
-  * [ ] player.rs
+  * [x] player.rs
   * [ ] unique_spawner.rs
   * [ ] walker.rs
-
+* [ ] faire les armes du héros et enfin faire une vrai première démo
+  * mode épée:
+  * mode fusil:
+* [ ] faire tourelles
 
 ## Maybe
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent
@@ -62,18 +73,6 @@ simple bullet (juste sensor avec velocity lorsque creation (+killonproximity?))
 tourelle avec rythme
 tourelle qui tourne et plus complexe
 tourelle continue avec distance et qui tourne et faire un labyrinthe comme dans un jeu précédent
-
-## réécriture avec tempo:
-
-il existe un tempo style continue qui fait 0.1s et permet de simuler un truc quasi-continue
-
-remplacer tout les timer par des timer en rythme
-* [x] circle_to_player faire chgt régulier en tempo
-* [x] faire une partition pour les spawn des uniques spawner
-* [x] idem pour les spawn de chaman ? oui: faire que la loi normale donne le numéro du beat sur lequel il sera spawn
-* [x] faire velocitytoplayer avec update en rythme au lieu de update en continue
-* [x] faire un monstre qui change de direction en rythme et fonce toujours vers le héros. comme un velocity to player mais avec update en rythme (generaliser) au lieu de tout le temps
-      il faut pas rester pres de lui sinon on arrive pas a l'esquiver il faut le tuer en passant ou en tirant
 
 # Fefe
 
