@@ -74,6 +74,7 @@ impl Insertable for Meta {
         }
 
         // TODO: debug circles for components
+        // TODO: sword_shape for sword_rifle
 
         if self.components.iter().any(|c| match c {
             MetaComponent::ContactDamage(_) | MetaComponent::VelocityToPlayerCircle(_) => true,

@@ -4,6 +4,7 @@ pub use animation::AnimationState;
 use entity::InsertableObject;
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyStatus;
+use ncollide2d::shape::ShapeHandle;
 use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 
@@ -11,6 +12,31 @@ use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 #[serde(deny_unknown_fields)]
 pub struct Player;
 impl Component for Player {
+    type Storage = VecStorage<Self>;
+}
+
+#[derive(Deserialize, Clone)]
+pub struct SwordRifle {
+    #[serde(skip)]
+    pub mode_sword: bool,
+    #[serde(skip)]
+    pub attack: bool,
+
+    pub sword_damage: usize,
+    pub sword_reload_time: f32,
+    #[serde(skip)]
+    pub sword_reloading: f32,
+    pub sword_length: f32,
+    pub sword_range: f32,
+
+    #[serde(skip, default = "::util::default_shape_handle")]
+    pub sword_shape: ShapeHandle<f32>,
+
+    // pub rifle_damage: usize,
+    // pub rifle_reload_time: f32,
+    // pub rifle_reloading_time: f32,
+}
+impl Component for SwordRifle {
     type Storage = VecStorage<Self>;
 }
 
@@ -317,7 +343,7 @@ impl Component for Contactor {
 
 //////////////////////////////// Debug ////////////////////////////////
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Deref, DerefMut)]
 #[serde(deny_unknown_fields)]
 pub struct DebugCircles(pub Vec<f32>);
 impl Component for DebugCircles {

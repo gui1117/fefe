@@ -1,6 +1,7 @@
 use entity::{FillableObject, InsertableObject, SegmentableObject};
 use fnv::FnvHashMap;
 use nphysics2d::object::BodyHandle;
+use ncollide2d::shape::ShapeHandle;
 use specs::Entity;
 use std::collections::HashMap;
 use std::fs::File;
@@ -28,6 +29,9 @@ impl Tempo {
         }
     }
 }
+
+#[derive(Deref, DerefMut)]
+pub struct DebugShapes(pub Vec<(::na::Isometry2<f32>, ShapeHandle<f32>)>);
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]

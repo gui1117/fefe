@@ -111,11 +111,13 @@ fn main() {
     world.register::<::component::VelocityToPlayerCircle>();
     world.register::<::component::Activator>();
     world.register::<::component::Boid>();
+    world.register::<::component::SwordRifle>();
 
     let conf = ::resource::Conf::load();
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one(), conf.zoom));
+    world.add_resource(::resource::DebugShapes(vec![]));
     world.add_resource(::resource::WindowSize(
         window.window().get_inner_size().unwrap(),
     ));
@@ -127,9 +129,12 @@ fn main() {
     // Things to check:
     // * all system checking for activator must depends on it system
     // * velocity dampings must depends on all system setting velcoity
+    // * tout ce qui utilise des positions doivent être après physic system
     let mut update_dispatcher = DispatcherBuilder::new()
         .add(::system::ActivatorSystem, "activator", &[])
         .add(::system::PhysicSystem::new(), "physic", &[])
+        .add_barrier()
+        .add(::system::SwordRifleSystem, "sword rifle", &[])
         .add(::system::DeadOnContactSystem, "dead on contact", &[])
         .add(::system::ContactDamageSystem, "damage", &[])
         .add(::system::UniqueSpawnerSystem, "unique spawner", &["activator"])

@@ -51,9 +51,13 @@ contient
 * [ ] faire les armes du héros et enfin faire une vrai première démo
   * mode épée:
   * mode fusil:
+* [ ] DebugShapes:
+      faire une fonction qui prend AsRef(Shape) et renvoie les vertices
+      changer la boucle pour faire que vertices ne soit pas réalloqué tout le temps et que debugcircle soit pour tout les unité
 * [ ] faire tourelles
 * [ ] ¿¿¿¿ faire que les spawner prennent des String au lieu de insertable ????
 * [ ] faire que le chaman puisse avoir plusieurs insertableobjects
+* [ ] peut être faire une dépendance dans les systemes: physic système doit avoir lieu en premier pour pouvoir remplir les contactors et mettre les position au bon endroit pour tous
 
 ## Maybe
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent

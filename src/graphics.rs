@@ -1,5 +1,5 @@
 use alga::general::SubsetOf;
-use ncollide2d::shape;
+use ncollide2d::shape::{self, ShapeHandle};
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer, CpuBufferPool, ImmutableBuffer};
 use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
 use vulkano::command_buffer::{AutoCommandBuffer, AutoCommandBufferBuilder, DynamicState};
@@ -21,8 +21,8 @@ use vulkano::pipeline::{GraphicsPipeline, GraphicsPipelineAbstract};
 use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode};
 use vulkano::swapchain::{self, AcquireError, Surface, Swapchain, SwapchainCreationError};
 use vulkano::sync::{now, FlushError, GpuFuture};
-
 use itertools::Itertools;
+use specs::Join;
 use specs::World;
 use std::cell::RefCell;
 use std::f32::consts::PI;
@@ -106,6 +106,13 @@ struct Vertex {
     position: [f32; 2],
 }
 impl_vertex!(Vertex, position);
+
+#[derive(Debug, Clone)]
+struct DebugVertex {
+    position: [f32; 2],
+    color: [f32; 4],
+}
+impl_vertex!(DebugVertex, position, color);
 
 #[derive(Debug, Clone)]
 pub struct ImGuiVertex {
@@ -242,9 +249,9 @@ impl Graphics {
 
         let debug_pipeline = Arc::new(
             GraphicsPipeline::start()
-                .vertex_input_single_buffer::<Vertex>()
+                .vertex_input_single_buffer::<DebugVertex>()
                 .vertex_shader(debug_vs.main_entry_point(), ())
-                .triangle_strip()
+                .triangle_list()
                 .viewports_dynamic_scissors_irrelevant(1)
                 .fragment_shader(debug_fs.main_entry_point(), ())
                 .blend_alpha_blending()
@@ -545,133 +552,46 @@ impl Graphics {
                     .unwrap(),
             );
 
-            let div = 16;
-            let disk = (0..div + 1)
-                .flat_map(|i| {
-                    let a1 = i as f32 * 2.0 * PI / div as f32;
-                    let a2 = i as f32 * 2.0 * PI / div as f32;
-
-                    vec![
-                        ::na::Point2::new(a1.cos(), a1.sin()),
-                        ::na::Point2::new(a2.cos(), a2.sin()),
-                        ::na::Point2::new(0.0, 0.0),
-                    ]
-                })
-                .collect::<Vec<_>>();
-
-            let circle = (0..div + 1)
-                .flat_map(|i| {
-                    let outer_radius = 1.05;
-                    let inner_radius = 0.95;
-
-                    let a1 = i as f32 * 2.0 * PI / div as f32;
-                    let p1 = ::na::Point2::new(a1.cos(), a1.sin());
-                    let inner_p1 = p1 * inner_radius;
-                    let outer_p1 = p1 * outer_radius;
-
-                    vec![outer_p1, inner_p1]
-                })
-                .collect::<Vec<_>>();
-
             let bodies_map = world.read_resource::<::resource::BodiesMap>();
             let debug_colors = world.read::<::component::DebugColor>();
             let debug_circles = world.read::<::component::DebugCircles>();
-            for collider in world.read_resource::<::resource::PhysicWorld>().colliders() {
-                let shape = collider.shape();
-                let entity_option = bodies_map.get(&collider.data().body());
-                let color = entity_option
+            let bodies = world.read::<::component::RigidBody>();
+            let physic_world = world.read_resource::<::resource::PhysicWorld>();
+            let debug_shapes= world.read_resource::<::resource::DebugShapes>();
+
+            let mut vertices = vec![];
+            for collider in physic_world.colliders() {
+                let color = bodies_map.get(&collider.data().body())
                     .and_then(|e| debug_colors.get(*e))
                     .map(|c| c.0)
                     .unwrap_or(0);
-
-                let mut vertices = None;
-                if let Some(ball) = shape.as_shape::<shape::Ball<f32>>() {
-                    vertices = Some(
-                        disk.iter()
-                            .map(|p| *p * ball.radius())
-                            .map(|p| {
-                                let p = collider.position() * p;
-                                Vertex {
-                                    position: [p[0], -p[1]],
-                                }
-                            })
-                            .collect::<Vec<_>>(),
-                    );
-                }
-                if let Some(convex_polygon) = shape.as_shape::<shape::ConvexPolygon<f32>>() {
-                    let mut points_iter = convex_polygon.points().iter();
-                    let pivot = points_iter.next().unwrap();
-                    vertices = Some(
-                        points_iter
-                            .tuples()
-                            .flat_map(|(p1, p2)| vec![pivot, p1, p2])
-                            .map(|p| {
-                                let p = collider.position() * *p;
-                                Vertex {
-                                    position: [p[0], -p[1]],
-                                }
-                            })
-                            .collect::<Vec<_>>(),
-                    );
-                }
-                if let Some(segment) = shape.as_shape::<shape::Segment<f32>>() {
-                    let direction = segment.scaled_direction().normalize();
-                    let normal = ::na::Vector2::new(-direction[1], direction[0]);
-
-                    vertices = Some(
-                        [
-                            segment.a() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
-                            segment.a() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
-                            segment.b() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
-                            segment.b() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
-                            segment.b() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
-                            segment.a() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
-                        ].iter()
-                            .map(|p| {
-                                let p = collider.position() * *p;
-                                Vertex {
-                                    position: [p[0], -p[1]],
-                                }
-                            })
-                            .collect::<Vec<_>>(),
-                    );
-                }
-
-                for &radius in entity_option
-                    .and_then(|e| debug_circles.get(*e))
-                    .iter()
-                    .flat_map(|c| c.0.iter())
-                {
-                    vertices
-                        .get_or_insert(vec![])
-                        .extend(circle.iter().map(|p| *p * radius).map(|p| {
-                            let p = collider.position() * p;
-                            Vertex {
-                                position: [p[0], -p[1]],
-                            }
-                        }));
-                }
-
-                if let Some(vertices) = vertices {
-                    let vertex_buffer = CpuAccessibleBuffer::from_iter(
-                        self.device.clone(),
-                        BufferUsage::vertex_buffer(),
-                        vertices.iter().cloned(),
-                    ).expect("failed to create buffer");
-
-                    command_buffer_builder = command_buffer_builder
-                        .draw(
-                            self.debug_pipeline.clone(),
-                            screen_dynamic_state.clone(),
-                            vec![vertex_buffer],
-                            sets.clone(),
-                            debug_fs::ty::Color {
-                                color: color as u32,
-                            },
-                        )
-                        .unwrap()
+                shape_vertices(collider.position(), collider.shape(), COLORS[color], &mut vertices);
+            }
+            for (radiuss, color, body) in (&debug_circles, &debug_colors, &bodies).join() {
+                let body = body.get(&physic_world);
+                for &radius in radiuss.iter() {
+                    circle_vertices(&body.position(), radius, COLORS[color.0], &mut vertices);
                 }
             }
+            for (position, shape) in debug_shapes.iter() {
+                shape_vertices(position, shape, COLORS[0], &mut vertices);
+            }
+
+            let vertex_buffer = CpuAccessibleBuffer::from_iter(
+                self.device.clone(),
+                BufferUsage::vertex_buffer(),
+                vertices.drain(..),
+            ).expect("failed to create buffer");
+
+            command_buffer_builder = command_buffer_builder
+                .draw(
+                    self.debug_pipeline.clone(),
+                    screen_dynamic_state.clone(),
+                    vec![vertex_buffer],
+                    sets.clone(),
+                    (),
+                )
+                .unwrap()
         }
 
         // Draw configuration menu
@@ -786,6 +706,123 @@ impl Graphics {
     }
 }
 
+const DIV: usize = 16;
+
+lazy_static! {
+    static ref DISK: Vec<::na::Point2<f32>> = (0..DIV + 1)
+        .flat_map(|i| {
+            let a1 = i as f32 * 2.0 * PI / DIV as f32;
+            let a2 = (i + 1) as f32 * 2.0 * PI / DIV as f32;
+
+            vec![
+                ::na::Point2::new(a1.cos(), a1.sin()),
+                ::na::Point2::new(a2.cos(), a2.sin()),
+                ::na::Point2::new(0.0, 0.0),
+            ]
+        })
+        .collect::<Vec<_>>();
+}
+
+lazy_static! {
+    static ref CIRCLE: Vec<::na::Point2<f32>> = (0..DIV + 1)
+        .flat_map(|i| {
+            let outer_radius = 1.05;
+            let inner_radius = 0.95;
+
+            let a1 = i as f32 * 2.0 * PI / DIV as f32;
+            let a2 = (i + 1) as f32 * 2.0 * PI / DIV as f32;
+
+            let p1 = ::na::Point2::new(a1.cos(), a1.sin());
+            let p2 = ::na::Point2::new(a2.cos(), a2.sin());
+
+            let inner_p1 = p1 * inner_radius;
+            let outer_p1 = p1 * outer_radius;
+
+            let inner_p2 = p2 * inner_radius;
+            let outer_p2 = p2 * outer_radius;
+
+            vec![outer_p1, inner_p1, outer_p2, outer_p2, inner_p2, inner_p1]
+        })
+        .collect::<Vec<_>>();
+}
+
+lazy_static! {
+    static ref COLORS: Vec<[f32; 4]> = vec![
+        [1.0, 0.0, 0.0, 1.0],
+        [1.0, 1.0, 0.0, 1.0],
+        [0.0, 1.0, 0.0, 1.0],
+        [0.0, 1.0, 1.0, 1.0],
+        [0.0, 0.0, 1.0, 1.0],
+        [1.0, 0.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0, 1.0],
+    ];
+}
+
+fn circle_vertices(position: &::na::Isometry2<f32>, radius: f32, color: [f32; 4], vertices: &mut Vec<DebugVertex>) {
+    vertices.extend(CIRCLE.iter().map(|p| *p * radius).map(|p| {
+        let p = position * p;
+        DebugVertex {
+            position: [p[0], -p[1]],
+            color,
+        }
+    }));
+}
+fn shape_vertices(position: &::na::Isometry2<f32>, shape: &ShapeHandle<f32>, color: [f32; 4], vertices: &mut Vec<DebugVertex>) {
+    if let Some(ball) = shape.as_shape::<shape::Ball<f32>>() {
+        vertices.extend(
+            DISK.iter()
+                .map(|p| *p * ball.radius())
+                .map(|p| {
+                    let p = position * p;
+                    DebugVertex {
+                        position: [p[0], -p[1]],
+                        color,
+                    }
+                })
+        );
+    }
+    if let Some(convex_polygon) = shape.as_shape::<shape::ConvexPolygon<f32>>() {
+        let mut points_iter = convex_polygon.points().iter();
+        let pivot = points_iter.next().unwrap();
+        vertices.extend(
+            points_iter
+                .tuples()
+                .flat_map(|(p1, p2)| vec![pivot, p1, p2])
+                .map(|p| {
+                    let p = position * *p;
+                    DebugVertex {
+                        position: [p[0], -p[1]],
+                        color,
+                    }
+                })
+                .collect::<Vec<_>>(),
+        );
+    }
+    if let Some(segment) = shape.as_shape::<shape::Segment<f32>>() {
+        let direction = segment.scaled_direction().normalize();
+        let normal = ::na::Vector2::new(-direction[1], direction[0]);
+
+        vertices.extend(
+            [
+                segment.a() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                segment.a() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                segment.b() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                segment.b() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                segment.b() - normal * DEBUG_SEGMENT_WIDTH / 2.0,
+                segment.a() + normal * DEBUG_SEGMENT_WIDTH / 2.0,
+            ].iter()
+                .map(|p| {
+                    let p = position * *p;
+                    DebugVertex {
+                        position: [p[0], -p[1]],
+                        color,
+                    }
+                })
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
 mod vs {
     #[derive(VulkanoShader)]
     #[ty = "vertex"]
@@ -842,6 +879,9 @@ mod debug_vs {
 #version 450
 
 layout(location = 0) in vec2 position;
+layout(location = 1) in vec4 color;
+
+layout(location = 0) out vec4 v_color;
 
 layout(set = 0, binding = 0) uniform View {
     mat4 view;
@@ -849,6 +889,7 @@ layout(set = 0, binding = 0) uniform View {
 
 void main() {
     gl_Position = view.view * vec4(position, 0.1, 1.0);
+    v_color = color;
 }
 "]
     struct _Dummy;
@@ -860,28 +901,12 @@ mod debug_fs {
     #[src = "
 #version 450
 
-layout(push_constant) uniform Color {
-    uint color;
-} color;
+layout(location = 0) in vec4 v_color;
 
 layout(location = 0) out vec4 f_color;
 
 void main() {
-    if (color.color == 0) {
-        f_color = vec4(1.0, 0.0, 0.0, 1.0);
-    } else if (color.color == 1) {
-        f_color = vec4(1.0, 1.0, 0.0, 1.0);
-    } else if (color.color == 2) {
-        f_color = vec4(0.0, 1.0, 0.0, 1.0);
-    } else if (color.color == 3) {
-        f_color = vec4(0.0, 1.0, 1.0, 1.0);
-    } else if (color.color == 4) {
-        f_color = vec4(0.0, 0.0, 1.0, 1.0);
-    } else if (color.color == 5) {
-        f_color = vec4(1.0, 0.0, 1.0, 1.0);
-    } else {
-        f_color = vec4(1.0, 1.0, 1.0, 1.0);
-    }
+    f_color = v_color;
 }
 "]
     struct _Dummy;

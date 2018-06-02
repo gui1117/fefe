@@ -45,3 +45,6 @@ pub use self::velocity_dampings::*;
 
 mod activator;
 pub use self::activator::*;
+
+mod sword_rifle;
+pub use self::sword_rifle::*;

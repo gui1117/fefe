@@ -3,6 +3,7 @@ use rand::ThreadRng;
 use retained_storage::Retained;
 use specs::World;
 use std::f32::consts::PI;
+use ncollide2d::shape::{Ball, ShapeHandle};
 use winit::{
     ElementState, Event, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode, WindowEvent,
 };
@@ -217,4 +218,8 @@ pub fn random_normalized(rng: &mut ThreadRng) -> ::na::Vector2<f32> {
 
 pub fn vector_zero() -> ::na::Vector2<f32> {
     ::na::zero()
+}
+
+pub fn default_shape_handle() -> ShapeHandle<f32> {
+    ShapeHandle::new(Ball::new(0.1))
 }
