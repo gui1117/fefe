@@ -77,7 +77,7 @@ fn run(&mut self, (players, aims, rigid_bodies, activators, mut vtprs, bodies_ma
                             let mut direction =
                                 distance.try_normalize(EPSILON).unwrap_or(::na::zero());
 
-                            if vtpr.toward_player {
+                            if !vtpr.toward_player {
                                 direction *= -1.0;
                             }
 

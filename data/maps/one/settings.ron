@@ -4,10 +4,10 @@ MapSettings(
             trigger: "#ff0000",
             processor: Build("player"),
         ),
-        // (
-        //     trigger: "#808000",
-        //     processor: Build("foo"),
-        // ),
+        (
+            trigger: "#808000",
+            processor: Build("foo"),
+        ),
     ],
     fill_rules: [
     ],

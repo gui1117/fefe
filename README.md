@@ -40,8 +40,6 @@ contient
   * [x] faire velocitytoplayer avec update en rythme au lieu de update en continue
   * [x] faire un monstre qui change de direction en rythme et fonce toujours vers le héros. comme un velocity to player mais avec update en rythme (generaliser) au lieu de tout le temps
         il faut pas rester pres de lui sinon on arrive pas a l'esquiver il faut le tuer en passant ou en tirant
-* [ ] ¿¿¿¿ faire que les spawner prennent des String au lieu de insertable ????
-* [ ] faire que le chaman puisse avoir plusieurs insertableobjects
 * [ ] refaire les unité en meta
   * [ ] bee.rs
   * [ ] chaman.rs
@@ -54,6 +52,8 @@ contient
   * mode épée:
   * mode fusil:
 * [ ] faire tourelles
+* [ ] ¿¿¿¿ faire que les spawner prennent des String au lieu de insertable ????
+* [ ] faire que le chaman puisse avoir plusieurs insertableobjects
 
 ## Maybe
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent

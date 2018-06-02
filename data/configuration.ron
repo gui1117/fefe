@@ -21,27 +21,38 @@ Conf(
                 )),
             ],
         )),
-        // "foo": Meta((
-        //     animation_specie: Character,
-        //     radius: 1,
-        //     density: 1,
-        //     insert_shift: false,
-        //     groups: [Monster],
-        //     components: [
-        //         ContactDamage((1)),
-        //         Life((1)),
-        //         Activator((
-        //             tempo: 0,
-        //             partition: [true, false, false, false]
-        //         )),
-        //         UniqueSpawner((
-        //             entity: Player(()),
-        //             dist_proba_clamp: None,
-        //             aim_proba_clamp: None,
-        //         )),
-        //         DeadOnContact(()),
-        //     ],
-        // )),
+        "foo": Meta((
+            animation_specie: Character,
+            radius: 1,
+            density: 1,
+            insert_shift: false,
+            groups: [Monster],
+            components: [
+                Life((1)),
+                Activator((
+                    tempo: 0,
+                    partition: [true, false, false, false]
+                )),
+                VelocityToPlayerRandom((
+                    velocity: 10,
+                    toward_player: false,
+                    random_weighted: None,
+                    dist_proba_clamp: (
+                        min_t: 1.0,
+                        max_t: 1.0,
+                        min_value: 1.0,
+                        max_value: 1.0,
+                    ),
+                    aim_proba_clamp: (
+                        min_t: 1.0,
+                        max_t: 1.0,
+                        min_value: 1.0,
+                        max_value: 1.0,
+                    ),
+                )),
+                ContactDamage((1)),
+            ],
+        )),
     },
     fillables: {
     },
