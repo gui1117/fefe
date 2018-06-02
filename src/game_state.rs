@@ -34,7 +34,11 @@ impl GameState for Game {
     fn update_draw_ui(self: Box<Self>, _world: &mut World) -> Box<GameState> {
         self
     }
-    fn winit_event(mut self: Box<Self>, event: ::winit::Event, world: &mut World) -> Box<GameState> {
+    fn winit_event(
+        mut self: Box<Self>,
+        event: ::winit::Event,
+        world: &mut World,
+    ) -> Box<GameState> {
         match event {
             ::winit::Event::WindowEvent {
                 event:
@@ -60,8 +64,8 @@ impl GameState for Game {
                 ..
             } => {
                 let size = world.read_resource::<::resource::WindowSize>().0;
-                x -= size.0 as f64/2.0;
-                y -= size.1 as f64/2.0;
+                x -= size.0 as f64 / 2.0;
+                y -= size.1 as f64 / 2.0;
                 let angle = y.atan2(x) as f32;
                 for (_, aim) in (
                     &world.read::<::component::Player>(),

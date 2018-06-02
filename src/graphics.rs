@@ -1,6 +1,6 @@
 use alga::general::SubsetOf;
 use ncollide2d::shape;
-use vulkano::buffer::{BufferUsage, CpuBufferPool, ImmutableBuffer, CpuAccessibleBuffer};
+use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer, CpuBufferPool, ImmutableBuffer};
 use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
 use vulkano::command_buffer::{AutoCommandBuffer, AutoCommandBufferBuilder, DynamicState};
 use vulkano::descriptor::descriptor_set::{
@@ -17,21 +17,19 @@ use vulkano::image::ImageLayout;
 use vulkano::image::{AttachmentImage, Dimensions, ImageUsage, ImmutableImage};
 use vulkano::instance::PhysicalDevice;
 use vulkano::pipeline::viewport::Viewport;
-use vulkano::pipeline::{GraphicsPipelineAbstract, GraphicsPipeline};
+use vulkano::pipeline::{GraphicsPipeline, GraphicsPipelineAbstract};
 use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode};
-use vulkano::swapchain::{self, Surface, Swapchain, SwapchainCreationError, AcquireError};
-use vulkano::sync::{now, GpuFuture, FlushError};
+use vulkano::swapchain::{self, AcquireError, Surface, Swapchain, SwapchainCreationError};
+use vulkano::sync::{now, FlushError, GpuFuture};
 
 use itertools::Itertools;
 use specs::World;
+use std::cell::RefCell;
 use std::f32::consts::PI;
 use std::fs::File;
 use std::sync::Arc;
 use std::time::Duration;
-use std::cell::RefCell;
 
-use vulkano;
-use std;
 // TODO: only a bool for whereas draw the cursor or not
 
 const DEBUG_SEGMENT_WIDTH: f32 = 1.0;
@@ -100,7 +98,7 @@ pub struct Graphics {
     future: Option<Box<GpuFuture>>,
 
     imgui_pipeline: Arc<GraphicsPipelineAbstract + Sync + Send>,
-    imgui_descriptor_set: std::sync::Arc<vulkano::descriptor::descriptor_set::PersistentDescriptorSet<std::sync::Arc<vulkano::pipeline::GraphicsPipeline<vulkano::pipeline::vertex::SingleBufferDefinition<ImGuiVertex>, std::boxed::Box<vulkano::descriptor::PipelineLayoutAbstract + std::marker::Send + std::marker::Sync>, std::sync::Arc<vulkano::framebuffer::RenderPass<CustomRenderPassDesc>>>>, (((), vulkano::descriptor::descriptor_set::PersistentDescriptorSetImg<std::sync::Arc<vulkano::image::ImmutableImage<vulkano::format::R8G8B8A8Unorm>>>), vulkano::descriptor::descriptor_set::PersistentDescriptorSetSampler)>>,
+    imgui_descriptor_set: Arc<DescriptorSet + Send + Sync>,
 }
 
 #[derive(Debug, Clone)]
@@ -283,7 +281,8 @@ impl Graphics {
                     queue.clone(),
                 )
             })
-            .unwrap().0;
+            .unwrap()
+            .0;
 
         let imgui_descriptor_set = {
             Arc::new(
@@ -567,12 +566,10 @@ impl Graphics {
 
                     let a1 = i as f32 * 2.0 * PI / div as f32;
                     let p1 = ::na::Point2::new(a1.cos(), a1.sin());
-                    let inner_p1 = p1*inner_radius;
-                    let outer_p1 = p1*outer_radius;
+                    let inner_p1 = p1 * inner_radius;
+                    let outer_p1 = p1 * outer_radius;
 
-                    vec![
-                        outer_p1, inner_p1,
-                    ]
+                    vec![outer_p1, inner_p1]
                 })
                 .collect::<Vec<_>>();
 
@@ -582,13 +579,15 @@ impl Graphics {
             for collider in world.read_resource::<::resource::PhysicWorld>().colliders() {
                 let shape = collider.shape();
                 let entity_option = bodies_map.get(&collider.data().body());
-                let color = entity_option.and_then(|e| debug_colors.get(*e)).map(|c| c.0).unwrap_or(0);
+                let color = entity_option
+                    .and_then(|e| debug_colors.get(*e))
+                    .map(|c| c.0)
+                    .unwrap_or(0);
 
                 let mut vertices = None;
                 if let Some(ball) = shape.as_shape::<shape::Ball<f32>>() {
                     vertices = Some(
-                        disk
-                            .iter()
+                        disk.iter()
                             .map(|p| *p * ball.radius())
                             .map(|p| {
                                 let p = collider.position() * p;
@@ -638,17 +637,19 @@ impl Graphics {
                     );
                 }
 
-                for &radius in entity_option.and_then(|e| debug_circles.get(*e)).iter().flat_map(|c| c.0.iter()) {
-                    vertices.get_or_insert(vec![]).extend(
-                        circle.iter()
-                            .map(|p| *p * radius)
-                            .map(|p| {
-                                let p = collider.position() * p;
-                                Vertex {
-                                    position: [p[0], -p[1]],
-                                }
-                            })
-                    );
+                for &radius in entity_option
+                    .and_then(|e| debug_circles.get(*e))
+                    .iter()
+                    .flat_map(|c| c.0.iter())
+                {
+                    vertices
+                        .get_or_insert(vec![])
+                        .extend(circle.iter().map(|p| *p * radius).map(|p| {
+                            let p = collider.position() * p;
+                            Vertex {
+                                position: [p[0], -p[1]],
+                            }
+                        }));
                 }
 
                 if let Some(vertices) = vertices {
@@ -681,7 +682,7 @@ impl Graphics {
             let ui = imgui.frame(
                 (dimensions[0], dimensions[1]),
                 (dimensions[0], dimensions[1]),
-                1.0/60.0,
+                1.0 / 60.0,
             );
 
             ::config_menu::build(&ui, world);
@@ -748,8 +749,7 @@ impl Graphics {
         let mut next_image = swapchain::acquire_next_image(self.swapchain.clone(), Some(timeout));
         loop {
             match next_image {
-                Err(AcquireError::OutOfDate)
-                | Err(AcquireError::Timeout) => {
+                Err(AcquireError::OutOfDate) | Err(AcquireError::Timeout) => {
                     self.recreate(&window);
                     next_image =
                         swapchain::acquire_next_image(self.swapchain.clone(), Some(timeout));

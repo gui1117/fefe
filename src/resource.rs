@@ -1,13 +1,13 @@
+use entity::{FillableObject, InsertableObject, SegmentableObject};
 use fnv::FnvHashMap;
 use nphysics2d::object::BodyHandle;
 use specs::Entity;
-use std::fs::File;
 use std::collections::HashMap;
-use entity::{FillableObject, InsertableObject, SegmentableObject};
+use std::fs::File;
 
-pub use specs::LazyUpdate;
-pub use specs::EntitiesRes;
 pub use imgui::ImGui;
+pub use specs::EntitiesRes;
+pub use specs::LazyUpdate;
 
 pub struct WindowSize(pub (u32, u32));
 
@@ -43,7 +43,7 @@ pub struct Conf {
 }
 
 impl Conf {
-    pub (crate) fn load() -> Self {
+    pub(crate) fn load() -> Self {
         ::ron::de::from_reader(File::open("data/configuration.ron").unwrap()).unwrap()
     }
 }

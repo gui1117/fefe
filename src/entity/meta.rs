@@ -1,10 +1,10 @@
 use animation::{AnimationName, AnimationSpecie};
+use component::*;
 use entity::{InsertPosition, Insertable};
-use specs::{Entity, World};
 use ncollide2d::shape::{Ball, ShapeHandle};
 use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
-use component::*;
+use specs::{Entity, World};
 
 macro_rules! component_list {
     ($($v:ident,)*) => (
@@ -64,10 +64,10 @@ pub struct Meta {
 impl Insertable for Meta {
     fn insert(&self, position: InsertPosition, world: &World) -> Entity {
         let entity = world.entities().create();
-        world.write().insert(entity, ::component::AnimationState::new(
-            self.animation_specie,
-            AnimationName::Idle,
-        ));
+        world.write().insert(
+            entity,
+            ::component::AnimationState::new(self.animation_specie, AnimationName::Idle),
+        );
         for component in &self.components {
             let component = component.clone();
             component.insert(entity, world);
@@ -76,8 +76,7 @@ impl Insertable for Meta {
         // TODO: debug circles for components
 
         if self.components.iter().any(|c| match c {
-            MetaComponent::ContactDamage(_) |
-            MetaComponent::VelocityToPlayerCircle(_) => true,
+            MetaComponent::ContactDamage(_) | MetaComponent::VelocityToPlayerCircle(_) => true,
             _ => false,
         }) {
             world.write().insert(entity, ::component::Contactor(vec![]));
@@ -111,7 +110,9 @@ impl Insertable for Meta {
         );
         let mut groups = ::ncollide2d::world::CollisionGroups::new();
         groups.set_membership(&self.groups.iter().map(|g| *g as usize).collect::<Vec<_>>());
-        physic_world.collision_world_mut().set_collision_groups(collider, groups);
+        physic_world
+            .collision_world_mut()
+            .set_collision_groups(collider, groups);
 
         entity
     }

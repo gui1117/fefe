@@ -1,4 +1,4 @@
-use specs::{Join, FetchMut, ReadStorage, System};
+use specs::{FetchMut, Join, ReadStorage, System};
 use std::f32::consts::PI;
 
 pub struct VelocityDampingsSystem;
@@ -13,12 +13,10 @@ impl<'a> System<'a> for VelocityDampingsSystem {
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-    fn run(&mut self, (players, aims, rigid_bodies, aim_dampings, distance_dampings, mut physic_world): Self::SystemData) {
+fn run(&mut self, (players, aims, rigid_bodies, aim_dampings, distance_dampings, mut physic_world): Self::SystemData){
         let players_aim = (&players, &aims, &rigid_bodies)
             .join()
-            .map(|(_, aim, body)| {
-                (aim.0, body.get(&physic_world).position().translation.vector)
-            })
+            .map(|(_, aim, body)| (aim.0, body.get(&physic_world).position().translation.vector))
             .collect::<Vec<_>>();
 
         for (aim_damping, rigid_body) in (&aim_dampings, &rigid_bodies).join() {
@@ -49,6 +47,5 @@ impl<'a> System<'a> for VelocityDampingsSystem {
             }
             body.set_velocity(velocity);
         }
-
     }
 }

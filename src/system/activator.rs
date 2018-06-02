@@ -1,4 +1,4 @@
-use specs::{Join, Fetch, FetchMut, WriteStorage, System};
+use specs::{Fetch, FetchMut, Join, System, WriteStorage};
 
 pub struct ActivatorSystem;
 
@@ -20,7 +20,8 @@ impl<'a> System<'a> for ActivatorSystem {
                 tempo.next_beat_time += tempo.time;
                 for activator in (&mut activators).join() {
                     if activator.tempo == id {
-                        activator.activated = activator.partition[tempo.beat % activator.partition.len()];
+                        activator.activated =
+                            activator.partition[tempo.beat % activator.partition.len()];
                     }
                 }
                 tempo.beat += 1;

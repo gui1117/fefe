@@ -1,11 +1,11 @@
 #[doc(hidden)]
 pub use animation::AnimationState;
 
+use entity::InsertableObject;
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyStatus;
 use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
-use entity::InsertableObject;
 
 #[derive(Deserialize, Clone, Default)]
 #[serde(deny_unknown_fields)]
@@ -387,4 +387,3 @@ impl Component for DebugColor {
 //         // }
 //     }
 // }
-

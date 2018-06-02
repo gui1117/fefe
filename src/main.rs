@@ -29,9 +29,9 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 
-mod config_menu;
 pub mod animation;
 pub mod component;
+mod config_menu;
 pub mod entity;
 mod force_generator;
 pub mod map;
@@ -43,8 +43,8 @@ mod game_state;
 mod graphics;
 mod retained_storage;
 
-pub use util::ClampFunction;
 pub use resource::Conf;
+pub use util::ClampFunction;
 
 use game_state::GameState;
 use specs::{DispatcherBuilder, World};
@@ -116,7 +116,9 @@ fn main() {
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one(), conf.zoom));
-    world.add_resource(::resource::WindowSize(window.window().get_inner_size().unwrap()));
+    world.add_resource(::resource::WindowSize(
+        window.window().get_inner_size().unwrap(),
+    ));
     world.add_resource(imgui);
     world.add_resource(conf);
     world.add_resource(::resource::Tempos(vec![::resource::Tempo::new(1.0)]));
@@ -173,13 +175,15 @@ fn main() {
                     event: winit::WindowEvent::Focused(false),
                     ..
                 } => {
-                    try_multiple_time!(window.window().set_cursor_state(CursorState::Normal)).unwrap();
+                    try_multiple_time!(window.window().set_cursor_state(CursorState::Normal))
+                        .unwrap();
                 }
                 winit::Event::WindowEvent {
                     event: winit::WindowEvent::CursorEntered { .. },
                     ..
                 } => {
-                    try_multiple_time!(window.window().set_cursor_state(CursorState::Grab)).unwrap();
+                    try_multiple_time!(window.window().set_cursor_state(CursorState::Grab))
+                        .unwrap();
                 }
                 winit::Event::WindowEvent {
                     event: winit::WindowEvent::Resized(x, y),

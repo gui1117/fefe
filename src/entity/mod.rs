@@ -4,7 +4,7 @@ use lyon::svg::path::iterator::PathIterator;
 use lyon::svg::path::{FlattenedEvent, PathEvent};
 use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
-use specs::{World, Entity};
+use specs::{Entity, World};
 
 #[derive(Deserialize, Clone, Copy)]
 #[serde(deny_unknown_fields)]

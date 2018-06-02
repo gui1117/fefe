@@ -1,7 +1,7 @@
-use specs::{Join, Fetch, FetchMut, ReadStorage, System, WriteStorage};
-use nphysics2d::math::Velocity;
-use ncollide2d::world::CollisionGroups;
 use ncollide2d::query::Ray;
+use ncollide2d::world::CollisionGroups;
+use nphysics2d::math::Velocity;
+use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
 
 pub struct VelocityToPlayerMemorySystem;
 
@@ -17,7 +17,7 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-    fn run(&mut self, (players, activators, rigid_bodies, mut vtpms, bodies_map, mut physic_world): Self::SystemData) {
+fn run(&mut self, (players, activators, rigid_bodies, mut vtpms, bodies_map, mut physic_world): Self::SystemData){
         let players_position = (&players, &rigid_bodies)
             .join()
             .map(|(_, body)| body.get(&physic_world).position().translation.vector)
@@ -27,18 +27,29 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
             let position = rigid_body.get(&physic_world).position().translation.vector;
 
             if activator.activated {
-                let closest_in_sight = players_position.iter()
+                let closest_in_sight = players_position
+                    .iter()
                     .filter_map(|player_position| {
-                        let ray = Ray::new(::na::Point::from_coordinates(position), player_position - position);
+                        let ray = Ray::new(
+                            ::na::Point::from_coordinates(position),
+                            player_position - position,
+                        );
                         let mut collision_groups = CollisionGroups::new();
                         collision_groups.set_whitelist(&[
                             ::entity::Group::Wall as usize,
                             ::entity::Group::Player as usize,
                         ]);
-                        let interference = physic_world.collision_world().interferences_with_ray(&ray, &collision_groups)
-                            .min_by_key(|(_, intersection)| (intersection.toi * ::CMP_PRECISION) as isize);
+                        let interference = physic_world
+                            .collision_world()
+                            .interferences_with_ray(&ray, &collision_groups)
+                            .min_by_key(|(_, intersection)| {
+                                (intersection.toi * ::CMP_PRECISION) as isize
+                            });
                         if let Some((object, intersection)) = interference {
-                            if players.get(*bodies_map.get(&object.data().body()).unwrap()).is_some() {
+                            if players
+                                .get(*bodies_map.get(&object.data().body()).unwrap())
+                                .is_some()
+                            {
                                 Some((object.position().translation.vector, intersection.toi))
                             } else {
                                 None
@@ -57,7 +68,8 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
                 }
             }
 
-            let direction = if let Some(last_closest_in_sight) = vtpm.last_closest_in_sight.clone() {
+            let direction = if let Some(last_closest_in_sight) = vtpm.last_closest_in_sight.clone()
+            {
                 let d = ::component::VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL;
                 if let Some(direction) = (last_closest_in_sight - position).try_normalize(d) {
                     direction
@@ -69,10 +81,12 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
                 ::na::zero()
             };
 
-            rigid_body.get_mut(&mut physic_world).set_velocity(Velocity {
-                linear: direction * vtpm.velocity,
-                angular: 0.0,
-            });
+            rigid_body
+                .get_mut(&mut physic_world)
+                .set_velocity(Velocity {
+                    linear: direction * vtpm.velocity,
+                    angular: 0.0,
+                });
         }
     }
 }

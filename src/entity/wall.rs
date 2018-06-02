@@ -58,7 +58,9 @@ impl Segmentable for Wall {
             );
             let mut groups = ::ncollide2d::world::CollisionGroups::new();
             groups.set_membership(&[super::Group::Wall as usize]);
-            physic_world.collision_world_mut().set_collision_groups(collider, groups);
+            physic_world
+                .collision_world_mut()
+                .set_collision_groups(collider, groups);
         }
     }
 }

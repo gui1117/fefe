@@ -1,5 +1,5 @@
-use specs::{Join, Fetch, ReadStorage, System, WriteStorage};
 use entity::Insertable;
+use specs::{Fetch, Join, ReadStorage, System, WriteStorage};
 
 pub struct TurretSystem;
 
@@ -12,7 +12,10 @@ impl<'a> System<'a> for TurretSystem {
         Fetch<'a, ::specs::LazyUpdate>,
     );
 
-    fn run(&mut self, (bodies, mut turrets, physic_world, update_time, lazy_update): Self::SystemData) {
+    fn run(
+        &mut self,
+        (bodies, mut turrets, physic_world, update_time, lazy_update): Self::SystemData,
+    ) {
         for (turret, body) in (&mut turrets, &bodies).join() {
             turret.remaining_cooldown -= update_time.0;
             if turret.remaining_cooldown <= 0.0 {

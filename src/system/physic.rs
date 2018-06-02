@@ -110,7 +110,8 @@ impl<'a> System<'a> for PhysicSystem {
                     // TODO: we probably want the mean when there will be multiple players
                     let position = body.position().translation.vector;
                     for &(_, ref player_position) in &players_aim {
-                        linear_damping /= player_distance_damping.compute((player_position - position).norm());
+                        linear_damping /=
+                            player_distance_damping.compute((player_position - position).norm());
                     }
                 }
 

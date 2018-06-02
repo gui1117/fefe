@@ -3,9 +3,9 @@ use entity::{InsertPosition, Insertable, InsertableObject};
 use ncollide2d::shape::{Ball, ShapeHandle};
 use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
-use rand::thread_rng;
 use rand::distributions::{IndependentSample, Range};
-use specs::{World, Entity};
+use rand::thread_rng;
+use specs::{Entity, World};
 
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
@@ -24,17 +24,20 @@ impl Insertable for Turret {
         let start_remaining_cooldown = cooldown;
 
         let entity = world.entities().create();
-        world.write().insert(entity, ::component::AnimationState::new(
-            self.animation_specie,
-            AnimationName::Idle,
-        ));
-        world.write().insert(entity, ::component::Turret {
-            cooldown,
-            bullet: self.bullet.clone(),
-            remaining_cooldown: start_remaining_cooldown,
-            angle: position.0.rotation.angle(),
-            shoot_distance: self.radius,
-        });
+        world.write().insert(
+            entity,
+            ::component::AnimationState::new(self.animation_specie, AnimationName::Idle),
+        );
+        world.write().insert(
+            entity,
+            ::component::Turret {
+                cooldown,
+                bullet: self.bullet.clone(),
+                remaining_cooldown: start_remaining_cooldown,
+                angle: position.0.rotation.angle(),
+                shoot_distance: self.radius,
+            },
+        );
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 

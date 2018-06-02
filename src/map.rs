@@ -6,15 +6,15 @@ use lyon::svg::parser::svg::{Token, Tokenizer};
 use lyon::svg::parser::FromSpan;
 use lyon::svg::parser::{AttributeId, ElementId};
 use lyon::svg::path::default::Path;
-use rand::{thread_rng, Rng};
 use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
+use rand::{thread_rng, Rng};
 use specs::World;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
-use std::collections::HashMap;
 
-pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
+pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure::Error> {
     ::util::reset_world(world);
 
     let mut path = PathBuf::from("data/maps");
@@ -175,7 +175,10 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
     }
 
     // Insert entities to world
-    let mut insertables = world.read_resource::<::resource::Conf>().insertables.clone();
+    let mut insertables = world
+        .read_resource::<::resource::Conf>()
+        .insertables
+        .clone();
     insertables.extend(settings.insertables);
     for (insert_rule, insert_rule_entities) in settings
         .insert_rules
@@ -219,7 +222,10 @@ pub (crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure
     }
 
     // Segment entities to world
-    let mut segmentables = world.read_resource::<::resource::Conf>().segmentables.clone();
+    let mut segmentables = world
+        .read_resource::<::resource::Conf>()
+        .segmentables
+        .clone();
     segmentables.extend(settings.segmentables);
     for (segment_rule, segment_rule_entities) in settings
         .segment_rules
@@ -283,7 +289,12 @@ pub enum Processor {
 }
 
 impl Processor {
-    fn build<B: Builder>(self, entities: Vec<Path>, defs: &HashMap<String, B>, world: &mut World) -> Result<(), ::failure::Error> {
+    fn build<B: Builder>(
+        self,
+        entities: Vec<Path>,
+        defs: &HashMap<String, B>,
+        world: &mut World,
+    ) -> Result<(), ::failure::Error> {
         let mut positions = vec![];
         for entity in entities {
             let position = B::Position::try_from_path(entity)
@@ -294,18 +305,22 @@ impl Processor {
         self.build_positions(positions, defs, world)
     }
 
-    fn build_positions<B: Builder>(self, mut positions: Vec<B::Position>, defs: &HashMap<String, B>, world: &mut World) -> Result<(), ::failure::Error> {
+    fn build_positions<B: Builder>(
+        self,
+        mut positions: Vec<B::Position>,
+        defs: &HashMap<String, B>,
+        world: &mut World,
+    ) -> Result<(), ::failure::Error> {
         use self::Processor::*;
         match self {
             Build(def_name) => {
                 let def = defs.get(&def_name)
                     .ok_or(::failure::err_msg(format!("unknown entity: {}", def_name)))?;
                 for position in positions {
-
                     def.build(position, world);
                 }
                 Ok(())
-            },
+            }
             TakeNPositions(n, processor) => {
                 positions.truncate(n);
                 processor.build_positions(positions, defs, world)

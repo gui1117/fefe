@@ -1,4 +1,4 @@
-use specs::{Join, Fetch, FetchMut, ReadStorage, System};
+use specs::{Fetch, FetchMut, Join, ReadStorage, System};
 
 pub struct CameraSystem;
 

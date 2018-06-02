@@ -2,8 +2,8 @@ use specs::{Component, VecStorage};
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs;
-use std::path::PathBuf;
 use std::fs::File;
+use std::path::PathBuf;
 
 #[derive(Deserialize, Clone, Copy)]
 #[serde(deny_unknown_fields)]
@@ -31,11 +31,11 @@ pub struct AnimationPartConf {
 }
 
 lazy_static! {
-    pub (crate) static ref ANIMATIONS: Animations = Animations::load().unwrap();
+    pub(crate) static ref ANIMATIONS: Animations = Animations::load().unwrap();
 }
 
 /// Animation parts must not be empty
-pub (crate) struct Animations {
+pub(crate) struct Animations {
     pub images: Vec<PathBuf>,
     table: HashMap<(AnimationSpecie, AnimationName), CompleteAnimation>,
 }

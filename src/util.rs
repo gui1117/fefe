@@ -1,10 +1,11 @@
+use rand::distributions::{IndependentSample, Range};
+use rand::ThreadRng;
 use retained_storage::Retained;
 use specs::World;
-use winit::{ElementState, Event, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode,
-            WindowEvent};
-use rand::ThreadRng;
-use rand::distributions::{IndependentSample, Range};
 use std::f32::consts::PI;
+use winit::{
+    ElementState, Event, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode, WindowEvent,
+};
 
 #[allow(unused)]
 macro_rules! try_multiple_time {
@@ -73,7 +74,7 @@ pub fn safe_maintain(world: &mut World) {
 
 #[inline]
 pub fn move_toward(isometry: &mut ::na::Isometry2<f32>, angle: f32, distance: f32) {
-    isometry.translation.vector += ::na::Vector2::new(angle.cos(), angle.sin())*distance;
+    isometry.translation.vector += ::na::Vector2::new(angle.cos(), angle.sin()) * distance;
 }
 
 #[inline]
@@ -82,7 +83,11 @@ pub fn move_forward(isometry: &mut ::na::Isometry2<f32>, distance: f32) {
     move_toward(isometry, angle, distance);
 }
 
-pub fn send_event_to_imgui(event: &::winit::Event, imgui: &mut ::imgui::ImGui, mouse_down: &mut [bool; 5]) {
+pub fn send_event_to_imgui(
+    event: &::winit::Event,
+    imgui: &mut ::imgui::ImGui,
+    mouse_down: &mut [bool; 5],
+) {
     match event {
         Event::WindowEvent {
             event: WindowEvent::MouseInput { button, state, .. },
@@ -92,21 +97,16 @@ pub fn send_event_to_imgui(event: &::winit::Event, imgui: &mut ::imgui::ImGui, m
                 MouseButton::Left => mouse_down[0] = *state == ElementState::Pressed,
                 MouseButton::Right => mouse_down[1] = *state == ElementState::Pressed,
                 MouseButton::Middle => mouse_down[2] = *state == ElementState::Pressed,
-                MouseButton::Other(0) => {
-                    mouse_down[3] = *state == ElementState::Pressed
-                }
-                MouseButton::Other(1) => {
-                    mouse_down[4] = *state == ElementState::Pressed
-                }
+                MouseButton::Other(0) => mouse_down[3] = *state == ElementState::Pressed,
+                MouseButton::Other(1) => mouse_down[4] = *state == ElementState::Pressed,
                 MouseButton::Other(_) => (),
             }
             imgui.set_mouse_down(&mouse_down);
         }
         Event::WindowEvent {
-            event:
-                WindowEvent::CursorMoved {
-                    position: (x, y), ..
-                },
+            event: WindowEvent::CursorMoved {
+                position: (x, y), ..
+            },
             ..
         } => imgui.set_mouse_pos(*x as f32, *y as f32),
         Event::WindowEvent {
@@ -157,12 +157,10 @@ pub fn send_event_to_imgui(event: &::winit::Event, imgui: &mut ::imgui::ImGui, m
                     ..
                 },
             ..
-        } => {
-            match delta {
-                MouseScrollDelta::LineDelta(_, y) => imgui.set_mouse_wheel(*y),
-                MouseScrollDelta::PixelDelta(_, y) => imgui.set_mouse_wheel(*y),
-            }
-        }
+        } => match delta {
+            MouseScrollDelta::LineDelta(_, y) => imgui.set_mouse_wheel(*y),
+            MouseScrollDelta::PixelDelta(_, y) => imgui.set_mouse_wheel(*y),
+        },
         Event::WindowEvent {
             event: WindowEvent::ReceivedCharacter(c),
             ..
@@ -201,18 +199,22 @@ pub fn init_imgui() -> ::imgui::ImGui {
 }
 
 #[allow(unused)]
-pub fn force_damping(mass: f32, time_to_reach_percent_velocity: f32, percent: f32, velocity: f32) -> (f32, f32) {
+pub fn force_damping(
+    mass: f32,
+    time_to_reach_percent_velocity: f32,
+    percent: f32,
+    velocity: f32,
+) -> (f32, f32) {
     let damping = mass / time_to_reach_percent_velocity * (1.0 - percent).ln();
     let force = damping * velocity;
     (force, damping)
 }
 
 pub fn random_normalized(rng: &mut ThreadRng) -> ::na::Vector2<f32> {
-    let angle = Range::new(0.0, 2.0*PI).ind_sample(rng);
+    let angle = Range::new(0.0, 2.0 * PI).ind_sample(rng);
     ::na::Vector2::new(angle.cos(), angle.sin())
 }
 
 pub fn vector_zero() -> ::na::Vector2<f32> {
     ::na::zero()
 }
-
