@@ -557,7 +557,7 @@ impl Graphics {
             let debug_circles = world.read::<::component::DebugCircles>();
             let bodies = world.read::<::component::RigidBody>();
             let physic_world = world.read_resource::<::resource::PhysicWorld>();
-            let debug_shapes= world.read_resource::<::resource::DebugShapes>();
+            let mut debug_shapes= world.write_resource::<::resource::DebugShapes>();
 
             let mut vertices = vec![];
             for collider in physic_world.colliders() {
@@ -573,8 +573,8 @@ impl Graphics {
                     circle_vertices(&body.position(), radius, COLORS[color.0], &mut vertices);
                 }
             }
-            for (position, shape) in debug_shapes.iter() {
-                shape_vertices(position, shape, COLORS[0], &mut vertices);
+            for (position, shape) in debug_shapes.drain(..) {
+                shape_vertices(&position, &shape, COLORS[0], &mut vertices);
             }
 
             let vertex_buffer = CpuAccessibleBuffer::from_iter(
@@ -786,7 +786,7 @@ fn shape_vertices(position: &::na::Isometry2<f32>, shape: &ShapeHandle<f32>, col
         let pivot = points_iter.next().unwrap();
         vertices.extend(
             points_iter
-                .tuples()
+                .tuple_windows()
                 .flat_map(|(p1, p2)| vec![pivot, p1, p2])
                 .map(|p| {
                     let p = position * *p;

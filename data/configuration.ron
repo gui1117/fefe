@@ -19,6 +19,14 @@ Conf(
                 VelocityControl((
                     velocity: 20
                 )),
+                SwordRifle((
+                    sword_damage: 1,
+                    sword_reload_time: 0.1,
+                    sword_length: 10,
+                    sword_range: 1,
+                    rifle_damage: 1,
+                    rifle_reload_time: 0.1,
+                )),
             ],
         )),
         "foo": Meta((

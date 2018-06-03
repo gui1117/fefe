@@ -48,6 +48,7 @@ component_list!{
     DebugColor,
     DebugCircles,
     Activator,
+    SwordRifle,
 }
 
 #[derive(Deserialize, Clone)]
@@ -74,13 +75,17 @@ impl Insertable for Meta {
         }
 
         // TODO: debug circles for components
-        // TODO: sword_shape for sword_rifle
 
         if self.components.iter().any(|c| match c {
             MetaComponent::ContactDamage(_) | MetaComponent::VelocityToPlayerCircle(_) => true,
             _ => false,
         }) {
             world.write().insert(entity, ::component::Contactor(vec![]));
+        }
+
+        // TODO: at the end this should be in load_map or sthg like that
+        if let Some(ref mut sword_rifle) = world.write::<::component::SwordRifle>().get_mut(entity) {
+            sword_rifle.compute_shapes();
         }
 
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();

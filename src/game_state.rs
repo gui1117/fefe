@@ -1,5 +1,5 @@
 use specs::{Join, World};
-use winit::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
+use winit::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent, MouseButton};
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;
@@ -42,6 +42,23 @@ impl GameState for Game {
         match event {
             ::winit::Event::WindowEvent {
                 event:
+                    WindowEvent::MouseInput {
+                        button: MouseButton::Left,
+                        state,
+                        ..
+                    },
+                ..
+            } => {
+                for (_, sr) in (
+                    &world.read::<::component::Player>(),
+                    &mut world.write::<::component::SwordRifle>(),
+                ).join()
+                {
+                    sr.attack = state == ElementState::Pressed;
+                }
+            }
+            ::winit::Event::WindowEvent {
+                event:
                     WindowEvent::KeyboardInput {
                         input:
                             KeyboardInput {
@@ -66,6 +83,7 @@ impl GameState for Game {
                 let size = world.read_resource::<::resource::WindowSize>().0;
                 x -= size.0 as f64 / 2.0;
                 y -= size.1 as f64 / 2.0;
+                y *= -1.0;
                 let angle = y.atan2(x) as f32;
                 for (_, aim) in (
                     &world.read::<::component::Player>(),

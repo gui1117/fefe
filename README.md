@@ -51,9 +51,7 @@ contient
 * [ ] faire les armes du héros et enfin faire une vrai première démo
   * mode épée:
   * mode fusil:
-* [ ] DebugShapes:
-      faire une fonction qui prend AsRef(Shape) et renvoie les vertices
-      changer la boucle pour faire que vertices ne soit pas réalloqué tout le temps et que debugcircle soit pour tout les unité
+* [x] DebugShapes
 * [ ] faire tourelles
 * [ ] ¿¿¿¿ faire que les spawner prennent des String au lieu de insertable ????
 * [ ] faire que le chaman puisse avoir plusieurs insertableobjects

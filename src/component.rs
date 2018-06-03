@@ -4,9 +4,10 @@ pub use animation::AnimationState;
 use entity::InsertableObject;
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyStatus;
-use ncollide2d::shape::ShapeHandle;
+use ncollide2d::shape::{ShapeHandle, ConvexPolygon};
 use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
+use std::f32::consts::PI;
 
 #[derive(Deserialize, Clone, Default)]
 #[serde(deny_unknown_fields)]
@@ -18,7 +19,7 @@ impl Component for Player {
 #[derive(Deserialize, Clone)]
 pub struct SwordRifle {
     #[serde(skip)]
-    pub mode_sword: bool,
+    pub sword_mode: bool,
     #[serde(skip)]
     pub attack: bool,
 
@@ -28,16 +29,29 @@ pub struct SwordRifle {
     pub sword_reloading: f32,
     pub sword_length: f32,
     pub sword_range: f32,
-
     #[serde(skip, default = "::util::default_shape_handle")]
     pub sword_shape: ShapeHandle<f32>,
 
-    // pub rifle_damage: usize,
-    // pub rifle_reload_time: f32,
-    // pub rifle_reloading_time: f32,
+    pub rifle_damage: usize,
+    pub rifle_reload_time: f32,
+    #[serde(skip)]
+    pub rifle_reloading: f32,
 }
 impl Component for SwordRifle {
     type Storage = VecStorage<Self>;
+}
+impl SwordRifle {
+    pub fn compute_shapes(&mut self) {
+        let div = (16.0 * (self.sword_range/(2.0*PI))).ceil() as usize;
+        let shape = ConvexPolygon::try_new((0..=div)
+            .map(|i| -self.sword_range/2.0 + (i as f32/div as f32)*self.sword_range)
+            .map(|angle| ::na::Point2::new(angle.cos(), angle.sin()))
+            .chain(Some(::na::Point2::new(0.0, 0.0)))
+            .map(|point| self.sword_length*point)
+            .collect::<Vec<_>>()
+        ).unwrap();
+        self.sword_shape = ShapeHandle::new(shape);
+    }
 }
 
 #[derive(Deserialize, Clone, Deref, DerefMut)]
