@@ -54,10 +54,9 @@ contient
       utiliser le remaining time pour mettre a jour l'angle de la tourelle ?
       nombre de beat par tour
       peut être faire aussi des tourelles qui change de sens (même si en fait bof je crois que ça peut être simulé avec un tourelle qui tire irrégulièrement)
-* [ ] ¿¿¿¿ faire que les spawner prennent des str au lieu de insertable ????
+* [x] ¿¿¿¿ faire que les spawner prennent des str au lieu de insertable ????
       on peut aussi enlever le Box<_> dans ce cas
 * [ ] faire que le chaman puisse avoir plusieurs insertableobjects
-* [ ] peut être faire une dépendance dans les systemes: physic système doit avoir lieu en premier pour pouvoir remplir les contactors et mettre les position au bon endroit pour tous
 * [ ] la randomization des activated beat peut se faire dans un composant randomisation qui desactive de facon random !!!!! OUI
 
 ## Maybe

@@ -187,7 +187,7 @@ macro_rules! object {
         #[derive(Deserialize, Clone)]
         #[serde(deny_unknown_fields)]
         pub enum $o {
-            $($v(Box<$v>),)*
+            $($v($v),)*
         }
 
         impl $t for $o {

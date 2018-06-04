@@ -31,7 +31,6 @@ Conf(
             external_components: [],
         )),
         "foo": Meta((
-            external_components: [],
             animation_specie: Character,
             radius: 1,
             density: 1,
@@ -62,6 +61,7 @@ Conf(
                 )),
                 ContactDamage((1)),
             ],
+            external_components: [],
         )),
     },
     fillables: {
