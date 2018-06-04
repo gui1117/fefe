@@ -13,8 +13,8 @@ pub use self::contact_damage::*;
 mod life;
 pub use self::life::*;
 
-mod turret;
-pub use self::turret::*;
+mod turret_part_spawner;
+pub use self::turret_part_spawner::*;
 
 mod unique_spawner;
 pub use self::unique_spawner::*;

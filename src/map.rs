@@ -180,6 +180,8 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
         .insertables
         .clone();
     insertables.extend(settings.insertables);
+    world.add_resource(insertables);
+
     for (insert_rule, insert_rule_entities) in settings
         .insert_rules
         .drain(..)
@@ -188,7 +190,7 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
         let rule_trigger = insert_rule.trigger;
         insert_rule
             .processor
-            .build(insert_rule_entities, &insertables, world)
+            .build(insert_rule_entities, world)
             .map_err(|e| {
                 format_err!(
                     "\"{}\": insert rule \"{}\": {}",
@@ -202,6 +204,8 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
     // Fill entities to world
     let mut fillables = world.read_resource::<::resource::Conf>().fillables.clone();
     fillables.extend(settings.fillables);
+    world.add_resource(fillables);
+
     for (fill_rule, fill_rule_entities) in settings
         .fill_rules
         .drain(..)
@@ -210,7 +214,7 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
         let rule_trigger = fill_rule.trigger;
         fill_rule
             .processor
-            .build(fill_rule_entities, &fillables, world)
+            .build(fill_rule_entities, world)
             .map_err(|e| {
                 format_err!(
                     "\"{}\": fill rule \"{}\": {}",
@@ -227,6 +231,8 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
         .segmentables
         .clone();
     segmentables.extend(settings.segmentables);
+    world.add_resource(segmentables);
+
     for (segment_rule, segment_rule_entities) in settings
         .segment_rules
         .drain(..)
@@ -235,7 +241,7 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
         let rule_trigger = segment_rule.trigger;
         segment_rule
             .processor
-            .build(segment_rule_entities, &segmentables, world)
+            .build(segment_rule_entities, world)
             .map_err(|e| {
                 format_err!(
                     "\"{}\": segment rule \"{}\": {}",
@@ -245,15 +251,17 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
                 )
             })?;
     }
+    ::util::check_world(&world);
+
     Ok(())
 }
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MapSettings {
-    pub insert_rules: Vec<Rule>,
-    pub fill_rules: Vec<Rule>,
-    pub segment_rules: Vec<Rule>,
+    pub insert_rules: Vec<Rule<InsertableObject>>,
+    pub fill_rules: Vec<Rule<FillableObject>>,
+    pub segment_rules: Vec<Rule<SegmentableObject>>,
 
     pub insertables: HashMap<String, InsertableObject>,
     pub fillables: HashMap<String, FillableObject>,
@@ -262,9 +270,9 @@ pub struct MapSettings {
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct Rule {
+pub struct Rule<B> {
     pub trigger: String,
-    pub processor: Processor,
+    pub processor: Processor<B>,
 }
 
 #[doc(hidden)]
@@ -281,18 +289,21 @@ pub trait Builder {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 /// entities are randomized before being processed
-pub enum Processor {
+pub enum Processor<B> {
     Build(String),
-    TakeNPositions(usize, Box<Processor>),
-    RandomPositionDispatch(Vec<(u32, Box<Processor>)>),
-    OrdonatePositionDispatch(Vec<Box<Processor>>),
+    TakeNPositions(usize, Box<Processor<B>>),
+    RandomPositionDispatch(Vec<(u32, Box<Processor<B>>)>),
+    OrdonatePositionDispatch(Vec<Box<Processor<B>>>),
+    #[doc(hidden)]
+    _Phantom(::std::marker::PhantomData<B>),
 }
 
-impl Processor {
-    fn build<B: Builder>(
+impl<B> Processor<B>
+where B: Builder + 'static + Send + Sync + Clone
+{
+    fn build(
         self,
         entities: Vec<Path>,
-        defs: &HashMap<String, B>,
         world: &mut World,
     ) -> Result<(), ::failure::Error> {
         let mut positions = vec![];
@@ -302,19 +313,18 @@ impl Processor {
             positions.push(position);
         }
         thread_rng().shuffle(&mut positions);
-        self.build_positions(positions, defs, world)
+        self.build_positions(positions, world)
     }
 
-    fn build_positions<B: Builder>(
+    fn build_positions(
         self,
         mut positions: Vec<B::Position>,
-        defs: &HashMap<String, B>,
         world: &mut World,
     ) -> Result<(), ::failure::Error> {
         use self::Processor::*;
         match self {
             Build(def_name) => {
-                let def = defs.get(&def_name)
+                let def = world.read_resource::<HashMap<String, B>>().get(&def_name).cloned()
                     .ok_or(::failure::err_msg(format!("unknown entity: {}", def_name)))?;
                 for position in positions {
                     def.build(position, world);
@@ -323,7 +333,7 @@ impl Processor {
             }
             TakeNPositions(n, processor) => {
                 positions.truncate(n);
-                processor.build_positions(positions, defs, world)
+                processor.build_positions(positions, world)
             }
             RandomPositionDispatch(weighted_processors) => {
                 let mut rng = ::rand::thread_rng();
@@ -343,7 +353,7 @@ impl Processor {
                     processors_entities[i].push(position);
                 }
                 for (_, processor) in weighted_processors {
-                    processor.build_positions(processors_entities.remove(0), defs, world)?
+                    processor.build_positions(processors_entities.remove(0), world)?
                 }
                 Ok(())
             }
@@ -356,10 +366,11 @@ impl Processor {
                     i %= processors_entities.len();
                 }
                 for processor in inserters {
-                    processor.build_positions(processors_entities.remove(0), defs, world)?
+                    processor.build_positions(processors_entities.remove(0), world)?
                 }
                 Ok(())
             }
+            _Phantom(_) => unreachable!(),
         }
     }
 }

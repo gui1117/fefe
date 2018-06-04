@@ -19,6 +19,7 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
         Fetch<'a, ::resource::LazyUpdate>,
         Fetch<'a, ::resource::EntitiesRes>,
         Fetch<'a, ::resource::BodiesMap>,
+        Fetch<'a, ::resource::InsertablesMap>,
     );
 
     fn run(
@@ -33,6 +34,7 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
             lazy_update,
             entities,
             bodies_map,
+            insertables_map,
         ): Self::SystemData,
     ) {
         let mut rng = thread_rng();
@@ -86,9 +88,9 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
                                 .is_some()
                             {
                                 entities.delete(entity).unwrap();
-                                let spawn_entity = unique_spawner.entity.clone();
+                                let spawn = insertables_map.get(&unique_spawner.spawn).unwrap().clone();
                                 lazy_update.execute(move |world| {
-                                    spawn_entity.insert(position.into(), world);
+                                    spawn.insert(position.into(), world);
                                 });
                             }
                         }

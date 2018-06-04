@@ -28,8 +28,10 @@ Conf(
                     rifle_reload_time: 0.1,
                 )),
             ],
+            external_components: [],
         )),
         "foo": Meta((
+            external_components: [],
             animation_specie: Character,
             radius: 1,
             density: 1,

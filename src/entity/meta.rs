@@ -45,6 +45,7 @@ component_list!{
     Damping,
     UniqueSpawner,
     ChamanSpawner,
+    TurretPartSpawner,
     DebugColor,
     DebugCircles,
     Activator,
@@ -60,18 +61,33 @@ pub struct Meta {
     pub density: f32,
     pub groups: Vec<super::Group>,
     pub components: Vec<MetaComponent>,
+    pub external_components: Vec<Vec<MetaComponent>>,
 }
 
 impl Insertable for Meta {
     fn insert(&self, position: InsertPosition, world: &World) -> Entity {
         let entity = world.entities().create();
+
         world.write().insert(
             entity,
             ::component::AnimationState::new(self.animation_specie, AnimationName::Idle),
         );
+
         for component in &self.components {
             let component = component.clone();
             component.insert(entity, world);
+        }
+
+        for components in &self.external_components {
+            let external_entity = world.entities().create();
+            for component in components {
+                let component = component.clone();
+                component.insert(external_entity, world);
+            }
+
+            if let Some(ref mut turret_part) = world.write::<::component::TurretPartSpawner>().get_mut(external_entity) {
+                turret_part.body = entity;
+            }
         }
 
         // TODO: debug circles for components
@@ -83,17 +99,16 @@ impl Insertable for Meta {
             world.write().insert(entity, ::component::Contactor(vec![]));
         }
 
-        // TODO: at the end this should be in load_map or sthg like that
         if let Some(ref mut sword_rifle) = world.write::<::component::SwordRifle>().get_mut(entity) {
             sword_rifle.compute_shapes();
         }
-
-        let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
         let mut position = position.0;
         if self.insert_shift {
             ::util::move_forward(&mut position, self.radius);
         }
+
+        let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
         let shape = ShapeHandle::new(Ball::new(self.radius));
         let body_handle = ::component::RigidBody::safe_insert(

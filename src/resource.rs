@@ -12,6 +12,8 @@ pub use specs::LazyUpdate;
 
 pub struct WindowSize(pub (u32, u32));
 
+pub type InsertablesMap = HashMap<String, InsertableObject>;
+
 #[derive(Deref, DerefMut)]
 pub struct Tempos(pub Vec<Tempo>);
 pub struct Tempo {

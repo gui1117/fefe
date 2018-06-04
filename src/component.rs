@@ -1,7 +1,6 @@
 #[doc(hidden)]
 pub use animation::AnimationState;
 
-use entity::InsertableObject;
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyStatus;
 use ncollide2d::shape::{ShapeHandle, ConvexPolygon};
@@ -252,7 +251,7 @@ impl Component for Damping {
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct UniqueSpawner {
-    pub entity: InsertableObject,
+    pub spawn: String,
     /// Clamp the proba with distance to characters
     pub dist_proba_clamp: Option<::util::ClampFunction>,
     /// Clamp the proba with aim of the characters
@@ -262,22 +261,27 @@ impl Component for UniqueSpawner {
     type Storage = VecStorage<Self>;
 }
 
-pub struct Turret {
-    pub bullet: InsertableObject,
-    pub cooldown: f32,
-    pub remaining_cooldown: f32,
-    pub angle: f32,
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct TurretPartSpawner {
+    #[serde(skip, default = "::util::uninitialized_entity")]
+    pub body: Entity,
+    pub spawn: String,
+    pub rotation_time: usize,
+    pub clockwise: bool,
+    // TODO: maybe use a vec here so it can have multiple canon
+    //       or maybe not
+    pub start_time: usize,
     pub shoot_distance: f32,
 }
-impl Component for Turret {
+impl Component for TurretPartSpawner {
     type Storage = VecStorage<Self>;
 }
 
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
-// TODO: maybe make spawn in an random of beat when activated
 pub struct ChamanSpawner {
-    pub entity: InsertableObject,
+    pub spawn: String,
     pub number_of_spawn: usize,
     #[serde(skip)]
     pub spawned: Vec<Entity>,

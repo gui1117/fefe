@@ -226,9 +226,6 @@ object!(
 mod wall;
 pub use self::wall::Wall;
 
-mod turret;
-pub use self::turret::Turret;
-
 mod meta;
 pub use self::meta::Meta;
 pub use self::meta::MetaComponent;

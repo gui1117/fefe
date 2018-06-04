@@ -97,7 +97,7 @@ fn main() {
     world.register::<::component::PlayersDistanceDamping>();
     world.register::<::component::GravityToPlayers>();
     world.register::<::component::Damping>();
-    world.register::<::component::Turret>();
+    world.register::<::component::TurretPartSpawner>();
     world.register::<::component::DebugColor>();
     world.register::<::component::UniqueSpawner>();
     world.register::<::component::ChamanSpawner>();
@@ -126,7 +126,7 @@ fn main() {
     world.add_resource(::resource::Tempos(vec![::resource::Tempo::new(1.0)]));
     world.maintain();
 
-    // Things to check:
+    // TOCHECK:
     // * all system checking for activator must depends on it system
     // * velocity dampings must depends on all system setting velcoity
     // * tout ce qui utilise des positions doivent être après physic system
@@ -139,6 +139,7 @@ fn main() {
         .add(::system::ContactDamageSystem, "damage", &[])
         .add(::system::UniqueSpawnerSystem, "unique spawner", &["activator"])
         .add(::system::ChamanSpawnerSystem, "chaman spawner", &["activator"])
+        .add(::system::TurretPartSpawnerSystem, "turret part spawner", &["activator"])
         .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &["activator"])
         .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &["activator"])
         .add(::system::VelocityToPlayerCircleSystem, "velocity to player circle", &["activator"])
@@ -152,7 +153,6 @@ fn main() {
              "boid",
         ])
         .add(::system::LifeSystem, "life", &[])
-        .add(::system::TurretSystem, "turret", &[])
         .add_barrier() // Draw barrier
         .add(::system::AnimationSystem, "animation", &[])
         .add(::system::CameraSystem, "camera", &[])
