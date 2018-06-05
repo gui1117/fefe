@@ -104,7 +104,7 @@ impl Insertable for Meta {
         // TODO: debug circles for components
 
         if self.components.iter().any(|c| match c {
-            MetaComponent::ContactDamage(_) | MetaComponent::VelocityToPlayerCircle(_) => true,
+            MetaComponent::ContactDamage(_) | MetaComponent::VelocityToPlayerCircle(_) | MetaComponent::DeadOnContact(_) => true,
             _ => false,
         }) {
             world.write().insert(entity, ::component::Contactor(vec![]));

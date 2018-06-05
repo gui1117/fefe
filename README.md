@@ -54,11 +54,9 @@ contient
 * [x] meta: allow static rigid body
 * [x] ¿¿¿¿ faire que les spawner prennent des str au lieu de insertable ????
 * [x] activator est la table des partitions
+* [x] faire meta extended qui permet de définir les activator dans settings.ron facilement
 * [ ] faire que le chaman puisse avoir plusieurs insertableobjects
 * [ ] la randomization des activated beat peut se faire dans un composant randomisation qui desactive de facon random !!!!! OUI
-* [ ] faire que deadoncontact prennent un groups ou masque ou ...
-      ou alors juste deadoncontact et deadonplayercontact
-* [ ] faire meta extended qui permet de définir les activator dans settings.ron facilement
 * [ ] check all insertables:
       they must have coherent activators
       they must have existing spawn
@@ -66,7 +64,7 @@ contient
 ## Performance
 
 * [ ] les bullet sont juste lancer avec vitesse initiale et pas update à chaque frame
-* [ ] on pourrait regrouper les partitions en ressource (bof)
+* [ ] on pourrait regrouper les partitions en ressource
 
 ## Maybe
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent

@@ -11,6 +11,7 @@ Conf(
             density: 1,
             launch: false,
             insert_shift: false,
+            status: Dynamic,
             groups: [Player],
             components: [
                 Life((1)),
@@ -29,7 +30,6 @@ Conf(
                     rifle_reload_time: 0.1,
                 )),
             ],
-            external_components: [],
         )),
         "bullet": Meta((
             animation_specie: Character,
@@ -37,73 +37,43 @@ Conf(
             density: 1,
             insert_shift: true,
             launch: true,
+            status: Dynamic,
             groups: [Monster],
             components: [
                 VelocityControl((
                     velocity: 10,
                 )),
+                Life((1)),
                 ContactDamage((1)),
+                DeadOnContact(()),
             ],
-            external_components: [],
         )),
         "turret": Meta((
             animation_specie: Character,
             radius: 1,
             density: 1,
             launch: false,
+            status: Static,
             insert_shift: false,
             groups: [Monster],
             components: [
-            ],
-            external_components: [
-                [
-                    Activator((
+                Activators(([
+                    (
                         tempo: 0,
-                        partition: [true]
-                    )),
-                    TurretPartSpawner((
+                        partition: [true, true],
+                    ),
+                ])),
+                TurretSpawner(([
+                    (
+                        activator: 0,
                         spawn: "bullet",
                         rotation_time: 8,
                         clockwise: true,
                         start_time: 0,
-                        shoot_distance: 1,
-                    )),
-                ],
-            ],
-        )),
-        "foo": Meta((
-            animation_specie: Character,
-            radius: 1,
-            density: 1,
-            launch: false,
-            insert_shift: false,
-            groups: [Monster],
-            components: [
-                Life((1)),
-                Activator((
-                    tempo: 0,
-                    partition: [true, false, false, false]
-                )),
-                VelocityToPlayerRandom((
-                    velocity: 10,
-                    toward_player: false,
-                    random_weighted: None,
-                    dist_proba_clamp: (
-                        min_t: 1.0,
-                        max_t: 1.0,
-                        min_value: 1.0,
-                        max_value: 1.0,
+                        shoot_distance: 1.1,
                     ),
-                    aim_proba_clamp: (
-                        min_t: 1.0,
-                        max_t: 1.0,
-                        min_value: 1.0,
-                        max_value: 1.0,
-                    ),
-                )),
-                ContactDamage((1)),
+                ])),
             ],
-            external_components: [],
         )),
     },
     fillables: {
