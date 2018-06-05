@@ -60,6 +60,13 @@ impl Component for Aim {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[serde(deny_unknown_fields)]
+pub struct Activators(pub Vec<Activator>);
+impl Component for Activators {
+    type Storage = VecStorage<Self>;
+}
+
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Activator {
@@ -67,9 +74,6 @@ pub struct Activator {
     pub partition: Vec<bool>,
     #[serde(skip)]
     pub activated: bool,
-}
-impl Component for Activator {
-    type Storage = VecStorage<Self>;
 }
 
 //////////////////////////////// Life ////////////////////////////////
@@ -116,6 +120,7 @@ pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct VelocityToPlayerMemory {
+    pub activator: usize,
     #[serde(skip)]
     pub last_closest_in_sight: Option<::na::Vector2<f32>>,
     pub velocity: f32,
@@ -133,6 +138,7 @@ impl Component for VelocityToPlayerMemory {
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct VelocityToPlayerRandom {
+    pub activator: usize,
     /// If some then a random direction with f32 norm is added
     pub random_weighted: Option<f32>,
     /// Clamp the proba with distance to characters
@@ -152,6 +158,7 @@ impl Component for VelocityToPlayerRandom {
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct VelocityToPlayerCircle {
+    pub activator: usize,
     pub circle_velocity: f32,
     pub direct_velocity: f32,
     /// Normal distribution
@@ -251,6 +258,7 @@ impl Component for Damping {
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct UniqueSpawner {
+    pub activator: usize,
     pub spawn: String,
     /// Clamp the proba with distance to characters
     pub dist_proba_clamp: Option<::util::ClampFunction>,
@@ -261,11 +269,17 @@ impl Component for UniqueSpawner {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[serde(deny_unknown_fields)]
+pub struct TurretSpawner(pub Vec<TurretPart>);
+impl Component for TurretSpawner {
+    type Storage = VecStorage<Self>;
+}
+
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
-pub struct TurretPartSpawner {
-    #[serde(skip, default = "::util::uninitialized_entity")]
-    pub body: Entity,
+pub struct TurretPart {
+    pub activator: usize,
     pub spawn: String,
     pub rotation_time: usize,
     pub clockwise: bool,
@@ -274,13 +288,11 @@ pub struct TurretPartSpawner {
     pub start_time: usize,
     pub shoot_distance: f32,
 }
-impl Component for TurretPartSpawner {
-    type Storage = VecStorage<Self>;
-}
 
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct ChamanSpawner {
+    pub activator: usize,
     pub spawn: String,
     pub number_of_spawn: usize,
     #[serde(skip)]

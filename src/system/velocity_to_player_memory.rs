@@ -10,23 +10,23 @@ pub struct VelocityToPlayerMemorySystem;
 impl<'a> System<'a> for VelocityToPlayerMemorySystem {
     type SystemData = (
         ReadStorage<'a, ::component::Player>,
-        ReadStorage<'a, ::component::Activator>,
+        ReadStorage<'a, ::component::Activators>,
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::VelocityToPlayerMemory>,
         Fetch<'a, ::resource::BodiesMap>,
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-fn run(&mut self, (players, activators, rigid_bodies, mut vtpms, bodies_map, mut physic_world): Self::SystemData){
+fn run(&mut self, (players, activatorses, rigid_bodies, mut vtpms, bodies_map, mut physic_world): Self::SystemData){
         let players_position = (&players, &rigid_bodies)
             .join()
             .map(|(_, body)| body.get(&physic_world).position().translation.vector)
             .collect::<Vec<_>>();
 
-        for (vtpm, rigid_body, activator) in (&mut vtpms, &rigid_bodies, &activators).join() {
+        for (vtpm, rigid_body, activators) in (&mut vtpms, &rigid_bodies, &activatorses).join() {
             let position = rigid_body.get(&physic_world).position().translation.vector;
 
-            if activator.activated {
+            if activators[vtpm.activator].activated {
                 let closest_in_sight = players_position
                     .iter()
                     .filter_map(|player_position| {

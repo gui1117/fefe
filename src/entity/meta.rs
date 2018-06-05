@@ -45,11 +45,32 @@ component_list!{
     Damping,
     UniqueSpawner,
     ChamanSpawner,
-    TurretPartSpawner,
+    TurretSpawner,
     DebugColor,
     DebugCircles,
-    Activator,
+    Activators,
     SwordRifle,
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct MetaOverride {
+    meta: String,
+    components: Vec<MetaComponent>,
+}
+
+impl Insertable for MetaOverride {
+    fn insert(&self, position: InsertPosition, world: &World) -> Entity {
+        let meta = world.read_resource::<::resource::InsertablesMap>().get(&self.meta).cloned()
+            .ok_or(::failure::err_msg(format!("unknown entity: {}", self.meta))).unwrap();
+        let entity = meta.insert(position, world);
+
+        for component in &self.components {
+            let component = component.clone();
+            component.insert(entity, world);
+        }
+        entity
+    }
 }
 
 #[derive(Deserialize, Clone)]
@@ -64,7 +85,6 @@ pub struct Meta {
     pub status: BodyStatus,
     pub groups: Vec<super::Group>,
     pub components: Vec<MetaComponent>,
-    pub external_components: Vec<Vec<MetaComponent>>,
 }
 
 impl Insertable for Meta {
@@ -79,18 +99,6 @@ impl Insertable for Meta {
         for component in &self.components {
             let component = component.clone();
             component.insert(entity, world);
-        }
-
-        for components in &self.external_components {
-            let external_entity = world.entities().create();
-            for component in components {
-                let component = component.clone();
-                component.insert(external_entity, world);
-            }
-
-            if let Some(ref mut turret_part) = world.write::<::component::TurretPartSpawner>().get_mut(external_entity) {
-                turret_part.body = entity;
-            }
         }
 
         // TODO: debug circles for components

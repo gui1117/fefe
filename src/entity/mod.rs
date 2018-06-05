@@ -211,7 +211,7 @@ object!(
     Insertable -> Entity,
     insert,
     InsertPosition,
-    InsertableObject { Meta }
+    InsertableObject { Meta, MetaOverride }
 );
 
 object!(Fillable, fill, FillPosition, FillableObject { Wall });
@@ -228,4 +228,5 @@ pub use self::wall::Wall;
 
 mod meta;
 pub use self::meta::Meta;
+pub use self::meta::MetaOverride;
 pub use self::meta::MetaComponent;

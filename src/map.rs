@@ -251,7 +251,6 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
                 )
             })?;
     }
-    ::util::check_world(&world);
 
     Ok(())
 }

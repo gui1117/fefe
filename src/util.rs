@@ -1,7 +1,7 @@
 use rand::distributions::{IndependentSample, Range};
 use rand::ThreadRng;
 use retained_storage::Retained;
-use specs::{World, Entity, Join};
+use specs::{World, Entity};
 use std::f32::consts::PI;
 use ncollide2d::shape::{Ball, ShapeHandle};
 use winit::{
@@ -71,17 +71,6 @@ pub fn safe_maintain(world: &mut World) {
         .map(|r| r.0)
         .collect::<Vec<_>>();
     physic_world.remove_bodies(&retained);
-}
-
-pub fn check_world(world: &World) {
-    // TOCHECK: all spawner must be checked
-    let insertables_map = world.read_resource::<::resource::InsertablesMap>();
-    for spawn in world.read::<::component::UniqueSpawner>().join().map(|s| &s.spawn)
-        .chain(world.read::<::component::ChamanSpawner>().join().map(|s| &s.spawn))
-        .chain(world.read::<::component::TurretPartSpawner>().join().map(|s| &s.spawn))
-    {
-        assert!(insertables_map.contains_key(spawn))
-    }
 }
 
 #[inline]
@@ -235,6 +224,7 @@ pub fn default_shape_handle() -> ShapeHandle<f32> {
     ShapeHandle::new(Ball::new(0.1))
 }
 
+#[allow(unused)]
 pub fn uninitialized_entity() -> Entity {
     unsafe {
         ::std::mem::uninitialized()

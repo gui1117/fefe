@@ -5,7 +5,7 @@ pub struct ChamanSpawnerSystem;
 
 impl<'a> System<'a> for ChamanSpawnerSystem {
     type SystemData = (
-        ReadStorage<'a, ::component::Activator>,
+        ReadStorage<'a, ::component::Activators>,
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::ChamanSpawner>,
         Fetch<'a, ::resource::PhysicWorld>,
@@ -14,11 +14,11 @@ impl<'a> System<'a> for ChamanSpawnerSystem {
         Fetch<'a, ::resource::InsertablesMap>,
     );
 
-fn run(&mut self, (activators, bodies, mut chaman_spawner, physic_world, lazy_update, entities, insertables_map): Self::SystemData){
-        for (chaman_spawner, body, activator, entity) in
-            (&mut chaman_spawner, &bodies, &activators, &*entities).join()
+fn run(&mut self, (activatorses, bodies, mut chaman_spawner, physic_world, lazy_update, entities, insertables_map): Self::SystemData){
+        for (chaman_spawner, body, activators, entity) in
+            (&mut chaman_spawner, &bodies, &activatorses, &*entities).join()
         {
-            if activator.activated {
+            if activators[chaman_spawner.activator].activated {
                 chaman_spawner
                     .spawned
                     .retain(|spawned| entities.is_alive(*spawned));

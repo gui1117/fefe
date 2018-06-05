@@ -14,13 +14,13 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
         ReadStorage<'a, ::component::Player>,
         ReadStorage<'a, ::component::Aim>,
         ReadStorage<'a, ::component::RigidBody>,
-        ReadStorage<'a, ::component::Activator>,
+        ReadStorage<'a, ::component::Activators>,
         WriteStorage<'a, ::component::VelocityToPlayerRandom>,
         Fetch<'a, ::resource::BodiesMap>,
         FetchMut<'a, ::resource::PhysicWorld>,
     );
 
-fn run(&mut self, (players, aims, rigid_bodies, activators, mut vtprs, bodies_map, mut physic_world): Self::SystemData){
+fn run(&mut self, (players, aims, rigid_bodies, activatorses, mut vtprs, bodies_map, mut physic_world): Self::SystemData){
         let mut rng = thread_rng();
         let range_0_1 = Range::new(0.0, 1.0);
         let players_position = (&players, &rigid_bodies)
@@ -28,9 +28,9 @@ fn run(&mut self, (players, aims, rigid_bodies, activators, mut vtprs, bodies_ma
             .map(|(_, body)| body.get(&physic_world).position().translation.vector)
             .collect::<Vec<_>>();
 
-        for (vtpr, rigid_body, activator) in (&mut vtprs, &rigid_bodies, &activators).join() {
+        for (vtpr, rigid_body, activators) in (&mut vtprs, &rigid_bodies, &activatorses).join() {
             let position = rigid_body.get(&physic_world).position().translation.vector;
-            if activator.activated {
+            if activators[vtpr.activator].activated {
                 let closest_in_sight = players_position
                     .iter()
                     .filter_map(|player_position| {

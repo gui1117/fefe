@@ -10,7 +10,7 @@ pub struct UniqueSpawnerSystem;
 
 impl<'a> System<'a> for UniqueSpawnerSystem {
     type SystemData = (
-        ReadStorage<'a, ::component::Activator>,
+        ReadStorage<'a, ::component::Activators>,
         ReadStorage<'a, ::component::Aim>,
         ReadStorage<'a, ::component::Player>,
         ReadStorage<'a, ::component::RigidBody>,
@@ -25,7 +25,7 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
     fn run(
         &mut self,
         (
-            activators,
+            activatorses,
             aims,
             players,
             bodies,
@@ -45,10 +45,10 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
             .map(|(_, aim, body)| (aim.0, body.get(&physic_world).position().translation.vector))
             .collect::<Vec<_>>();
 
-        for (unique_spawner, body, activator, entity) in
-            (&mut unique_spawners, &bodies, &activators, &*entities).join()
+        for (unique_spawner, body, activators, entity) in
+            (&mut unique_spawners, &bodies, &activatorses, &*entities).join()
         {
-            if activator.activated {
+            if activators[unique_spawner.activator].activated {
                 let position = body.get(&physic_world).position().clone();
                 let pos_vector = position.translation.vector;
                 for &(player_aim, ref player_position) in &players_aim {

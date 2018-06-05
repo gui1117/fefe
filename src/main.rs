@@ -97,7 +97,7 @@ fn main() {
     world.register::<::component::PlayersDistanceDamping>();
     world.register::<::component::GravityToPlayers>();
     world.register::<::component::Damping>();
-    world.register::<::component::TurretPartSpawner>();
+    world.register::<::component::TurretSpawner>();
     world.register::<::component::DebugColor>();
     world.register::<::component::UniqueSpawner>();
     world.register::<::component::ChamanSpawner>();
@@ -109,7 +109,7 @@ fn main() {
     world.register::<::component::VelocityAimDamping>();
     world.register::<::component::VelocityDistanceDamping>();
     world.register::<::component::VelocityToPlayerCircle>();
-    world.register::<::component::Activator>();
+    world.register::<::component::Activators>();
     world.register::<::component::Boid>();
     world.register::<::component::SwordRifle>();
 
@@ -139,7 +139,7 @@ fn main() {
         .add(::system::ContactDamageSystem, "damage", &[])
         .add(::system::UniqueSpawnerSystem, "unique spawner", &["activator"])
         .add(::system::ChamanSpawnerSystem, "chaman spawner", &["activator"])
-        .add(::system::TurretPartSpawnerSystem, "turret part spawner", &["activator"])
+        .add(::system::TurretSpawnerSystem, "turret spawner", &["activator"])
         .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &["activator"])
         .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &["activator"])
         .add(::system::VelocityToPlayerCircleSystem, "velocity to player circle", &["activator"])
