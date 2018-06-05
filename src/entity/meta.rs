@@ -56,9 +56,12 @@ component_list!{
 #[serde(deny_unknown_fields)]
 pub struct Meta {
     pub insert_shift: bool,
+    pub launch: bool,
     pub animation_specie: AnimationSpecie,
     pub radius: f32,
     pub density: f32,
+    #[serde(with = "::util::BodyStatusDef")]
+    pub status: BodyStatus,
     pub groups: Vec<super::Group>,
     pub components: Vec<MetaComponent>,
     pub external_components: Vec<Vec<MetaComponent>>,
@@ -108,6 +111,13 @@ impl Insertable for Meta {
             ::util::move_forward(&mut position, self.radius);
         }
 
+        if self.launch {
+            if let Some(ref mut control) = world.write::<::component::VelocityControl>().get_mut(entity) {
+                let angle = position.rotation.angle();
+                control.direction = ::na::Vector2::new(angle.cos(), angle.sin());
+            }
+        }
+
         let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
 
         let shape = ShapeHandle::new(Ball::new(self.radius));
@@ -116,7 +126,7 @@ impl Insertable for Meta {
             position,
             shape.inertia(self.density),
             shape.center_of_mass(),
-            BodyStatus::Dynamic,
+            self.status,
             &mut world.write(),
             &mut physic_world,
             &mut world.write_resource(),

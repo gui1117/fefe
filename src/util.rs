@@ -240,3 +240,12 @@ pub fn uninitialized_entity() -> Entity {
         ::std::mem::uninitialized()
     }
 }
+
+#[derive(Deserialize)]
+#[serde(remote = "::nphysics2d::object::BodyStatus")]
+pub enum BodyStatusDef {
+    Disabled,
+    Static,
+    Dynamic,
+    Kinematic,
+}

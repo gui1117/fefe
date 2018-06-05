@@ -50,14 +50,30 @@ contient
   * [ ] walker.rs
 * [x] faire les armes du héros et enfin faire une vrai première démo
 * [x] DebugShapes
-* [ ] faire tourelles
-      utiliser le remaining time pour mettre a jour l'angle de la tourelle ?
-      nombre de beat par tour
-      peut être faire aussi des tourelles qui change de sens (même si en fait bof je crois que ça peut être simulé avec un tourelle qui tire irrégulièrement)
+* [x] faire tourelles
+* [x] meta: allow static rigid body
 * [x] ¿¿¿¿ faire que les spawner prennent des str au lieu de insertable ????
-      on peut aussi enlever le Box<_> dans ce cas
 * [ ] faire que le chaman puisse avoir plusieurs insertableobjects
 * [ ] la randomization des activated beat peut se faire dans un composant randomisation qui desactive de facon random !!!!! OUI
+* [ ] faire que deadoncontact prennent un groups ou masque ou ...
+      ou alors juste deadoncontact et deadonplayercontact
+* [ ] faire meta extended qui permet de définir les activator dans settings.ron facilement
+      faut voir comment gérer ça avec les extendcomponents
+      probablement mettre les partitions dans une resource et utiliser des ids dans les composants (réutilisation tout ca)
+      les partitions sont définie au niveau de la map
+      un composants qui contient un vec de id de partition
+      chacun des composant qui ont besoin d'une partition ont un id qui est pour ce vec de id de partition
+      plus besoin de external_component: juste un composant Turret(VecTurretPart)
+      on a ensuite juste a redefinir ce composant si on veut changer
+      d'abord faire le nouveau composant et la mise des partition en resource
+      refaire turret
+      faire la suppression external comps
+      faire extendedmeta
+
+## Performance
+
+* [ ] les bullet sont juste lancer avec vitesse initiale et pas update à chaque frame
+* [ ] on pourrait regrouper les partitions en ressource (bof)
 
 ## Maybe
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent
@@ -309,4 +325,3 @@ dans une même arme: il faut appuier sur shift pour se mettre en mode arbalete
 
 pour dessiner le cursor faire avec le truc natif ou redessiner un autre:
 le truc natif est surement mieux pour le temps de réponse
-

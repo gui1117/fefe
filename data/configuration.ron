@@ -9,6 +9,7 @@ Conf(
             animation_specie: Character,
             radius: 1,
             density: 1,
+            launch: false,
             insert_shift: false,
             groups: [Player],
             components: [
@@ -30,10 +31,51 @@ Conf(
             ],
             external_components: [],
         )),
+        "bullet": Meta((
+            animation_specie: Character,
+            radius: 1,
+            density: 1,
+            insert_shift: true,
+            launch: true,
+            groups: [Monster],
+            components: [
+                VelocityControl((
+                    velocity: 10,
+                )),
+                ContactDamage((1)),
+            ],
+            external_components: [],
+        )),
+        "turret": Meta((
+            animation_specie: Character,
+            radius: 1,
+            density: 1,
+            launch: false,
+            insert_shift: false,
+            groups: [Monster],
+            components: [
+            ],
+            external_components: [
+                [
+                    Activator((
+                        tempo: 0,
+                        partition: [true]
+                    )),
+                    TurretPartSpawner((
+                        spawn: "bullet",
+                        rotation_time: 8,
+                        clockwise: true,
+                        start_time: 0,
+                        shoot_distance: 1,
+                    )),
+                ],
+            ],
+        )),
         "foo": Meta((
             animation_specie: Character,
             radius: 1,
             density: 1,
+            launch: false,
             insert_shift: false,
             groups: [Monster],
             components: [

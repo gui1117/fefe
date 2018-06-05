@@ -6,7 +6,7 @@ MapSettings(
         ),
         (
             trigger: "#808000",
-            processor: Build("foo"),
+            processor: Build("turret"),
         ),
     ],
     fill_rules: [
