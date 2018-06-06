@@ -1,11 +1,11 @@
-use specs::{Fetch, Join, ReadStorage, System};
+use specs::{ReadExpect, Join, ReadStorage, System};
 
 pub struct LifeSystem;
 
 impl<'a> System<'a> for LifeSystem {
     type SystemData = (
         ReadStorage<'a, ::component::Life>,
-        Fetch<'a, ::resource::EntitiesRes>,
+        ReadExpect<'a, ::resource::EntitiesRes>,
     );
 
     fn run(&mut self, (lives, entities): Self::SystemData) {

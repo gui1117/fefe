@@ -1,5 +1,5 @@
 use entity::Insertable;
-use specs::{Fetch, Join, ReadStorage, System, WriteStorage};
+use specs::{ReadExpect, Join, ReadStorage, System, WriteStorage};
 
 pub struct ChamanSpawnerSystem;
 
@@ -8,10 +8,10 @@ impl<'a> System<'a> for ChamanSpawnerSystem {
         ReadStorage<'a, ::component::Activators>,
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::ChamanSpawner>,
-        Fetch<'a, ::resource::PhysicWorld>,
-        Fetch<'a, ::resource::LazyUpdate>,
-        Fetch<'a, ::resource::EntitiesRes>,
-        Fetch<'a, ::resource::InsertablesMap>,
+        ReadExpect<'a, ::resource::PhysicWorld>,
+        ReadExpect<'a, ::resource::LazyUpdate>,
+        ReadExpect<'a, ::resource::EntitiesRes>,
+        ReadExpect<'a, ::resource::InsertablesMap>,
     );
 
 fn run(&mut self, (activatorses, bodies, mut chaman_spawner, physic_world, lazy_update, entities, insertables_map): Self::SystemData){
@@ -25,10 +25,10 @@ fn run(&mut self, (activatorses, bodies, mut chaman_spawner, physic_world, lazy_
                 if chaman_spawner.spawned.len() < chaman_spawner.number_of_spawn {
                     let spawn = insertables_map.get(&chaman_spawner.spawn).unwrap().clone();
                     let position = body.get(&physic_world).position().clone();
-                    lazy_update.execute(move |world| {
+                    lazy_update.exec(move |world| {
                         let spawned = spawn.insert(position.into(), world);
                         if let Some(chaman_spawner) =
-                            world.write::<::component::ChamanSpawner>().get_mut(entity)
+                            world.write_storage::<::component::ChamanSpawner>().get_mut(entity)
                         {
                             chaman_spawner.spawned.push(spawned);
                         }

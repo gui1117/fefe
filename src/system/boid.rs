@@ -1,4 +1,4 @@
-use specs::{Fetch, FetchMut, Join, ReadStorage, System};
+use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System};
 use std::f32::EPSILON;
 
 pub struct Boid;
@@ -7,8 +7,8 @@ impl<'a> System<'a> for Boid {
     type SystemData = (
         ReadStorage<'a, ::component::Boid>,
         ReadStorage<'a, ::component::RigidBody>,
-        Fetch<'a, ::resource::EntitiesRes>,
-        FetchMut<'a, ::resource::PhysicWorld>,
+        ReadExpect<'a, ::resource::EntitiesRes>,
+        WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
     fn run(&mut self, (boids, bodies, entities, mut physic_world): Self::SystemData) {

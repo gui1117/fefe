@@ -1,7 +1,7 @@
 use ncollide2d::events::ContactEvent;
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyHandle;
-use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
+use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System, WriteStorage};
 use std::f32::consts::PI;
 
 pub struct PhysicSystem {
@@ -27,12 +27,12 @@ impl<'a> System<'a> for PhysicSystem {
         ReadStorage<'a, ::component::PlayersAimDamping>,
         ReadStorage<'a, ::component::PlayersDistanceDamping>,
         WriteStorage<'a, ::component::Contactor>,
-        Fetch<'a, ::resource::UpdateTime>,
-        Fetch<'a, ::specs::EntitiesRes>,
-        Fetch<'a, ::resource::StepForces>,
-        Fetch<'a, ::resource::BodiesMap>,
-        Fetch<'a, ::resource::Conf>,
-        FetchMut<'a, ::resource::PhysicWorld>,
+        ReadExpect<'a, ::resource::UpdateTime>,
+        ReadExpect<'a, ::resource::EntitiesRes>,
+        ReadExpect<'a, ::resource::StepForces>,
+        ReadExpect<'a, ::resource::BodiesMap>,
+        ReadExpect<'a, ::resource::Conf>,
+        WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
     fn run(

@@ -51,7 +51,7 @@ impl ClampFunction {
 pub fn reset_world(world: &mut World) {
     world.maintain();
     world.delete_all();
-    world.write::<::component::RigidBody>().retained();
+    world.write_storage::<::component::RigidBody>().retained();
 
     let ground = world.create_entity().with(::component::Ground).build();
     world.add_resource(::resource::BodiesMap::new(ground));
@@ -65,7 +65,7 @@ pub fn safe_maintain(world: &mut World) {
     world.maintain();
     let mut physic_world = world.write_resource::<::resource::PhysicWorld>();
     let retained = world
-        .write::<::component::RigidBody>()
+        .write_storage::<::component::RigidBody>()
         .retained()
         .iter()
         .map(|r| r.0)

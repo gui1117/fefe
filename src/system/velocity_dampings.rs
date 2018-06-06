@@ -1,4 +1,4 @@
-use specs::{FetchMut, Join, ReadStorage, System};
+use specs::{WriteExpect, Join, ReadStorage, System};
 use std::f32::consts::PI;
 
 pub struct VelocityDampingsSystem;
@@ -10,7 +10,7 @@ impl<'a> System<'a> for VelocityDampingsSystem {
         ReadStorage<'a, ::component::RigidBody>,
         ReadStorage<'a, ::component::VelocityAimDamping>,
         ReadStorage<'a, ::component::VelocityDistanceDamping>,
-        FetchMut<'a, ::resource::PhysicWorld>,
+        WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
 fn run(&mut self, (players, aims, rigid_bodies, aim_dampings, distance_dampings, mut physic_world): Self::SystemData){

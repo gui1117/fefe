@@ -1,12 +1,12 @@
-use specs::{Fetch, FetchMut, Join, System, WriteStorage};
+use specs::{ReadExpect, WriteExpect, Join, System, WriteStorage};
 
 pub struct ActivatorSystem;
 
 impl<'a> System<'a> for ActivatorSystem {
     type SystemData = (
         WriteStorage<'a, ::component::Activators>,
-        Fetch<'a, ::resource::UpdateTime>,
-        FetchMut<'a, ::resource::Tempos>,
+        ReadExpect<'a, ::resource::UpdateTime>,
+        WriteExpect<'a, ::resource::Tempos>,
     );
 
     fn run(&mut self, (mut activatorses, update_time, mut tempos): Self::SystemData) {

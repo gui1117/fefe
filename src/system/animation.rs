@@ -1,4 +1,4 @@
-use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
+use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System, WriteStorage};
 
 pub struct AnimationSystem;
 
@@ -6,9 +6,9 @@ impl<'a> System<'a> for AnimationSystem {
     type SystemData = (
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::AnimationState>,
-        Fetch<'a, ::resource::UpdateTime>,
-        Fetch<'a, ::resource::PhysicWorld>,
-        FetchMut<'a, ::resource::AnimationImages>,
+        ReadExpect<'a, ::resource::UpdateTime>,
+        ReadExpect<'a, ::resource::PhysicWorld>,
+        WriteExpect<'a, ::resource::AnimationImages>,
     );
 
     fn run(

@@ -1,7 +1,7 @@
 use ncollide2d::query::Ray;
 use ncollide2d::world::CollisionGroups;
 use nphysics2d::math::Velocity;
-use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
+use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System, WriteStorage};
 
 pub struct VelocityToPlayerMemorySystem;
 
@@ -13,8 +13,8 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
         ReadStorage<'a, ::component::Activators>,
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::VelocityToPlayerMemory>,
-        Fetch<'a, ::resource::BodiesMap>,
-        FetchMut<'a, ::resource::PhysicWorld>,
+        ReadExpect<'a, ::resource::BodiesMap>,
+        WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
 fn run(&mut self, (players, activatorses, rigid_bodies, mut vtpms, bodies_map, mut physic_world): Self::SystemData){

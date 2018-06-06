@@ -1,4 +1,7 @@
-use specs::{Component, Index, Join, MaskedStorage, Storage, UnprotectedStorage};
+use specs::{Component, Join, Storage};
+use hibitset::BitSetLike;
+use specs::world::Index;
+use specs::storage::{MaskedStorage, UnprotectedStorage, TryDefault};
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::DerefMut;
@@ -24,16 +27,16 @@ pub struct RetainedStorage<C, T = UnprotectedStorage<C>> {
     phantom: PhantomData<C>,
 }
 
-impl<C, T> Default for RetainedStorage<C, T>
+impl<C, T> TryDefault for RetainedStorage<C, T>
 where
-    T: Default,
+    T: TryDefault,
 {
-    fn default() -> Self {
-        RetainedStorage {
+    fn try_default() -> Result<Self, String> {
+        Ok(RetainedStorage {
             retained: vec![],
-            storage: T::default(),
+            storage: T::try_default()?,
             phantom: PhantomData,
-        }
+        })
     }
 }
 
@@ -44,11 +47,11 @@ impl<C, T> Retained<C> for RetainedStorage<C, T> {
 }
 
 impl<C: Clone, T: UnprotectedStorage<C>> UnprotectedStorage<C> for RetainedStorage<C, T> {
-    unsafe fn clean<F>(&mut self, f: F)
+    unsafe fn clean<B>(&mut self, has: B)
     where
-        F: Fn(Index) -> bool,
+        B: BitSetLike
     {
-        self.storage.clean(f)
+        self.storage.clean(has)
     }
 
     unsafe fn get(&self, id: Index) -> &C {

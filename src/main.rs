@@ -28,6 +28,9 @@ extern crate vulkano;
 extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
+extern crate hibitset;
+#[macro_use]
+extern crate specs_derive;
 
 pub mod animation;
 pub mod component;
@@ -82,7 +85,7 @@ fn main() {
     let mut graphics = graphics::Graphics::new(&window, &mut imgui);
 
     let mut world = World::new();
-    world.register::<::component::RigidBody>();
+    // world.register::<::component::RigidBody>();
     world.register::<::component::AnimationState>();
     world.register::<::component::Ground>();
     world.register::<::component::Life>();
@@ -132,31 +135,31 @@ fn main() {
     // * velocity dampings must depends on all system setting velcoity
     // * tout ce qui utilise des positions doivent être après physic system
     let mut update_dispatcher = DispatcherBuilder::new()
-        .add(::system::ActivatorSystem, "activator", &[])
-        .add(::system::PhysicSystem::new(), "physic", &[])
-        .add_barrier()
-        .add(::system::SwordRifleSystem, "sword rifle", &[])
-        .add(::system::DeadOnContactSystem, "dead on contact", &[])
-        .add(::system::ContactDamageSystem, "damage", &[])
-        .add(::system::UniqueSpawnerSystem, "unique spawner", &["activator"])
-        .add(::system::ChamanSpawnerSystem, "chaman spawner", &["activator"])
-        .add(::system::TurretSpawnerSystem, "turret spawner", &["activator"])
-        .add(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &["activator"])
-        .add(::system::VelocityToPlayerRandomSystem, "velocity to player random", &["activator"])
-        .add(::system::VelocityToPlayerCircleSystem, "velocity to player circle", &["activator"])
-        .add(::system::VelocityControlSystem, "velocity control", &[])
-        .add(::system::Boid, "boid", &[])
-        .add(::system::VelocityDampingsSystem, "velocity dampings", &[
+        .with(::system::ActivatorSystem, "activator", &[])
+        .with(::system::PhysicSystem::new(), "physic", &[])
+        .with_barrier()
+        .with(::system::SwordRifleSystem, "sword rifle", &[])
+        .with(::system::DeadOnContactSystem, "dead on contact", &[])
+        .with(::system::ContactDamageSystem, "damage", &[])
+        .with(::system::UniqueSpawnerSystem, "unique spawner", &["activator"])
+        .with(::system::ChamanSpawnerSystem, "chaman spawner", &["activator"])
+        .with(::system::TurretSpawnerSystem, "turret spawner", &["activator"])
+        .with(::system::VelocityToPlayerMemorySystem, "velocity to player memory", &["activator"])
+        .with(::system::VelocityToPlayerRandomSystem, "velocity to player random", &["activator"])
+        .with(::system::VelocityToPlayerCircleSystem, "velocity to player circle", &["activator"])
+        .with(::system::VelocityControlSystem, "velocity control", &[])
+        .with(::system::Boid, "boid", &[])
+        .with(::system::VelocityDampingsSystem, "velocity dampings", &[
              "velocity to player memory",
              "velocity to player random",
              "velocity to player circle",
              "velocity control",
              "boid",
         ])
-        .add(::system::LifeSystem, "life", &[])
-        .add_barrier() // Draw barrier
-        .add(::system::AnimationSystem, "animation", &[])
-        .add(::system::CameraSystem, "camera", &[])
+        .with(::system::LifeSystem, "life", &[])
+        .with_barrier() // Draw barrier
+        .with(::system::AnimationSystem, "animation", &[])
+        .with(::system::CameraSystem, "camera", &[])
         .build();
 
     let mut fps_counter = fps_counter::FPSCounter::new();

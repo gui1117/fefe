@@ -554,11 +554,11 @@ impl Graphics {
             );
 
             let bodies_map = world.read_resource::<::resource::BodiesMap>();
-            let debug_colors = world.read::<::component::DebugColor>();
-            let aims = world.read::<::component::Aim>();
-            let debug_circles = world.read::<::component::DebugCircles>();
-            let debug_rays = world.read::<::component::DebugRays>();
-            let bodies = world.read::<::component::RigidBody>();
+            let debug_colors = world.read_storage::<::component::DebugColor>();
+            let aims = world.read_storage::<::component::Aim>();
+            let debug_circles = world.read_storage::<::component::DebugCircles>();
+            let debug_rays = world.read_storage::<::component::DebugRays>();
+            let bodies = world.read_storage::<::component::RigidBody>();
             let physic_world = world.read_resource::<::resource::PhysicWorld>();
             let mut debug_shapes= world.write_resource::<::resource::DebugShapes>();
 

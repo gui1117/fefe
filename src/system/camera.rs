@@ -1,4 +1,4 @@
-use specs::{Fetch, FetchMut, Join, ReadStorage, System};
+use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System};
 
 pub struct CameraSystem;
 
@@ -6,8 +6,8 @@ impl<'a> System<'a> for CameraSystem {
     type SystemData = (
         ReadStorage<'a, ::component::RigidBody>,
         ReadStorage<'a, ::component::Player>,
-        Fetch<'a, ::resource::PhysicWorld>,
-        FetchMut<'a, ::resource::Camera>,
+        ReadExpect<'a, ::resource::PhysicWorld>,
+        WriteExpect<'a, ::resource::Camera>,
     );
 
     fn run(&mut self, (bodies, players, physic_world, mut camera): Self::SystemData) {

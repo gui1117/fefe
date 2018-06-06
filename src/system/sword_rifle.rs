@@ -1,4 +1,4 @@
-use specs::{Join, Fetch, FetchMut, ReadStorage, System, WriteStorage};
+use specs::{Join, ReadExpect, WriteExpect, ReadStorage, System, WriteStorage};
 use ncollide2d::world::CollisionGroups;
 use ncollide2d::query::{self, Ray};
 use entity::Group;
@@ -11,10 +11,10 @@ impl<'a> System<'a> for SwordRifleSystem {
         ReadStorage<'a, ::component::Aim>,
         WriteStorage<'a, ::component::SwordRifle>,
         WriteStorage<'a, ::component::Life>,
-        Fetch<'a, ::resource::PhysicWorld>,
-        Fetch<'a, ::resource::BodiesMap>,
-        Fetch<'a, ::resource::UpdateTime>,
-        FetchMut<'a, ::resource::DebugShapes>,
+        ReadExpect<'a, ::resource::PhysicWorld>,
+        ReadExpect<'a, ::resource::BodiesMap>,
+        ReadExpect<'a, ::resource::UpdateTime>,
+        WriteExpect<'a, ::resource::DebugShapes>,
     );
 
     fn run(&mut self, (bodies, aims, mut sword_rifles, mut lives, physic_world, bodies_map, update_time, mut debug_shapes): Self::SystemData) {

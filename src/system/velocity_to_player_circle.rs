@@ -1,5 +1,5 @@
 use nphysics2d::math::Velocity;
-use specs::{FetchMut, Join, ReadStorage, System, WriteStorage};
+use specs::{WriteExpect, Join, ReadStorage, System, WriteStorage};
 use std::f32::EPSILON;
 
 pub struct VelocityToPlayerCircleSystem;
@@ -12,7 +12,7 @@ impl<'a> System<'a> for VelocityToPlayerCircleSystem {
         ReadStorage<'a, ::component::Activators>,
         ReadStorage<'a, ::component::Contactor>,
         WriteStorage<'a, ::component::VelocityToPlayerCircle>,
-        FetchMut<'a, ::resource::PhysicWorld>,
+        WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
 fn run(&mut self, (players, rigid_bodies, activatorses, contactors, mut circle_to_players, mut physic_world): Self::SystemData){

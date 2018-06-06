@@ -1,5 +1,5 @@
 use entity::Insertable;
-use specs::{Fetch, Join, ReadStorage, System};
+use specs::{ReadExpect, Join, ReadStorage, System};
 use std::f32::consts::PI;
 
 pub struct TurretSpawnerSystem;
@@ -9,10 +9,10 @@ impl<'a> System<'a> for TurretSpawnerSystem {
         ReadStorage<'a, ::component::RigidBody>,
         ReadStorage<'a, ::component::TurretSpawner>,
         ReadStorage<'a, ::component::Activators>,
-        Fetch<'a, ::resource::PhysicWorld>,
-        Fetch<'a, ::resource::Tempos>,
-        Fetch<'a, ::resource::LazyUpdate>,
-        Fetch<'a, ::resource::InsertablesMap>,
+        ReadExpect<'a, ::resource::PhysicWorld>,
+        ReadExpect<'a, ::resource::Tempos>,
+        ReadExpect<'a, ::resource::LazyUpdate>,
+        ReadExpect<'a, ::resource::InsertablesMap>,
     );
 
     fn run(
@@ -33,7 +33,7 @@ impl<'a> System<'a> for TurretSpawnerSystem {
                     position.rotation *= ::na::UnitComplex::new(angle);
                     ::util::move_forward(&mut position, turret_part.shoot_distance);
                     let spawn = insertables_map.get(&turret_part.spawn).unwrap().clone();
-                    lazy_update.execute(move |world| {
+                    lazy_update.exec(move |world| {
                         spawn.insert(position.into(), world);
                     });
                 }

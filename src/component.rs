@@ -8,14 +8,13 @@ use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 use std::f32::consts::PI;
 
-#[derive(Deserialize, Clone, Default)]
+#[derive(Deserialize, Clone, Default, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct Player;
-impl Component for Player {
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
+#[storage(VecStorage)]
 pub struct SwordRifle {
     #[serde(skip)]
     pub sword_mode: bool,
@@ -36,9 +35,6 @@ pub struct SwordRifle {
     #[serde(skip)]
     pub rifle_reloading: f32,
 }
-impl Component for SwordRifle {
-    type Storage = VecStorage<Self>;
-}
 impl SwordRifle {
     pub fn compute_shapes(&mut self) {
         let div = (16.0 * (self.sword_range/(2.0*PI))).ceil() as usize;
@@ -53,19 +49,15 @@ impl SwordRifle {
     }
 }
 
-#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[derive(Deserialize, Clone, Deref, DerefMut, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct Aim(pub f32);
-impl Component for Aim {
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[derive(Deserialize, Clone, Deref, DerefMut, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct Activators(pub Vec<Activator>);
-impl Component for Activators {
-    type Storage = VecStorage<Self>;
-}
 
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
@@ -79,46 +71,39 @@ pub struct Activator {
 //////////////////////////////// Life ////////////////////////////////
 
 /// Only against players
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct ContactDamage(pub usize);
-impl Component for ContactDamage {
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone, Default)]
+#[derive(Deserialize, Clone, Default, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(NullStorage)]
 pub struct DeadOnContact;
-impl Component for DeadOnContact {
-    type Storage = NullStorage<Self>;
-}
 
-#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[derive(Deserialize, Clone, Deref, DerefMut, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct Life(pub usize);
-impl Component for Life {
-    type Storage = VecStorage<Self>;
-}
 
 //////////////////////////////// Velocity ////////////////////////////////
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct VelocityControl {
     pub velocity: f32,
     #[serde(skip)]
     #[serde(default = "::util::vector_zero")]
     pub direction: ::na::Vector2<f32>,
 }
-impl Component for VelocityControl {
-    type Storage = VecStorage<Self>;
-}
 
 pub const VELOCITY_TO_PLAYER_DISTANCE_TO_GOAL: f32 = 0.1;
 
 /// Go to the closest or the last position in memory
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct VelocityToPlayerMemory {
     pub activator: usize,
     #[serde(skip)]
@@ -127,16 +112,14 @@ pub struct VelocityToPlayerMemory {
     /// If false it is equivalent to go to player in sight
     pub memory: bool,
 }
-impl Component for VelocityToPlayerMemory {
-    type Storage = VecStorage<Self>;
-}
 
 /// Go into random directions
 /// or closest player in sight depending of proba
 ///
 // TODO: maybe make change of direction random when activated
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct VelocityToPlayerRandom {
     pub activator: usize,
     /// If some then a random direction with f32 norm is added
@@ -151,12 +134,10 @@ pub struct VelocityToPlayerRandom {
     #[serde(default = "::util::vector_zero")]
     pub current_direction: ::na::Vector2<f32>,
 }
-impl Component for VelocityToPlayerRandom {
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct VelocityToPlayerCircle {
     pub activator: usize,
     pub circle_velocity: f32,
@@ -168,9 +149,6 @@ pub struct VelocityToPlayerCircle {
     #[serde(default)]
     pub dir_shift: bool,
 }
-impl Component for VelocityToPlayerCircle {
-    type Storage = VecStorage<Self>;
-}
 
 // TODO: peut être faire qu'il se repoussent un peu
 // peut être aussi faire que pas mis a jour tout le temps
@@ -178,85 +156,72 @@ impl Component for VelocityToPlayerCircle {
 // mais si on les fait apparaitre dans un cadre autour du héros
 // et on les tue si il sorte du cadre ca peut faire un truc
 // bien dans une plaine
+#[derive(Component)]
+#[storage(VecStorage)]
 pub struct Boid {
     pub id: usize,
     pub clamp: ::util::ClampFunction,
     pub velocity: f32,
     pub weight: f32,
 }
-impl Component for Boid {
-    type Storage = VecStorage<Self>;
-}
 
 /// The processor takes distance with player aim in radiant
 /// The velocity is multiplied by the result
-#[derive(Deserialize, Clone, Deref)]
+#[derive(Deserialize, Clone, Deref, Component)]
+#[storage(VecStorage)]
 #[serde(deny_unknown_fields)]
 pub struct VelocityDistanceDamping(pub ::util::ClampFunction);
-impl Component for VelocityDistanceDamping {
-    type Storage = VecStorage<Self>;
-}
 
 /// The processor takes distance with player
 /// The velocity is multiplied by the result
-#[derive(Deserialize, Clone, Deref)]
+#[derive(Deserialize, Clone, Deref, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct VelocityAimDamping(pub ::util::ClampFunction);
-impl Component for VelocityAimDamping {
-    type Storage = VecStorage<Self>;
-}
 
 //////////////////////////////// Force ////////////////////////////////
 
 /// The processor takes distance with player aim in radiant
 /// The final damping is divided by the result
-#[derive(Deserialize, Clone, Deref)]
+#[derive(Deserialize, Clone, Deref, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct PlayersAimDamping(pub ::util::ClampFunction);
-impl Component for PlayersAimDamping {
-    type Storage = VecStorage<Self>;
-}
 
 /// The processor takes distance with player
 /// The final damping is divided by the result
-#[derive(Deserialize, Clone, Deref)]
+#[derive(Deserialize, Clone, Deref, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct PlayersDistanceDamping(pub ::util::ClampFunction);
-impl Component for PlayersDistanceDamping {
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct GravityToPlayers {
     pub force: f32,
     pub powi: i32,
 }
-impl Component for GravityToPlayers {
-    type Storage = VecStorage<Self>;
-}
 
+#[derive(Component)]
+#[storage(VecStorage)]
 pub struct ControlForce(pub Force<f32>);
-impl Component for ControlForce {
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct Damping {
     pub linear: f32,
     pub angular: f32,
-}
-impl Component for Damping {
-    type Storage = VecStorage<Self>;
 }
 
 //////////////////////////////// Spawner ////////////////////////////////
 
 /// Spawn an entity if character is in aim at a certain probability function of
 /// the distance to the character every time activated
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct UniqueSpawner {
     pub activator: usize,
     pub spawn: String,
@@ -265,16 +230,11 @@ pub struct UniqueSpawner {
     /// Clamp the proba with aim of the characters
     pub aim_proba_clamp: Option<::util::ClampFunction>,
 }
-impl Component for UniqueSpawner {
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[derive(Deserialize, Clone, Deref, DerefMut, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct TurretSpawner(pub Vec<TurretPart>);
-impl Component for TurretSpawner {
-    type Storage = VecStorage<Self>;
-}
 
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
@@ -289,17 +249,15 @@ pub struct TurretPart {
     pub shoot_distance: f32,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
 pub struct ChamanSpawner {
     pub activator: usize,
     pub spawn: String,
     pub number_of_spawn: usize,
     #[serde(skip)]
     pub spawned: Vec<Entity>,
-}
-impl Component for ChamanSpawner {
-    type Storage = VecStorage<Self>;
 }
 
 //////////////////////////////// Physic ////////////////////////////////
@@ -359,40 +317,30 @@ impl RigidBody {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Component)]
+#[storage(NullStorage)]
 pub struct Ground;
-impl Component for Ground {
-    type Storage = NullStorage<Self>;
-}
 
-#[derive(Deref, DerefMut)]
+#[derive(Deref, DerefMut, Component)]
+#[storage(VecStorage)]
 pub struct Contactor(pub Vec<Entity>);
-impl Component for Contactor {
-    type Storage = VecStorage<Self>;
-}
 
 //////////////////////////////// Debug ////////////////////////////////
 
-#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[derive(Deserialize, Clone, Deref, DerefMut, Component)]
+#[storage(VecStorage)]
 #[serde(deny_unknown_fields)]
 pub struct DebugCircles(pub Vec<f32>);
-impl Component for DebugCircles {
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[derive(Deserialize, Clone, Deref, DerefMut, Component)]
+#[storage(VecStorage)]
 #[serde(deny_unknown_fields)]
 pub struct DebugRays(pub Vec<f32>);
-impl Component for DebugRays{
-    type Storage = VecStorage<Self>;
-}
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Component)]
+#[storage(VecStorage)]
 #[serde(deny_unknown_fields)]
 pub struct DebugColor(pub usize);
-impl Component for DebugColor {
-    type Storage = VecStorage<Self>;
-}
 
 //////////////////////////////// TODO ////////////////////////////////
 

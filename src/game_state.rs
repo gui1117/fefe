@@ -51,8 +51,8 @@ impl GameState for Game {
                 ..
             } => {
                 for (_, sr) in (
-                    &world.read::<::component::Player>(),
-                    &mut world.write::<::component::SwordRifle>(),
+                    &world.read_storage::<::component::Player>(),
+                    &mut world.write_storage::<::component::SwordRifle>(),
                 ).join()
                 {
                     sr.attack = state == ElementState::Pressed;
@@ -72,8 +72,8 @@ impl GameState for Game {
                 ..
             } => {
                 for (_, sr) in (
-                    &world.read::<::component::Player>(),
-                    &mut world.write::<::component::SwordRifle>(),
+                    &world.read_storage::<::component::Player>(),
+                    &mut world.write_storage::<::component::SwordRifle>(),
                 ).join()
                 {
                     sr.sword_mode = !(state == ElementState::Pressed);
@@ -108,8 +108,8 @@ impl GameState for Game {
                 y *= -1.0;
                 let angle = y.atan2(x) as f32;
                 for (_, aim) in (
-                    &world.read::<::component::Player>(),
-                    &mut world.write::<::component::Aim>(),
+                    &world.read_storage::<::component::Player>(),
+                    &mut world.write_storage::<::component::Aim>(),
                 ).join()
                 {
                     aim.0 = angle;
@@ -152,8 +152,8 @@ impl GameState for Game {
                     }
                 }
                 for (_, velocity_control) in (
-                    &world.read::<::component::Player>(),
-                    &mut world.write::<::component::VelocityControl>(),
+                    &world.read_storage::<::component::Player>(),
+                    &mut world.write_storage::<::component::VelocityControl>(),
                 ).join()
                 {
                     velocity_control.direction = velocity;
@@ -172,8 +172,8 @@ impl GameState for Game {
         match event {
             EventType::ButtonPressed(Button::LeftTrigger2, _) => {
                 for (_, sr) in (
-                    &world.read::<::component::Player>(),
-                    &mut world.write::<::component::SwordRifle>(),
+                    &world.read_storage::<::component::Player>(),
+                    &mut world.write_storage::<::component::SwordRifle>(),
                 ).join()
                 {
                     sr.sword_mode = false;
@@ -181,8 +181,8 @@ impl GameState for Game {
             },
             EventType::ButtonReleased(Button::LeftTrigger2, _) => {
                 for (_, sr) in (
-                    &world.read::<::component::Player>(),
-                    &mut world.write::<::component::SwordRifle>(),
+                    &world.read_storage::<::component::Player>(),
+                    &mut world.write_storage::<::component::SwordRifle>(),
                 ).join()
                 {
                     sr.sword_mode = true;
@@ -190,8 +190,8 @@ impl GameState for Game {
             },
             EventType::ButtonPressed(Button::RightTrigger, _) => {
                 for (_, sr) in (
-                    &world.read::<::component::Player>(),
-                    &mut world.write::<::component::SwordRifle>(),
+                    &world.read_storage::<::component::Player>(),
+                    &mut world.write_storage::<::component::SwordRifle>(),
                 ).join()
                 {
                     sr.attack = true;
@@ -199,8 +199,8 @@ impl GameState for Game {
             },
             EventType::ButtonReleased(Button::RightTrigger, _) => {
                 for (_, sr) in (
-                    &world.read::<::component::Player>(),
-                    &mut world.write::<::component::SwordRifle>(),
+                    &world.read_storage::<::component::Player>(),
+                    &mut world.write_storage::<::component::SwordRifle>(),
                 ).join()
                 {
                     sr.attack = false;
@@ -229,8 +229,8 @@ impl GameState for Game {
         let (px_circle, py_circle) = square_to_circle(px, py);
 
         for (_, velocity_control) in (
-            &world.read::<::component::Player>(),
-            &mut world.write::<::component::VelocityControl>(),
+            &world.read_storage::<::component::Player>(),
+            &mut world.write_storage::<::component::VelocityControl>(),
         ).join()
         {
             velocity_control.direction = ::na::Vector2::new(px_circle, py_circle);
@@ -248,8 +248,8 @@ impl GameState for Game {
         let (ax_circle, ay_circle) = square_to_circle(ax, ay);
 
         for (_, aim) in (
-            &world.read::<::component::Player>(),
-            &mut world.write::<::component::Aim>(),
+            &world.read_storage::<::component::Player>(),
+            &mut world.write_storage::<::component::Aim>(),
         ).join()
         {
             **aim = ay_circle.atan2(ax_circle);

@@ -1,5 +1,5 @@
 use nphysics2d::math::Velocity;
-use specs::{FetchMut, Join, ReadStorage, System};
+use specs::{WriteExpect, Join, ReadStorage, System};
 
 pub struct VelocityControlSystem;
 
@@ -7,7 +7,7 @@ impl<'a> System<'a> for VelocityControlSystem {
     type SystemData = (
         ReadStorage<'a, ::component::RigidBody>,
         ReadStorage<'a, ::component::VelocityControl>,
-        FetchMut<'a, ::resource::PhysicWorld>,
+        WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
     fn run(&mut self, (rigid_bodies, velocity_controls, mut physic_world): Self::SystemData) {

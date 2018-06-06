@@ -19,7 +19,7 @@ macro_rules! component_list {
                 use self::*;
                 match self {
                     $(MetaComponent::$v(component) => {
-                        world.write().insert(entity, component);
+                        world.write_storage().insert(entity, component).unwrap();
                     },)*
                 }
             }
@@ -90,10 +90,10 @@ impl Insertable for Meta {
     fn insert(&self, position: InsertPosition, world: &World) -> Entity {
         let entity = world.entities().create();
 
-        world.write().insert(
+        world.write_storage().insert(
             entity,
             ::component::AnimationState::new(self.animation_specie, AnimationName::Idle),
-        );
+        ).unwrap();
 
         for component in &self.components {
             let component = component.clone();
@@ -106,17 +106,17 @@ impl Insertable for Meta {
             MetaComponent::ContactDamage(_) | MetaComponent::VelocityToPlayerCircle(_) | MetaComponent::DeadOnContact(_) => true,
             _ => false,
         }) {
-            world.write().insert(entity, ::component::Contactor(vec![]));
+            world.write_storage().insert(entity, ::component::Contactor(vec![])).unwrap();
         }
 
         // TODO: rays
         // let mut rays = vec![];
         // if !rays.is_empty() {
-        //     world.write().insert(entity, ::component::DebugRays(rays));
+        //     world.write_storage().insert(entity, ::component::DebugRays(rays));
         // }
 
 
-        if let Some(ref mut sword_rifle) = world.write::<::component::SwordRifle>().get_mut(entity) {
+        if let Some(ref mut sword_rifle) = world.write_storage::<::component::SwordRifle>().get_mut(entity) {
             sword_rifle.compute_shapes();
         }
 
@@ -126,7 +126,7 @@ impl Insertable for Meta {
         }
 
         if self.launch {
-            if let Some(ref mut control) = world.write::<::component::VelocityControl>().get_mut(entity) {
+            if let Some(ref mut control) = world.write_storage::<::component::VelocityControl>().get_mut(entity) {
                 let angle = position.rotation.angle();
                 control.direction = ::na::Vector2::new(angle.cos(), angle.sin());
             }
@@ -141,7 +141,7 @@ impl Insertable for Meta {
             shape.inertia(self.density),
             shape.center_of_mass(),
             self.status,
-            &mut world.write(),
+            &mut world.write_storage(),
             &mut physic_world,
             &mut world.write_resource(),
         );

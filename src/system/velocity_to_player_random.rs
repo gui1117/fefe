@@ -3,7 +3,7 @@ use ncollide2d::world::CollisionGroups;
 use nphysics2d::math::Velocity;
 use rand::distributions::{IndependentSample, Range};
 use rand::thread_rng;
-use specs::{Fetch, FetchMut, Join, ReadStorage, System, WriteStorage};
+use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System, WriteStorage};
 use std::f32::consts::PI;
 use std::f32::EPSILON;
 
@@ -16,8 +16,8 @@ impl<'a> System<'a> for VelocityToPlayerRandomSystem {
         ReadStorage<'a, ::component::RigidBody>,
         ReadStorage<'a, ::component::Activators>,
         WriteStorage<'a, ::component::VelocityToPlayerRandom>,
-        Fetch<'a, ::resource::BodiesMap>,
-        FetchMut<'a, ::resource::PhysicWorld>,
+        ReadExpect<'a, ::resource::BodiesMap>,
+        WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
 fn run(&mut self, (players, aims, rigid_bodies, activatorses, mut vtprs, bodies_map, mut physic_world): Self::SystemData){

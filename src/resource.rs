@@ -7,8 +7,8 @@ use std::collections::HashMap;
 use std::fs::File;
 
 pub use imgui::ImGui;
-pub use specs::EntitiesRes;
-pub use specs::LazyUpdate;
+pub use specs::world::EntitiesRes;
+pub use specs::world::LazyUpdate;
 
 pub struct WindowSize(pub (u32, u32));
 

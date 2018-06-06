@@ -3,7 +3,7 @@ use ncollide2d::query::Ray;
 use ncollide2d::world::CollisionGroups;
 use rand::distributions::{IndependentSample, Range};
 use rand::thread_rng;
-use specs::{Fetch, Join, ReadStorage, System, WriteStorage};
+use specs::{ReadExpect, Join, ReadStorage, System, WriteStorage};
 use std::f32::consts::PI;
 
 pub struct UniqueSpawnerSystem;
@@ -15,11 +15,11 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
         ReadStorage<'a, ::component::Player>,
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::UniqueSpawner>,
-        Fetch<'a, ::resource::PhysicWorld>,
-        Fetch<'a, ::resource::LazyUpdate>,
-        Fetch<'a, ::resource::EntitiesRes>,
-        Fetch<'a, ::resource::BodiesMap>,
-        Fetch<'a, ::resource::InsertablesMap>,
+        ReadExpect<'a, ::resource::PhysicWorld>,
+        ReadExpect<'a, ::resource::LazyUpdate>,
+        ReadExpect<'a, ::resource::EntitiesRes>,
+        ReadExpect<'a, ::resource::BodiesMap>,
+        ReadExpect<'a, ::resource::InsertablesMap>,
     );
 
     fn run(
@@ -89,7 +89,7 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
                             {
                                 entities.delete(entity).unwrap();
                                 let spawn = insertables_map.get(&unique_spawner.spawn).unwrap().clone();
-                                lazy_update.execute(move |world| {
+                                lazy_update.exec(move |world| {
                                     spawn.insert(position.into(), world);
                                 });
                             }
