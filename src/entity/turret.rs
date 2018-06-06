@@ -3,7 +3,7 @@ use entity::{InsertPosition, Insertable, InsertableObject};
 use ncollide2d::shape::{Ball, ShapeHandle};
 use nphysics2d::object::{BodyStatus, Material};
 use nphysics2d::volumetric::Volumetric;
-use rand::distributions::{IndependentSample, Range};
+use rand::distributions::{Distribution, Range};
 use rand::thread_rng;
 use specs::{Entity, World};
 
@@ -20,7 +20,7 @@ impl Insertable for Turret {
     fn insert(&self, position: InsertPosition, world: &World) -> Entity {
         let mut rng = thread_rng();
 
-        let cooldown = Range::new(0.0, self.max_cooldown).ind_sample(&mut rng);
+        let cooldown = Range::new(0.0, self.max_cooldown).sample(&mut rng);
         let start_remaining_cooldown = cooldown;
 
         let entity = world.entities().create();

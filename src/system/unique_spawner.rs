@@ -1,7 +1,7 @@
 use entity::Insertable;
 use ncollide2d::query::Ray;
 use ncollide2d::world::CollisionGroups;
-use rand::distributions::{IndependentSample, Range};
+use rand::distributions::{Distribution, Range};
 use rand::thread_rng;
 use specs::{ReadExpect, Join, ReadStorage, System, WriteStorage};
 use std::f32::consts::PI;
@@ -69,7 +69,7 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
                         proba *= aim_proba_clamp.compute(angle_distance);
                     }
 
-                    if range_0_1.ind_sample(&mut rng) <= proba {
+                    if range_0_1.sample(&mut rng) <= proba {
                         let ray = Ray::new(::na::Point::from_coordinates(pos_vector), dist_vector);
                         let mut collision_groups = CollisionGroups::new();
                         collision_groups.set_whitelist(&[

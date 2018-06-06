@@ -1,7 +1,7 @@
 use ncollide2d::query::Ray;
 use ncollide2d::world::CollisionGroups;
 use nphysics2d::math::Velocity;
-use rand::distributions::{IndependentSample, Range};
+use rand::distributions::{Distribution, Range};
 use rand::thread_rng;
 use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System, WriteStorage};
 use std::f32::consts::PI;
@@ -73,7 +73,7 @@ fn run(&mut self, (players, aims, rigid_bodies, activatorses, mut vtprs, bodies_
                         let final_proba = vtpr.dist_proba_clamp.compute(distance.norm())
                             * vtpr.aim_proba_clamp.compute(angle_distance);
 
-                        if range_0_1.ind_sample(&mut rng) <= final_proba {
+                        if range_0_1.sample(&mut rng) <= final_proba {
                             let mut direction =
                                 distance.try_normalize(EPSILON).unwrap_or(::na::zero());
 

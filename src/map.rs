@@ -6,7 +6,7 @@ use lyon::svg::parser::svg::{Token, Tokenizer};
 use lyon::svg::parser::FromSpan;
 use lyon::svg::parser::{AttributeId, ElementId};
 use lyon::svg::path::default::Path;
-use rand::distributions::{IndependentSample, Weighted, WeightedChoice};
+use rand::distributions::{Distribution, Weighted, WeightedChoice};
 use rand::{thread_rng, Rng};
 use specs::World;
 use std::collections::HashMap;
@@ -348,7 +348,7 @@ where B: Builder + 'static + Send + Sync + Clone
                 let choices = WeightedChoice::new(&mut items);
 
                 for position in positions {
-                    let i = choices.ind_sample(&mut rng);
+                    let i = choices.sample(&mut rng);
                     processors_entities[i].push(position);
                 }
                 for (_, processor) in weighted_processors {

@@ -1,4 +1,4 @@
-use rand::distributions::{IndependentSample, Range};
+use rand::distributions::{Distribution, Range};
 use rand::ThreadRng;
 use retained_storage::Retained;
 use specs::{World, Entity};
@@ -212,7 +212,7 @@ pub fn force_damping(
 }
 
 pub fn random_normalized(rng: &mut ThreadRng) -> ::na::Vector2<f32> {
-    let angle = Range::new(0.0, 2.0 * PI).ind_sample(rng);
+    let angle = Range::new(0.0, 2.0 * PI).sample(rng);
     ::na::Vector2::new(angle.cos(), angle.sin())
 }
 
