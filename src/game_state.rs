@@ -1,6 +1,7 @@
 use specs::{Join, World};
 use winit::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent, MouseButton};
 use gilrs::{Button, EventType};
+use std::f32::EPSILON;
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;
@@ -151,6 +152,7 @@ impl GameState for Game {
                         _ => unreachable!(),
                     }
                 }
+                velocity = velocity.try_normalize(EPSILON).unwrap_or(::na::zero());
                 for (_, velocity_control) in (
                     &world.read_storage::<::component::Player>(),
                     &mut world.write_storage::<::component::VelocityControl>(),
