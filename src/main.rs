@@ -102,6 +102,7 @@ fn main() {
     world.register::<::component::UniqueSpawner>();
     world.register::<::component::ChamanSpawner>();
     world.register::<::component::DebugCircles>();
+    world.register::<::component::DebugRays>();
     world.register::<::component::VelocityToPlayerMemory>();
     world.register::<::component::VelocityToPlayerRandom>();
     world.register::<::component::VelocityToPlayerCircle>();

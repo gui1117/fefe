@@ -1,5 +1,5 @@
 use alga::general::SubsetOf;
-use ncollide2d::shape::{self, ShapeHandle};
+use ncollide2d::shape::{self, ShapeHandle, Segment};
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer, CpuBufferPool, ImmutableBuffer};
 use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
 use vulkano::command_buffer::{AutoCommandBuffer, AutoCommandBufferBuilder, DynamicState};
@@ -32,7 +32,8 @@ use std::time::Duration;
 
 // TODO: only a bool for whereas draw the cursor or not
 
-const DEBUG_SEGMENT_WIDTH: f32 = 1.0;
+const DEBUG_SEGMENT_WIDTH: f32 = 0.2;
+const DEBUG_RAY_LENGTH: f32 = 10.0;
 
 pub struct Camera {
     pub position: ::na::Isometry2<f32>,
@@ -554,7 +555,9 @@ impl Graphics {
 
             let bodies_map = world.read_resource::<::resource::BodiesMap>();
             let debug_colors = world.read::<::component::DebugColor>();
+            let aims = world.read::<::component::Aim>();
             let debug_circles = world.read::<::component::DebugCircles>();
+            let debug_rays = world.read::<::component::DebugRays>();
             let bodies = world.read::<::component::RigidBody>();
             let physic_world = world.read_resource::<::resource::PhysicWorld>();
             let mut debug_shapes= world.write_resource::<::resource::DebugShapes>();
@@ -575,6 +578,20 @@ impl Graphics {
             }
             for (position, shape) in debug_shapes.drain(..) {
                 shape_vertices(&position, &shape, COLORS[0], &mut vertices);
+            }
+
+            let segment = ShapeHandle::new(Segment::new(::na::Point2::new(0.0, 0.0), ::na::Point2::new(DEBUG_RAY_LENGTH, 0.0)));
+            for (rays, body, color) in (&debug_rays, &bodies, &debug_colors).join() {
+                let position = body.get(&physic_world).position();
+                for &ray in rays.iter() {
+                    let position = position * ::na::UnitComplex::new(ray);
+                    shape_vertices(&position, &segment, COLORS[color.0], &mut vertices);
+                }
+            }
+            for (aim, body, color) in (&aims, &bodies, &debug_colors).join() {
+                let position = body.get(&physic_world).position();
+                let position = position * ::na::UnitComplex::new(aim.0);
+                shape_vertices(&position, &segment, COLORS[color.0], &mut vertices);
             }
 
             let vertex_buffer = CpuAccessibleBuffer::from_iter(

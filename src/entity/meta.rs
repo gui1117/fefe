@@ -47,7 +47,6 @@ component_list!{
     ChamanSpawner,
     TurretSpawner,
     DebugColor,
-    DebugCircles,
     Activators,
     SwordRifle,
 }
@@ -109,6 +108,13 @@ impl Insertable for Meta {
         }) {
             world.write().insert(entity, ::component::Contactor(vec![]));
         }
+
+        // TODO: rays
+        // let mut rays = vec![];
+        // if !rays.is_empty() {
+        //     world.write().insert(entity, ::component::DebugRays(rays));
+        // }
+
 
         if let Some(ref mut sword_rifle) = world.write::<::component::SwordRifle>().get_mut(entity) {
             sword_rifle.compute_shapes();

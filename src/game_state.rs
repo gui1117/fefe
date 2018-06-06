@@ -1,5 +1,6 @@
 use specs::{Join, World};
 use winit::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent, MouseButton};
+use gilrs::{Button, EventType};
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;
@@ -55,6 +56,27 @@ impl GameState for Game {
                 ).join()
                 {
                     sr.attack = state == ElementState::Pressed;
+                }
+            }
+            ::winit::Event::WindowEvent {
+                event:
+                    WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                virtual_keycode: Some(VirtualKeyCode::LShift),
+                                state,
+                                ..
+                            },
+                        ..
+                    },
+                ..
+            } => {
+                for (_, sr) in (
+                    &world.read::<::component::Player>(),
+                    &mut world.write::<::component::SwordRifle>(),
+                ).join()
+                {
+                    sr.sword_mode = !(state == ElementState::Pressed);
                 }
             }
             ::winit::Event::WindowEvent {
@@ -144,9 +166,48 @@ impl GameState for Game {
 
     fn gilrs_event(
         self: Box<Self>,
-        _event: ::gilrs::EventType,
-        _world: &mut World,
+        event: EventType,
+        world: &mut World,
     ) -> Box<GameState> {
+        match event {
+            EventType::ButtonPressed(Button::LeftTrigger2, _) => {
+                for (_, sr) in (
+                    &world.read::<::component::Player>(),
+                    &mut world.write::<::component::SwordRifle>(),
+                ).join()
+                {
+                    sr.sword_mode = false;
+                }
+            },
+            EventType::ButtonReleased(Button::LeftTrigger2, _) => {
+                for (_, sr) in (
+                    &world.read::<::component::Player>(),
+                    &mut world.write::<::component::SwordRifle>(),
+                ).join()
+                {
+                    sr.sword_mode = true;
+                }
+            },
+            EventType::ButtonPressed(Button::RightTrigger, _) => {
+                for (_, sr) in (
+                    &world.read::<::component::Player>(),
+                    &mut world.write::<::component::SwordRifle>(),
+                ).join()
+                {
+                    sr.attack = true;
+                }
+            },
+            EventType::ButtonReleased(Button::RightTrigger, _) => {
+                for (_, sr) in (
+                    &world.read::<::component::Player>(),
+                    &mut world.write::<::component::SwordRifle>(),
+                ).join()
+                {
+                    sr.attack = false;
+                }
+            },
+            _ => (),
+        }
         self
     }
 
@@ -184,12 +245,14 @@ impl GameState for Game {
             .map(|e| e.value())
             .unwrap_or(0.0);
 
+        let (ax_circle, ay_circle) = square_to_circle(ax, ay);
+
         for (_, aim) in (
             &world.read::<::component::Player>(),
             &mut world.write::<::component::Aim>(),
         ).join()
         {
-            **aim = ay.atan2(ax);
+            **aim = ay_circle.atan2(ax_circle);
         }
 
         self

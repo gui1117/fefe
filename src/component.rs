@@ -380,6 +380,13 @@ impl Component for DebugCircles {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Deserialize, Clone, Deref, DerefMut)]
+#[serde(deny_unknown_fields)]
+pub struct DebugRays(pub Vec<f32>);
+impl Component for DebugRays{
+    type Storage = VecStorage<Self>;
+}
+
 #[derive(Deserialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct DebugColor(pub usize);

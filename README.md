@@ -55,8 +55,9 @@ contient
 * [x] ¿¿¿¿ faire que les spawner prennent des str au lieu de insertable ????
 * [x] activator est la table des partitions
 * [x] faire meta extended qui permet de définir les activator dans settings.ron facilement
-* [ ] faire que le chaman puisse avoir plusieurs insertableobjects
 * [ ] la randomization des activated beat peut se faire dans un composant randomisation qui desactive de facon random !!!!! OUI
+* [ ] sound
+
 * [ ] check all insertables:
       they must have coherent activators
       they must have existing spawn
@@ -67,6 +68,7 @@ contient
 * [ ] on pourrait regrouper les partitions en ressource
 
 ## Maybe
+* [ ] faire que le chaman puisse avoir plusieurs insertableobjects
 * peut être faire que le ToPlayerMemory continue un peu avant de s'arreter. ou pas faut voir si ca casse souvent
   sisi c'est bien, on peut faire juste qu'il continue met un boolean a true et contine deux metre plus loin
   si il ne voit rien avec le boolean a true alors il s'arrete vraiment
