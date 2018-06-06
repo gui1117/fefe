@@ -27,16 +27,16 @@ pub struct RetainedStorage<C, T = UnprotectedStorage<C>> {
     phantom: PhantomData<C>,
 }
 
-impl<C, T> TryDefault for RetainedStorage<C, T>
+impl<C, T> Default for RetainedStorage<C, T>
 where
     T: TryDefault,
 {
-    fn try_default() -> Result<Self, String> {
-        Ok(RetainedStorage {
+    fn default() -> Self {
+        RetainedStorage {
             retained: vec![],
-            storage: T::try_default()?,
+            storage: T::try_default().unwrap(),
             phantom: PhantomData,
-        })
+        }
     }
 }
 

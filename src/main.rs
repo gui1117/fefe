@@ -31,6 +31,7 @@ extern crate winit;
 extern crate hibitset;
 #[macro_use]
 extern crate specs_derive;
+extern crate rodio;
 
 pub mod animation;
 pub mod component;
@@ -85,7 +86,7 @@ fn main() {
     let mut graphics = graphics::Graphics::new(&window, &mut imgui);
 
     let mut world = World::new();
-    // world.register::<::component::RigidBody>();
+    world.register::<::component::RigidBody>();
     world.register::<::component::AnimationState>();
     world.register::<::component::Ground>();
     world.register::<::component::Life>();
