@@ -1,7 +1,7 @@
 use ncollide2d::events::ContactEvent;
 use nphysics2d::math::Force;
 use nphysics2d::object::BodyHandle;
-use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System, WriteStorage};
+use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect, WriteStorage};
 use std::f32::consts::PI;
 
 pub struct PhysicSystem {

@@ -1,4 +1,4 @@
-use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System, WriteStorage};
+use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect, WriteStorage};
 
 pub struct AnimationSystem;
 

@@ -1,7 +1,7 @@
 use ncollide2d::query::Ray;
 use ncollide2d::world::CollisionGroups;
 use nphysics2d::math::Velocity;
-use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System, WriteStorage};
+use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect, WriteStorage};
 
 pub struct VelocityToPlayerMemorySystem;
 

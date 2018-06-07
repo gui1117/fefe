@@ -1,5 +1,5 @@
 use nphysics2d::math::Velocity;
-use specs::{WriteExpect, Join, ReadStorage, System, WriteStorage};
+use specs::{Join, ReadStorage, System, WriteExpect, WriteStorage};
 use std::f32::EPSILON;
 
 pub struct VelocityToPlayerCircleSystem;

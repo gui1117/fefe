@@ -1,5 +1,5 @@
 use nphysics2d::math::Velocity;
-use specs::{WriteExpect, Join, ReadStorage, System};
+use specs::{Join, ReadStorage, System, WriteExpect};
 
 pub struct VelocityControlSystem;
 

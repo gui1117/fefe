@@ -26,9 +26,9 @@ extern crate specs;
 extern crate vulkano;
 #[macro_use]
 extern crate vulkano_shader_derive;
+extern crate hibitset;
 extern crate vulkano_win;
 extern crate winit;
-extern crate hibitset;
 #[macro_use]
 extern crate specs_derive;
 extern crate rodio;

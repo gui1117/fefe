@@ -1,4 +1,4 @@
-use specs::{WriteExpect, Join, ReadStorage, System};
+use specs::{Join, ReadStorage, System, WriteExpect};
 use std::f32::consts::PI;
 
 pub struct VelocityDampingsSystem;

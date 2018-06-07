@@ -1,4 +1,4 @@
-use specs::{ReadExpect, WriteExpect, Join, ReadStorage, System};
+use specs::{Join, ReadExpect, ReadStorage, System, WriteExpect};
 use std::f32::EPSILON;
 
 pub struct Boid;

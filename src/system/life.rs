@@ -1,4 +1,4 @@
-use specs::{ReadExpect, Join, ReadStorage, System};
+use specs::{Join, ReadExpect, ReadStorage, System};
 
 pub struct LifeSystem;
 

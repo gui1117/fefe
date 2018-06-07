@@ -298,13 +298,10 @@ pub enum Processor<B> {
 }
 
 impl<B> Processor<B>
-where B: Builder + 'static + Send + Sync + Clone
+where
+    B: Builder + 'static + Send + Sync + Clone,
 {
-    fn build(
-        self,
-        entities: Vec<Path>,
-        world: &mut World,
-    ) -> Result<(), ::failure::Error> {
+    fn build(self, entities: Vec<Path>, world: &mut World) -> Result<(), ::failure::Error> {
         let mut positions = vec![];
         for entity in entities {
             let position = B::Position::try_from_path(entity)
@@ -323,7 +320,10 @@ where B: Builder + 'static + Send + Sync + Clone
         use self::Processor::*;
         match self {
             Build(def_name) => {
-                let def = world.read_resource::<HashMap<String, B>>().get(&def_name).cloned()
+                let def = world
+                    .read_resource::<HashMap<String, B>>()
+                    .get(&def_name)
+                    .cloned()
                     .ok_or(::failure::err_msg(format!("unknown entity: {}", def_name)))?;
                 for position in positions {
                     def.build(position, world);

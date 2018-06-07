@@ -60,8 +60,12 @@ pub struct MetaOverride {
 
 impl Insertable for MetaOverride {
     fn insert(&self, position: InsertPosition, world: &World) -> Entity {
-        let meta = world.read_resource::<::resource::InsertablesMap>().get(&self.meta).cloned()
-            .ok_or(::failure::err_msg(format!("unknown entity: {}", self.meta))).unwrap();
+        let meta = world
+            .read_resource::<::resource::InsertablesMap>()
+            .get(&self.meta)
+            .cloned()
+            .ok_or(::failure::err_msg(format!("unknown entity: {}", self.meta)))
+            .unwrap();
         let entity = meta.insert(position, world);
 
         for component in &self.components {
@@ -90,10 +94,13 @@ impl Insertable for Meta {
     fn insert(&self, position: InsertPosition, world: &World) -> Entity {
         let entity = world.entities().create();
 
-        world.write_storage().insert(
-            entity,
-            ::component::AnimationState::new(self.animation_specie, AnimationName::Idle),
-        ).unwrap();
+        world
+            .write_storage()
+            .insert(
+                entity,
+                ::component::AnimationState::new(self.animation_specie, AnimationName::Idle),
+            )
+            .unwrap();
 
         for component in &self.components {
             let component = component.clone();
@@ -103,10 +110,15 @@ impl Insertable for Meta {
         // TODO: debug circles for components
 
         if self.components.iter().any(|c| match c {
-            MetaComponent::ContactDamage(_) | MetaComponent::VelocityToPlayerCircle(_) | MetaComponent::DeadOnContact(_) => true,
+            MetaComponent::ContactDamage(_)
+            | MetaComponent::VelocityToPlayerCircle(_)
+            | MetaComponent::DeadOnContact(_) => true,
             _ => false,
         }) {
-            world.write_storage().insert(entity, ::component::Contactor(vec![])).unwrap();
+            world
+                .write_storage()
+                .insert(entity, ::component::Contactor(vec![]))
+                .unwrap();
         }
 
         // TODO: rays
@@ -115,8 +127,10 @@ impl Insertable for Meta {
         //     world.write_storage().insert(entity, ::component::DebugRays(rays));
         // }
 
-
-        if let Some(ref mut sword_rifle) = world.write_storage::<::component::SwordRifle>().get_mut(entity) {
+        if let Some(ref mut sword_rifle) = world
+            .write_storage::<::component::SwordRifle>()
+            .get_mut(entity)
+        {
             sword_rifle.compute_shapes();
         }
 
@@ -126,7 +140,10 @@ impl Insertable for Meta {
         }
 
         if self.launch {
-            if let Some(ref mut control) = world.write_storage::<::component::VelocityControl>().get_mut(entity) {
+            if let Some(ref mut control) = world
+                .write_storage::<::component::VelocityControl>()
+                .get_mut(entity)
+            {
                 let angle = position.rotation.angle();
                 control.direction = ::na::Vector2::new(angle.cos(), angle.sin());
             }

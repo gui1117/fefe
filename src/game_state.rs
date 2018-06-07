@@ -1,7 +1,7 @@
-use specs::{Join, World};
-use winit::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent, MouseButton};
 use gilrs::{Button, EventType};
+use specs::{Join, World};
 use std::f32::EPSILON;
+use winit::{ElementState, KeyboardInput, MouseButton, VirtualKeyCode, WindowEvent};
 
 pub trait GameState {
     fn update_draw_ui(self: Box<Self>, world: &mut World) -> Box<GameState>;
@@ -166,11 +166,7 @@ impl GameState for Game {
         self
     }
 
-    fn gilrs_event(
-        self: Box<Self>,
-        event: EventType,
-        world: &mut World,
-    ) -> Box<GameState> {
+    fn gilrs_event(self: Box<Self>, event: EventType, world: &mut World) -> Box<GameState> {
         match event {
             EventType::ButtonPressed(Button::LeftTrigger2, _) => {
                 for (_, sr) in (
@@ -180,7 +176,7 @@ impl GameState for Game {
                 {
                     sr.sword_mode = false;
                 }
-            },
+            }
             EventType::ButtonReleased(Button::LeftTrigger2, _) => {
                 for (_, sr) in (
                     &world.read_storage::<::component::Player>(),
@@ -189,7 +185,7 @@ impl GameState for Game {
                 {
                     sr.sword_mode = true;
                 }
-            },
+            }
             EventType::ButtonPressed(Button::RightTrigger, _) => {
                 for (_, sr) in (
                     &world.read_storage::<::component::Player>(),
@@ -198,7 +194,7 @@ impl GameState for Game {
                 {
                     sr.attack = true;
                 }
-            },
+            }
             EventType::ButtonReleased(Button::RightTrigger, _) => {
                 for (_, sr) in (
                     &world.read_storage::<::component::Player>(),
@@ -207,7 +203,7 @@ impl GameState for Game {
                 {
                     sr.attack = false;
                 }
-            },
+            }
             _ => (),
         }
         self

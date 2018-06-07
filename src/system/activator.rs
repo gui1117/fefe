@@ -1,4 +1,4 @@
-use specs::{ReadExpect, WriteExpect, Join, System, WriteStorage};
+use specs::{Join, ReadExpect, System, WriteExpect, WriteStorage};
 
 pub struct ActivatorSystem;
 

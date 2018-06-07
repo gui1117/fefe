@@ -1,5 +1,13 @@
 use alga::general::SubsetOf;
-use ncollide2d::shape::{self, ShapeHandle, Segment};
+use itertools::Itertools;
+use ncollide2d::shape::{self, Segment, ShapeHandle};
+use specs::Join;
+use specs::World;
+use std::cell::RefCell;
+use std::f32::consts::PI;
+use std::fs::File;
+use std::sync::Arc;
+use std::time::Duration;
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer, CpuBufferPool, ImmutableBuffer};
 use vulkano::command_buffer::pool::standard::StandardCommandPoolAlloc;
 use vulkano::command_buffer::{AutoCommandBuffer, AutoCommandBufferBuilder, DynamicState};
@@ -21,14 +29,6 @@ use vulkano::pipeline::{GraphicsPipeline, GraphicsPipelineAbstract};
 use vulkano::sampler::{Filter, MipmapMode, Sampler, SamplerAddressMode};
 use vulkano::swapchain::{self, AcquireError, Surface, Swapchain, SwapchainCreationError};
 use vulkano::sync::{now, FlushError, GpuFuture};
-use itertools::Itertools;
-use specs::Join;
-use specs::World;
-use std::cell::RefCell;
-use std::f32::consts::PI;
-use std::fs::File;
-use std::sync::Arc;
-use std::time::Duration;
 
 // TODO: only a bool for whereas draw the cursor or not
 
@@ -560,15 +560,21 @@ impl Graphics {
             let debug_rays = world.read_storage::<::component::DebugRays>();
             let bodies = world.read_storage::<::component::RigidBody>();
             let physic_world = world.read_resource::<::resource::PhysicWorld>();
-            let mut debug_shapes= world.write_resource::<::resource::DebugShapes>();
+            let mut debug_shapes = world.write_resource::<::resource::DebugShapes>();
 
             let mut vertices = vec![];
             for collider in physic_world.colliders() {
-                let color = bodies_map.get(&collider.data().body())
+                let color = bodies_map
+                    .get(&collider.data().body())
                     .and_then(|e| debug_colors.get(*e))
                     .map(|c| c.0)
                     .unwrap_or(0);
-                shape_vertices(collider.position(), collider.shape(), COLORS[color], &mut vertices);
+                shape_vertices(
+                    collider.position(),
+                    collider.shape(),
+                    COLORS[color],
+                    &mut vertices,
+                );
             }
             for (radiuss, color, body) in (&debug_circles, &debug_colors, &bodies).join() {
                 let body = body.get(&physic_world);
@@ -580,7 +586,10 @@ impl Graphics {
                 shape_vertices(&position, &shape, COLORS[0], &mut vertices);
             }
 
-            let segment = ShapeHandle::new(Segment::new(::na::Point2::new(0.0, 0.0), ::na::Point2::new(DEBUG_RAY_LENGTH, 0.0)));
+            let segment = ShapeHandle::new(Segment::new(
+                ::na::Point2::new(0.0, 0.0),
+                ::na::Point2::new(DEBUG_RAY_LENGTH, 0.0),
+            ));
             for (rays, body, color) in (&debug_rays, &bodies, &debug_colors).join() {
                 let position = body.get(&physic_world).position();
                 for &ray in rays.iter() {
@@ -775,7 +784,12 @@ lazy_static! {
     ];
 }
 
-fn circle_vertices(position: &::na::Isometry2<f32>, radius: f32, color: [f32; 4], vertices: &mut Vec<DebugVertex>) {
+fn circle_vertices(
+    position: &::na::Isometry2<f32>,
+    radius: f32,
+    color: [f32; 4],
+    vertices: &mut Vec<DebugVertex>,
+) {
     vertices.extend(CIRCLE.iter().map(|p| *p * radius).map(|p| {
         let p = position * p;
         DebugVertex {
@@ -784,19 +798,20 @@ fn circle_vertices(position: &::na::Isometry2<f32>, radius: f32, color: [f32; 4]
         }
     }));
 }
-fn shape_vertices(position: &::na::Isometry2<f32>, shape: &ShapeHandle<f32>, color: [f32; 4], vertices: &mut Vec<DebugVertex>) {
+fn shape_vertices(
+    position: &::na::Isometry2<f32>,
+    shape: &ShapeHandle<f32>,
+    color: [f32; 4],
+    vertices: &mut Vec<DebugVertex>,
+) {
     if let Some(ball) = shape.as_shape::<shape::Ball<f32>>() {
-        vertices.extend(
-            DISK.iter()
-                .map(|p| *p * ball.radius())
-                .map(|p| {
-                    let p = position * p;
-                    DebugVertex {
-                        position: [p[0], -p[1]],
-                        color,
-                    }
-                })
-        );
+        vertices.extend(DISK.iter().map(|p| *p * ball.radius()).map(|p| {
+            let p = position * p;
+            DebugVertex {
+                position: [p[0], -p[1]],
+                color,
+            }
+        }));
     }
     if let Some(convex_polygon) = shape.as_shape::<shape::ConvexPolygon<f32>>() {
         let mut points_iter = convex_polygon.points().iter();

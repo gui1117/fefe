@@ -1,7 +1,7 @@
-use specs::{Component, Join, Storage};
 use hibitset::BitSetLike;
+use specs::storage::{MaskedStorage, TryDefault, UnprotectedStorage};
 use specs::world::Index;
-use specs::storage::{MaskedStorage, UnprotectedStorage, TryDefault};
+use specs::{Component, Join, Storage};
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::DerefMut;
@@ -49,7 +49,7 @@ impl<C, T> Retained<C> for RetainedStorage<C, T> {
 impl<C: Clone, T: UnprotectedStorage<C>> UnprotectedStorage<C> for RetainedStorage<C, T> {
     unsafe fn clean<B>(&mut self, has: B)
     where
-        B: BitSetLike
+        B: BitSetLike,
     {
         self.storage.clean(has)
     }

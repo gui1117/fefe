@@ -1,7 +1,7 @@
 use entity::{FillableObject, InsertableObject, SegmentableObject};
 use fnv::FnvHashMap;
-use nphysics2d::object::BodyHandle;
 use ncollide2d::shape::ShapeHandle;
+use nphysics2d::object::BodyHandle;
 use specs::Entity;
 use std::collections::HashMap;
 use std::fs::File;

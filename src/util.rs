@@ -1,9 +1,9 @@
+use ncollide2d::shape::{Ball, ShapeHandle};
 use rand::distributions::{Distribution, Range};
 use rand::ThreadRng;
 use retained_storage::Retained;
-use specs::{World, Entity};
+use specs::{Entity, World};
 use std::f32::consts::PI;
-use ncollide2d::shape::{Ball, ShapeHandle};
 use winit::{
     ElementState, Event, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode, WindowEvent,
 };
@@ -226,9 +226,7 @@ pub fn default_shape_handle() -> ShapeHandle<f32> {
 
 #[allow(unused)]
 pub fn uninitialized_entity() -> Entity {
-    unsafe {
-        ::std::mem::uninitialized()
-    }
+    unsafe { ::std::mem::uninitialized() }
 }
 
 #[derive(Deserialize)]

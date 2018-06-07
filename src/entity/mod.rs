@@ -228,5 +228,5 @@ pub use self::wall::Wall;
 
 mod meta;
 pub use self::meta::Meta;
-pub use self::meta::MetaOverride;
 pub use self::meta::MetaComponent;
+pub use self::meta::MetaOverride;

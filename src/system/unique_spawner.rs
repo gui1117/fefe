@@ -3,7 +3,7 @@ use ncollide2d::query::Ray;
 use ncollide2d::world::CollisionGroups;
 use rand::distributions::{Distribution, Range};
 use rand::thread_rng;
-use specs::{ReadExpect, Join, ReadStorage, System, WriteStorage};
+use specs::{Join, ReadExpect, ReadStorage, System, WriteStorage};
 use std::f32::consts::PI;
 
 pub struct UniqueSpawnerSystem;
@@ -88,7 +88,8 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
                                 .is_some()
                             {
                                 entities.delete(entity).unwrap();
-                                let spawn = insertables_map.get(&unique_spawner.spawn).unwrap().clone();
+                                let spawn =
+                                    insertables_map.get(&unique_spawner.spawn).unwrap().clone();
                                 lazy_update.exec(move |world| {
                                     spawn.insert(position.into(), world);
                                 });

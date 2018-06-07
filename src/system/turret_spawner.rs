@@ -1,5 +1,5 @@
 use entity::Insertable;
-use specs::{ReadExpect, Join, ReadStorage, System};
+use specs::{Join, ReadExpect, ReadStorage, System};
 use std::f32::consts::PI;
 
 pub struct TurretSpawnerSystem;
@@ -18,14 +18,16 @@ impl<'a> System<'a> for TurretSpawnerSystem {
     fn run(
         &mut self,
         (bodies, turret_spawners, activatorses, physic_world, tempos, lazy_update, insertables_map): Self::SystemData,
-    ) {
-        for (turret_spawner, activators, body) in (&turret_spawners, &activatorses, &bodies).join() {
+){
+        for (turret_spawner, activators, body) in (&turret_spawners, &activatorses, &bodies).join()
+        {
             for turret_part in turret_spawner.iter() {
                 let ref activator = activators[turret_part.activator];
                 if activator.activated {
                     let mut position = body.get(&physic_world).position();
                     let ref tempo = tempos[activator.tempo];
-                    let mut angle = (2.0 * PI / turret_part.rotation_time as f32) * (turret_part.start_time + tempo.beat) as f32;
+                    let mut angle = (2.0 * PI / turret_part.rotation_time as f32)
+                        * (turret_part.start_time + tempo.beat) as f32;
                     if turret_part.clockwise {
                         angle *= -1.0;
                     }
