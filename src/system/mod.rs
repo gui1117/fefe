@@ -48,3 +48,6 @@ pub use self::activator::*;
 
 mod sword_rifle;
 pub use self::sword_rifle::*;
+
+mod audio;
+pub use self::audio::*;

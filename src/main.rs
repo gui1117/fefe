@@ -32,7 +32,13 @@ extern crate winit;
 #[macro_use]
 extern crate specs_derive;
 extern crate rodio;
+extern crate show_message;
+extern crate heck;
+#[macro_use]
+extern crate enum_iterator_derive;
+extern crate app_dirs2;
 
+mod audio;
 pub mod animation;
 pub mod component;
 mod config_menu;
@@ -119,6 +125,8 @@ fn main() {
     world.register::<::component::SwordRifle>();
 
     let conf = ::resource::Conf::load();
+    let save = ::resource::Save::load();
+    world.add_resource(::resource::Audio::init(&save));
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one(), conf.zoom));
@@ -159,6 +167,7 @@ fn main() {
         ])
         .with(::system::LifeSystem, "life", &[])
         .with_barrier() // Draw barrier
+        .with(::system::AudioSystem, "audio", &[])
         .with(::system::AnimationSystem, "animation", &[])
         .with(::system::CameraSystem, "camera", &[])
         .build();

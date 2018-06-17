@@ -12,6 +12,7 @@ impl<'a> System<'a> for ChamanSpawnerSystem {
         ReadExpect<'a, ::resource::LazyUpdate>,
         ReadExpect<'a, ::resource::EntitiesRes>,
         ReadExpect<'a, ::resource::InsertablesMap>,
+        ReadExpect<'a, ::resource::Audio>,
     );
 
     fn run(
@@ -24,18 +25,21 @@ impl<'a> System<'a> for ChamanSpawnerSystem {
             lazy_update,
             entities,
             insertables_map,
+            audio,
         ): Self::SystemData,
     ) {
         for (chaman_spawner, body, activators, entity) in
             (&mut chaman_spawner, &bodies, &activatorses, &*entities).join()
         {
-            if activators[chaman_spawner.activator].activated {
+            let ref activator = activators[chaman_spawner.activator];
+            if activator.activated {
                 chaman_spawner
                     .spawned
                     .retain(|spawned| entities.is_alive(*spawned));
                 if chaman_spawner.spawned.len() < chaman_spawner.number_of_spawn {
                     let spawn = insertables_map.get(&chaman_spawner.spawn).unwrap().clone();
                     let position = body.get(&physic_world).position().clone();
+                    audio.play(activator.sound, position.translation.vector.into());
                     lazy_update.exec(move |world| {
                         let spawned = spawn.insert(position.into(), world);
                         if let Some(chaman_spawner) = world

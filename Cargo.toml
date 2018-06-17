@@ -6,7 +6,7 @@ authors = ["thiolliere <gui.thiolliere@gmail.com>"]
 [dependencies]
 specs = "0.11"
 rand = "0.5"
-ron = "0.2"
+ron = "0.3"
 serde_derive = "1.0"
 serde = "1.0"
 failure = "0.1"
@@ -21,7 +21,7 @@ ncollide2d = "0.15"
 nphysics2d = "0.8"
 nalgebra = "0.14"
 alga = "0.5"
-pathfinding = "0.7"
+pathfinding = "0.8"
 png = "0.12"
 fps_counter = "1"
 app_dirs2 = "2"
@@ -33,6 +33,9 @@ fnv = "1"
 imgui = "0.0.18"
 hibitset = "0.5"
 specs-derive = "0.2"
+show_message = { git = "https://github.com/thiolliere/show_message/" }
+heck = "0.3"
+enum-iterator-derive = "0.1"
 
 [replace]
 "vulkano-win:0.9.0" = { git = "https://github.com/thiolliere/vulkano" }

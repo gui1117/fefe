@@ -67,6 +67,7 @@ pub struct Activator {
     pub partition: Vec<bool>,
     #[serde(skip)]
     pub activated: bool,
+    pub sound: ::audio::Sound,
 }
 
 //////////////////////////////// Life ////////////////////////////////
@@ -117,7 +118,6 @@ pub struct VelocityToPlayerMemory {
 /// Go into random directions
 /// or closest player in sight depending of proba
 ///
-// TODO: maybe make change of direction random when activated
 #[derive(Deserialize, Clone, Component)]
 #[serde(deny_unknown_fields)]
 #[storage(VecStorage)]

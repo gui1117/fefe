@@ -5,10 +5,39 @@ use nphysics2d::object::BodyHandle;
 use specs::Entity;
 use std::collections::HashMap;
 use std::fs::File;
+use std::path::PathBuf;
+use app_dirs2::{AppInfo, AppDataType, app_root};
 
 pub use imgui::ImGui;
 pub use specs::world::EntitiesRes;
 pub use specs::world::LazyUpdate;
+pub use audio::Audio;
+
+const APP_INFO: AppInfo = AppInfo { name: "fefe", author: "thiolliere" };
+const FILENAME: &str = "save.ron";
+
+lazy_static! {
+    static ref SAVE_PATH: PathBuf = {
+        let mut path = app_root(AppDataType::UserConfig, &APP_INFO).unwrap();
+        path.push(FILENAME);
+        path
+    };
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct Save {
+    pub effect_volume: f32,
+}
+
+impl Save {
+    pub fn load() -> Self {
+        File::open(SAVE_PATH.as_path()).ok()
+            .and_then(|file| ::ron::de::from_reader(file).ok())
+            .unwrap_or(Save {
+                effect_volume: 1.0,
+            })
+    }
+}
 
 pub struct WindowSize(pub (u32, u32));
 
@@ -42,6 +71,9 @@ pub struct Conf {
     pub physic_max_timestep: f32,
     pub physic_min_timestep: f32,
     pub zoom: f32,
+
+    pub audio_ear_distance: f32,
+    pub audio_z_distance: f32,
 
     pub insertables: HashMap<String, InsertableObject>,
     pub fillables: HashMap<String, FillableObject>,
