@@ -23,5 +23,5 @@ MapSettings(
     fillables: {
     },
     segmentables: {
-    }
+    },
 )

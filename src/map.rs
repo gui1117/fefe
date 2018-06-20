@@ -252,6 +252,26 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
             })?;
     }
 
+    // Finalize world
+    {
+        use specs::Join;
+
+        let players = world.read_storage::<::component::Player>();
+        let bodies = world.read_storage::<::component::RigidBody>();
+        let save = world.read_resource::<::resource::Save>();
+        let physic_world = world.read_resource::<::resource::PhysicWorld>();
+        let mut audio = world.write_resource::<::resource::Audio>();
+
+        // TODO: Fix it when multiple bodies
+        let position = (&players, &bodies).join().next().map(|(_, body)| {
+            body.get(&physic_world)
+                .position()
+                .translation.vector
+        });
+
+        audio.update(position, &save);
+    }
+
     Ok(())
 }
 

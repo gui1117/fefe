@@ -60,7 +60,7 @@ Conf(
             groups: [Monster],
             components: [
                 Activators(([
-                    (tempo: 0, partition: [true, true], sound: BongoH),
+                    (tempo: 0, partition: [true, true, false], sound: BongoH),
                 ])),
                 TurretSpawner(([
                     (
@@ -79,5 +79,5 @@ Conf(
     },
     segmentables: {
         "wall": Wall(())
-    }
+    },
 )
