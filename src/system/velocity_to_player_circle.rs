@@ -1,5 +1,5 @@
 use nphysics2d::math::Velocity;
-use specs::{Join, ReadStorage, System, WriteExpect, WriteStorage};
+use specs::{Join, ReadStorage, System, WriteExpect, WriteStorage, ReadExpect};
 use std::f32::EPSILON;
 
 pub struct VelocityToPlayerCircleSystem;
@@ -11,10 +11,11 @@ impl<'a> System<'a> for VelocityToPlayerCircleSystem {
         ReadStorage<'a, ::component::Activators>,
         ReadStorage<'a, ::component::Contactor>,
         WriteStorage<'a, ::component::VelocityToPlayerCircle>,
+        ReadExpect<'a, ::resource::Audio>,
         WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
-fn run(&mut self, (players, rigid_bodies, activatorses, contactors, mut circle_to_players, mut physic_world): Self::SystemData){
+fn run(&mut self, (players, rigid_bodies, activatorses, contactors, mut circle_to_players, audio, mut physic_world): Self::SystemData){
         let players_position = (&players, &rigid_bodies)
             .join()
             .map(|(_, body)| body.get(&physic_world).position().translation.vector)
@@ -27,11 +28,13 @@ fn run(&mut self, (players, rigid_bodies, activatorses, contactors, mut circle_t
             &activatorses,
         ).join()
         {
-            if !contactor.0.is_empty() || activators[circle_to_player.activator].activated {
+            let position = rigid_body.get(&physic_world).position().translation.vector;
+            let ref activator = activators[circle_to_player.activator];
+            if !contactor.0.is_empty() || activator.activated {
+                audio.play(activator.sound, position.into());
                 circle_to_player.dir_shift = !circle_to_player.dir_shift;
             }
 
-            let position = rigid_body.get(&physic_world).position().translation.vector;
             let direction = players_position
                 .iter()
                 .map(|p| (p - position))

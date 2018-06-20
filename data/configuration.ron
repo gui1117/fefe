@@ -2,7 +2,11 @@ Conf(
     fps: 60,
     physic_max_timestep: 1000,
     physic_min_timestep: 0,
-    zoom: 108,
+    zoom: 100,
+
+    audio_clamp_start: 1.0,
+    audio_clamp_end: 2.0,
+    audio_unit: 0.01,
 
     insertables: {
         "player": Meta((
@@ -56,7 +60,7 @@ Conf(
             groups: [Monster],
             components: [
                 Activators(([
-                    (tempo: 0, partition: [true, true]),
+                    (tempo: 0, partition: [true, true], sound: BongoH),
                 ])),
                 TurretSpawner(([
                     (

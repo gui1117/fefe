@@ -13,11 +13,12 @@ impl<'a> System<'a> for TurretSpawnerSystem {
         ReadExpect<'a, ::resource::Tempos>,
         ReadExpect<'a, ::resource::LazyUpdate>,
         ReadExpect<'a, ::resource::InsertablesMap>,
+        ReadExpect<'a, ::resource::Audio>,
     );
 
     fn run(
         &mut self,
-        (bodies, turret_spawners, activatorses, physic_world, tempos, lazy_update, insertables_map): Self::SystemData,
+        (bodies, turret_spawners, activatorses, physic_world, tempos, lazy_update, insertables_map, audio): Self::SystemData,
 ){
         for (turret_spawner, activators, body) in (&turret_spawners, &activatorses, &bodies).join()
         {
@@ -25,6 +26,7 @@ impl<'a> System<'a> for TurretSpawnerSystem {
                 let ref activator = activators[turret_part.activator];
                 if activator.activated {
                     let mut position = body.get(&physic_world).position();
+                    audio.play(activator.sound, position.translation.vector.into());
                     let ref tempo = tempos[activator.tempo];
                     let mut angle = (2.0 * PI / turret_part.rotation_time as f32)
                         * (turret_part.start_time + tempo.beat) as f32;

@@ -20,6 +20,7 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
         ReadExpect<'a, ::resource::EntitiesRes>,
         ReadExpect<'a, ::resource::BodiesMap>,
         ReadExpect<'a, ::resource::InsertablesMap>,
+        ReadExpect<'a, ::resource::Audio>,
     );
 
     fn run(
@@ -35,6 +36,7 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
             entities,
             bodies_map,
             insertables_map,
+            audio,
         ): Self::SystemData,
     ) {
         let mut rng = thread_rng();
@@ -48,7 +50,8 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
         for (unique_spawner, body, activators, entity) in
             (&mut unique_spawners, &bodies, &activatorses, &*entities).join()
         {
-            if activators[unique_spawner.activator].activated {
+            let ref activator = activators[unique_spawner.activator];
+            if activator.activated {
                 let position = body.get(&physic_world).position().clone();
                 let pos_vector = position.translation.vector;
                 for &(player_aim, ref player_position) in &players_aim {
@@ -87,6 +90,7 @@ impl<'a> System<'a> for UniqueSpawnerSystem {
                                 .get(*bodies_map.get(&object.data().body()).unwrap())
                                 .is_some()
                             {
+                                audio.play(activator.sound, pos_vector.into());
                                 entities.delete(entity).unwrap();
                                 let spawn =
                                     insertables_map.get(&unique_spawner.spawn).unwrap().clone();

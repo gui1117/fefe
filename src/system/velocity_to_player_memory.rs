@@ -14,10 +14,11 @@ impl<'a> System<'a> for VelocityToPlayerMemorySystem {
         ReadStorage<'a, ::component::RigidBody>,
         WriteStorage<'a, ::component::VelocityToPlayerMemory>,
         ReadExpect<'a, ::resource::BodiesMap>,
+        ReadExpect<'a, ::resource::Audio>,
         WriteExpect<'a, ::resource::PhysicWorld>,
     );
 
-fn run(&mut self, (players, activatorses, rigid_bodies, mut vtpms, bodies_map, mut physic_world): Self::SystemData){
+fn run(&mut self, (players, activatorses, rigid_bodies, mut vtpms, bodies_map, audio, mut physic_world): Self::SystemData){
         let players_position = (&players, &rigid_bodies)
             .join()
             .map(|(_, body)| body.get(&physic_world).position().translation.vector)
@@ -26,7 +27,8 @@ fn run(&mut self, (players, activatorses, rigid_bodies, mut vtpms, bodies_map, m
         for (vtpm, rigid_body, activators) in (&mut vtpms, &rigid_bodies, &activatorses).join() {
             let position = rigid_body.get(&physic_world).position().translation.vector;
 
-            if activators[vtpm.activator].activated {
+            let ref activator = activators[vtpm.activator];
+            if activator.activated {
                 let closest_in_sight = players_position
                     .iter()
                     .filter_map(|player_position| {
@@ -60,6 +62,10 @@ fn run(&mut self, (players, activatorses, rigid_bodies, mut vtpms, bodies_map, m
                     })
                     .min_by_key(|(_, toi)| (toi * ::CMP_PRECISION) as isize)
                     .map(|(object_position, _)| object_position);
+
+                if closest_in_sight.is_some() {
+                    audio.play(activator.sound, position.into());
+                }
 
                 if vtpm.memory {
                     vtpm.last_closest_in_sight = closest_in_sight.or(vtpm.last_closest_in_sight);

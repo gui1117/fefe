@@ -25,8 +25,9 @@ lazy_static! {
 }
 
 #[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Save {
-    pub effect_volume: f32,
+    pub audio_volume: f32,
 }
 
 impl Save {
@@ -34,7 +35,7 @@ impl Save {
         File::open(SAVE_PATH.as_path()).ok()
             .and_then(|file| ::ron::de::from_reader(file).ok())
             .unwrap_or(Save {
-                effect_volume: 1.0,
+                audio_volume: 1.0,
             })
     }
 }
@@ -72,8 +73,9 @@ pub struct Conf {
     pub physic_min_timestep: f32,
     pub zoom: f32,
 
-    pub audio_ear_distance: f32,
-    pub audio_z_distance: f32,
+    pub audio_clamp_start: f32,
+    pub audio_clamp_end: f32,
+    pub audio_unit: f32,
 
     pub insertables: HashMap<String, InsertableObject>,
     pub fillables: HashMap<String, FillableObject>,

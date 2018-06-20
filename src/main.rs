@@ -38,6 +38,7 @@ extern crate heck;
 extern crate enum_iterator_derive;
 extern crate app_dirs2;
 
+mod dynamic_mixer;
 mod audio;
 pub mod animation;
 pub mod component;
@@ -126,7 +127,7 @@ fn main() {
 
     let conf = ::resource::Conf::load();
     let save = ::resource::Save::load();
-    world.add_resource(::resource::Audio::init(&save));
+    world.add_resource(::resource::Audio::init(&conf, &save));
     world.add_resource(::resource::UpdateTime(0.0));
     world.add_resource(::resource::AnimationImages(vec![]));
     world.add_resource(::resource::Camera::new(::na::one(), conf.zoom));
@@ -136,7 +137,8 @@ fn main() {
     ));
     world.add_resource(imgui);
     world.add_resource(conf);
-    world.add_resource(::resource::Tempos(vec![::resource::Tempo::new(1.0)]));
+    world.add_resource(save);
+    world.add_resource(::resource::Tempos(vec![::resource::Tempo::new(0.2)]));
     world.maintain();
 
     // TOCHECK:

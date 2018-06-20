@@ -56,7 +56,15 @@ contient
 * [x] activator est la table des partitions
 * [x] faire meta extended qui permet de définir les activator dans settings.ron facilement
 * [ ] la randomization des activated beat peut se faire dans un composant randomisation qui desactive de facon random !!!!! OUI
-* [ ] sound
+* [ ] sound spatialisation ?
+      faire par soi même: spatial gauche droite en fonction de la position dans l'écran et faire atténuation en dehors de l'écran
+      l'atténuation peut être une fonction clamp ou alors regarder comment est calculé l'atténuation dans rodio/spatial.
+      peut être est-il possible de faire up down avec de la reverb différente entre up et down
+
+      api play short that a play a sound at a certain position never updated
+      play long that play sound with position updatable
+
+      et faire update position pour audio à la création de la map
 
 * [ ] check all insertables:
       they must have coherent activators
