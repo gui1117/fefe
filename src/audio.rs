@@ -150,7 +150,6 @@ lazy_static! {
 }
 
 pub struct Audio {
-    device: ::rodio::Device,
     mixer: Arc<::dynamic_mixer::DynamicMixerController<i16>>,
 
     position: ::na::Vector2<f32>,
@@ -170,7 +169,6 @@ impl Audio {
         sink.detach();
 
         Audio {
-            device: device,
             position: ::na::Vector2::new(0.0, 0.0),
             unit: conf.audio_unit,
             clamp: ::util::ClampFunction {

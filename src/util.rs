@@ -237,3 +237,7 @@ pub enum BodyStatusDef {
     Dynamic,
     Kinematic,
 }
+
+pub fn true_bool() -> bool {
+    true
+}

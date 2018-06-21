@@ -16,7 +16,7 @@ pub struct Player;
 #[derive(Deserialize, Clone, Component)]
 #[storage(VecStorage)]
 pub struct SwordRifle {
-    #[serde(skip)]
+    #[serde(skip, default = "::util::true_bool")]
     pub sword_mode: bool,
     #[serde(skip)]
     pub attack: bool,
