@@ -25,8 +25,7 @@ pathfinding = "0.8"
 png = "0.12"
 fps_counter = "1"
 app_dirs2 = "2"
-# rodio = "0.7"
-rodio = { path = "../rodio" }
+rodio = "0.7"
 derive_deref = "1"
 rusttype = { version = "0.6", features = ["gpu_cache"] }
 itertools = "0.7"

@@ -60,11 +60,13 @@ Conf(
             groups: [Monster],
             components: [
                 Activators(([
-                    (tempo: 0, partition: [true, true, false], sound: BongoH),
+                    (tempo: 0, partition: [true, true, true], sound: BongoH),
+                    (tempo: 0, partition: [true, false, false], sound: BongoL),
                 ])),
                 TurretSpawner(([
                     (
                         activator: 0,
+                        rotation_activator: Some(1),
                         spawn: "bullet",
                         rotation_time: 8,
                         clockwise: true,

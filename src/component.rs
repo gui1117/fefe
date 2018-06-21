@@ -217,6 +217,7 @@ pub struct Damping {
 }
 
 //////////////////////////////// Spawner ////////////////////////////////
+//TODO: shoot to hero spawner
 
 /// Spawn an entity if character is in aim at a certain probability function of
 /// the distance to the character every time activated
@@ -241,12 +242,14 @@ pub struct TurretSpawner(pub Vec<TurretPart>);
 #[serde(deny_unknown_fields)]
 pub struct TurretPart {
     pub activator: usize,
+    pub rotation_activator: Option<usize>,
     pub spawn: String,
     pub rotation_time: usize,
     pub clockwise: bool,
     // TODO: maybe use a vec here so it can have multiple canon
-    //       or maybe not
-    pub start_time: usize,
+    //       or maybe not because can be done with multiple part
+    //       but its way more handy that multiple parts
+    pub start_time: isize,
     pub shoot_distance: f32,
 }
 

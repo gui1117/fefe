@@ -35,7 +35,8 @@ impl Save {
         File::open(SAVE_PATH.as_path()).ok()
             .and_then(|file| ::ron::de::from_reader(file).ok())
             .unwrap_or(Save {
-                audio_volume: 1.0,
+                // TODO:
+                audio_volume: 0.2,
             })
     }
 }
