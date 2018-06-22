@@ -120,6 +120,7 @@ fn main() {
     world.register::<::component::VelocityControl>();
     world.register::<::component::VelocityAimDamping>();
     world.register::<::component::VelocityDistanceDamping>();
+    world.register::<::component::PositionInPath>();
     world.register::<::component::VelocityToPlayerCircle>();
     world.register::<::component::Activators>();
     world.register::<::component::Boid>();
@@ -145,9 +146,12 @@ fn main() {
     // * all system checking for activator must depends on it system
     // * velocity dampings must depends on all system setting velcoity
     // * tout ce qui utilise des positions doivent être après physic system
+    // * positioner system must be before every system that use position
     let mut update_dispatcher = DispatcherBuilder::new()
         .with(::system::ActivatorSystem, "activator", &[])
         .with(::system::PhysicSystem::new(), "physic", &[])
+        .with_barrier()
+        .with(::system::PositionInPathSystem, "position in path", &[])
         .with_barrier()
         .with(::system::SwordRifleSystem, "sword rifle", &[])
         .with(::system::DeadOnContactSystem, "dead on contact", &[])

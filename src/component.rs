@@ -7,6 +7,7 @@ use nphysics2d::object::BodyStatus;
 use retained_storage::RetainedStorage;
 use specs::{Component, Entity, NullStorage, VecStorage, WriteStorage};
 use std::f32::consts::PI;
+use itertools::Itertools;
 
 #[derive(Deserialize, Clone, Default, Component)]
 #[serde(deny_unknown_fields)]
@@ -87,6 +88,33 @@ pub struct DeadOnContact;
 #[serde(deny_unknown_fields)]
 #[storage(VecStorage)]
 pub struct Life(pub usize);
+
+//////////////////////////////// Position ////////////////////////////////
+
+// TODO: maybe add an activator for changing sens
+#[derive(Deserialize, Clone, Component)]
+#[serde(deny_unknown_fields)]
+#[storage(VecStorage)]
+pub struct PositionInPath {
+    pub velocity: f32,
+    #[serde(skip)]
+    pub current_point: usize,
+    #[serde(skip)]
+    pub current_advancement: f32,
+    #[serde(skip)]
+    pub points: Vec<::na::Vector2<f32>>,
+    #[serde(skip)]
+    pub distances: Vec<f32>,
+}
+
+impl PositionInPath {
+    pub fn set(&mut self, path: Vec<::na::Vector2<f32>>) {
+        self.distances = path.iter().chain(&[path[0]]).tuple_windows()
+            .map(|(p1, p2)| (p2 -p1).norm())
+            .collect();
+        self.points = path;
+    }
+}
 
 //////////////////////////////// Velocity ////////////////////////////////
 

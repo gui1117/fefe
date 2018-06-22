@@ -43,7 +43,7 @@ Conf(
             status: Dynamic,
             groups: [Monster],
             components: [
-                VelocityControl((velocity: 10)),
+                VelocityControl((velocity: 20)),
                 Life((1)),
                 ContactDamage((1)),
                 DeadOnContact(()),
@@ -55,7 +55,7 @@ Conf(
             radius: 1,
             density: 1,
             launch: false,
-            status: Static,
+            status: Dynamic,
             insert_shift: false,
             groups: [Monster],
             components: [
@@ -63,6 +63,9 @@ Conf(
                     (tempo: 0, partition: [true, true, true], sound: BongoH),
                     (tempo: 0, partition: [true, false, false], sound: BongoL),
                 ])),
+                PositionInPath((
+                    velocity: 1,
+                )),
                 TurretSpawner(([
                     (
                         activator: 0,

@@ -262,7 +262,6 @@ pub(crate) fn load_map(name: String, world: &mut World) -> Result<(), ::failure:
         let physic_world = world.read_resource::<::resource::PhysicWorld>();
         let mut audio = world.write_resource::<::resource::Audio>();
 
-        // TODO: Fix it when multiple bodies
         let position = (&players, &bodies).join().next().map(|(_, body)| {
             body.get(&physic_world)
                 .position()

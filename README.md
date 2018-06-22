@@ -57,11 +57,14 @@ contient
 * [x] faire meta extended qui permet de définir les activator dans settings.ron facilement
 * [x] sound spatialisation ?
 * [ ] faire monstre qui patrouille: rajouter un type de chemin svg
+      rajouter le chemin dans insertable...
+* [ ] faires les monstres NEAT
 * [ ] la randomization des activated beat peut se faire dans un composant randomisation qui desactive de facon random !!!!! OUI
 
 * [ ] check all insertables:
       they must have coherent activators
       they must have existing spawn
+      there spawn must not need path
 
 ## Performance
 

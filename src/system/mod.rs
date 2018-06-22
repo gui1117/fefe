@@ -51,3 +51,6 @@ pub use self::sword_rifle::*;
 
 mod audio;
 pub use self::audio::*;
+
+mod position_in_path;
+pub use self::position_in_path::*;

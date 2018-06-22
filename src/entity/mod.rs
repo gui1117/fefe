@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use lyon::svg::path::default::Path;
 use lyon::svg::path::iterator::PathIterator;
-use lyon::svg::path::{FlattenedEvent, PathEvent};
+use lyon::svg::path::FlattenedEvent;
 use lyon::tessellation::geometry_builder::simple_builder;
 use lyon::tessellation::{FillOptions, FillTessellator, FillVertex, VertexBuffers};
 use specs::{Entity, World};
@@ -130,38 +130,83 @@ impl ::map::TryFromPath for FillPosition {
     }
 }
 
-#[derive(Deref, DerefMut)]
 #[doc(hidden)]
-pub struct InsertPosition(::na::Isometry2<f32>);
+pub struct InsertPosition {
+    pub position: ::na::Isometry2<f32>,
+    pub path: Option<Vec<::na::Vector2<f32>>>,
+}
 
 impl ::map::TryFromPath for InsertPosition {
     fn try_from_path(value: Path) -> Result<Self, ::failure::Error> {
-        let mut path_iter = value.path_iter();
-        match (path_iter.next(), path_iter.next()) {
-            (Some(PathEvent::MoveTo(p1)), Some(PathEvent::LineTo(p2))) => {
-                let p1 = ::na::Vector2::new(p1.x, p1.y);
-                let p2 = ::na::Vector2::new(p2.x, p2.y);
-                let dir = p2 - p1;
-                Ok(InsertPosition(::na::Isometry2::new(
-                    p1,
-                    dir[1].atan2(dir[0]),
-                )))
-            }
-            _ => Err(format_err!(
+        let mut path_iter = value
+            .path_iter()
+            .flattened(SEGMENTS_POSITION_FLATTENED_TOLERANCE);
+
+        let err = |msg: String| {
+            format_err!(
                 "invalid path for InsertPosition.
-After being converted to absolute event path must be:
-[MoveTo(_), LineTo(_)]
-or it is:
+{}
+Full path after being converted to absolute flattened event path:
 {:?}",
-                value.path_iter().collect::<Vec<_>>()
-            )),
+                msg,
+                value
+                    .path_iter()
+                    .flattened(SEGMENTS_POSITION_FLATTENED_TOLERANCE)
+                    .collect::<Vec<_>>()
+            )
+        };
+
+        let mut path_position = vec![];
+        match path_iter.next() {
+            Some(FlattenedEvent::MoveTo(p)) => path_position.push(::na::Vector2::new(p.x, p.y)),
+            e @ _ => return Err(err(format!("First event must be MoveTo, found {:?}", e))),
         }
+
+        loop {
+            match path_iter.next() {
+                Some(FlattenedEvent::LineTo(p)) => path_position.push(::na::Vector2::new(p.x, p.y)),
+                None => {
+                    let len = path_position.len();
+                    if len > 2 {
+                        let mut reverse_path = path_position.iter().cloned().rev().skip(1).take(len - 2).collect::<Vec<_>>();
+                        path_position.append(&mut reverse_path);
+                    }
+                    break;
+                }
+                Some(FlattenedEvent::Close) => if path_iter.next().is_some() {
+                    return Err(err("Unexpected events after Close".to_string()));
+                } else {
+                    break;
+                },
+                e @ _ => return Err(err(format!("Unexpected event: {:?}", e))),
+            }
+        }
+
+        if path_position.len() == 1 {
+            return Err(err("Must contains at least 2 events (and Close if closed)".to_string()));
+        }
+
+        let p1 = path_position[0];
+        let p2 = path_position[1];
+        let dir = p2 - p1;
+        let isometry = ::na::Isometry2::new(
+            p1,
+            dir[1].atan2(dir[0]),
+        );
+
+        Ok(InsertPosition {
+            position: isometry,
+            path: Some(path_position),
+        })
     }
 }
 
 impl From<::na::Isometry2<f32>> for InsertPosition {
     fn from(isometry: ::na::Isometry2<f32>) -> Self {
-        InsertPosition(isometry)
+        InsertPosition {
+            position: isometry,
+            path: None,
+        }
     }
 }
 

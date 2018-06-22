@@ -49,6 +49,7 @@ component_list!{
     DebugColor,
     Activators,
     SwordRifle,
+    PositionInPath,
 }
 
 #[derive(Deserialize, Clone)]
@@ -66,13 +67,15 @@ impl Insertable for MetaOverride {
             .cloned()
             .ok_or(::failure::err_msg(format!("unknown entity: {}", self.meta)))
             .unwrap();
-        let entity = meta.insert(position, world);
 
-        for component in &self.components {
-            let component = component.clone();
-            component.insert(entity, world);
+        match meta {
+            // FIXME: does this override really works for specs storage ?
+            super::InsertableObject::Meta(mut meta) => {
+                meta.components.extend(self.components.iter().cloned());
+                meta.insert(position, world)
+            }
+            _ => panic!("MetaOverride must override a Meta"),
         }
-        entity
     }
 }
 
@@ -91,7 +94,7 @@ pub struct Meta {
 }
 
 impl Insertable for Meta {
-    fn insert(&self, position: InsertPosition, world: &World) -> Entity {
+    fn insert(&self, mut position: InsertPosition, world: &World) -> Entity {
         let entity = world.entities().create();
 
         world
@@ -134,9 +137,17 @@ impl Insertable for Meta {
             sword_rifle.compute_shapes();
         }
 
-        let mut position = position.0;
+        if let Some(ref mut position_in_path) = world
+            .write_storage::<::component::PositionInPath>()
+            .get_mut(entity)
+        {
+            let path = position.path
+                .expect("entity with position in path requires to be inserted with path");
+            position_in_path.set(path)
+        }
+
         if self.insert_shift {
-            ::util::move_forward(&mut position, self.radius);
+            ::util::move_forward(&mut position.position, self.radius);
         }
 
         if self.launch {
@@ -144,7 +155,7 @@ impl Insertable for Meta {
                 .write_storage::<::component::VelocityControl>()
                 .get_mut(entity)
             {
-                let angle = position.rotation.angle();
+                let angle = position.position.rotation.angle();
                 control.direction = ::na::Vector2::new(angle.cos(), angle.sin());
             }
         }
@@ -154,7 +165,7 @@ impl Insertable for Meta {
         let shape = ShapeHandle::new(Ball::new(self.radius));
         let body_handle = ::component::RigidBody::safe_insert(
             entity,
-            position,
+            position.position,
             shape.inertia(self.density),
             shape.center_of_mass(),
             self.status,
