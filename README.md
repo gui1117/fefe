@@ -56,15 +56,37 @@ contient
 * [x] activator est la table des partitions
 * [x] faire meta extended qui permet de définir les activator dans settings.ron facilement
 * [x] sound spatialisation ?
-* [ ] faire monstre qui patrouille: rajouter un type de chemin svg
-      rajouter le chemin dans insertable...
+* [x] faire monstre qui patrouille: rajouter un type de chemin svg
 * [ ] faires les monstres NEAT
+      the way population is evaluate is not handy in our case
+      modify it so we can take ctrnn use it and then set it fitness in the population
+      when all organism have been evaluated we can evolve the population
+      the way we retrieve ctrnn is first not retrieved then retrieved but not evaluated then retrieved and evaluated
+      we must be careful when setting fitness on an organism that it is really unique
+
+      also we must be able to store a population:
+      * use serde bincode or msgpack for efficient storage (compare !!)
+      * use json for standard save ? if the result make sense
+
+      also we must be able to extend a network: I don't know how to do it yet but:
+      * new size of input and output should be doable
+
+      create a new struct Element with activate function and internal id
+
+* [ ] faire les monstres de PEPE
+  * [ ] bouncer
+  * [ ] avoider (evite aussi les projectiles des tourelles ...
 * [ ] la randomization des activated beat peut se faire dans un composant randomisation qui desactive de facon random !!!!! OUI
 
 * [ ] check all insertables:
       they must have coherent activators
       they must have existing spawn
       there spawn must not need path
+
+# Structure:
+
+* [ ] graphics can get a immutable access to world if it no longer write imgui and debug things
+      as imgui is mostly for debug maybe we can make it !
 
 ## Performance
 

@@ -36,6 +36,7 @@ specs-derive = "0.2"
 show_message = { git = "https://github.com/thiolliere/show_message/" }
 heck = "0.3"
 enum-iterator-derive = "0.1"
+rustneat = "0.2"
 
 [replace]
 "vulkano-win:0.9.0" = { git = "https://github.com/thiolliere/vulkano" }
