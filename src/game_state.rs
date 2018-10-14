@@ -215,14 +215,27 @@ impl GameState for Game {
         gamepad: &::gilrs::Gamepad,
         world: &mut World,
     ) -> Box<GameState> {
-        let px = gamepad
-            .axis_data(::gilrs::Axis::LeftStickX)
+        let mut px = gamepad
+            .axis_data(::gilrs::Axis::DPadX)
             .map(|e| e.value())
             .unwrap_or(0.0);
-        let py = gamepad
-            .axis_data(::gilrs::Axis::LeftStickY)
+        let mut py = gamepad
+            .axis_data(::gilrs::Axis::DPadY)
             .map(|e| e.value())
             .unwrap_or(0.0);
+
+        if gamepad.is_pressed(::gilrs::Button::DPadDown) {
+            py = -1.0;
+        }
+        if gamepad.is_pressed(::gilrs::Button::DPadUp) {
+            py = 1.0;
+        }
+        if gamepad.is_pressed(::gilrs::Button::DPadLeft) {
+            px = -1.0;
+        }
+        if gamepad.is_pressed(::gilrs::Button::DPadRight) {
+            px = 1.0;
+        }
 
         let (px_circle, py_circle) = square_to_circle(px, py);
 

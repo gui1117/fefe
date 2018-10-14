@@ -17,7 +17,9 @@ where
     D: DerefMut<Target = MaskedStorage<T>>,
 {
     fn retained(&mut self) -> Vec<T> {
-        self.open().1.retained()
+        unsafe {
+            self.open().1.retained()
+        }
     }
 }
 

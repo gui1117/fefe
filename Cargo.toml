@@ -4,28 +4,28 @@ version = "0.1.0"
 authors = ["thiolliere <gui.thiolliere@gmail.com>"]
 
 [dependencies]
-specs = "0.11"
+specs = "0.12"
 rand = "0.5"
 ron = "0.3"
 serde_derive = "1.0"
 serde = "1.0"
 failure = "0.1"
-lyon = { version = "0.10", features = ["svg"] }
+lyon = { version = "0.11", features = ["svg"] }
 lazy_static = "1"
 gilrs = "0.6"
 vulkano = "0.9"
 vulkano-shader-derive = "0.9"
 vulkano-win = "0.9"
 winit = "0.14"
-ncollide2d = "0.15"
-nphysics2d = "0.8"
-nalgebra = "0.14"
-alga = "0.5"
+ncollide2d = "0.17"
+nphysics2d = "0.9"
+nalgebra = "0.16"
+alga = "0.7"
 pathfinding = "0.8"
 png = "0.12"
 fps_counter = "1"
 app_dirs2 = "2"
-rodio = "0.7"
+rodio = "0.8"
 derive_deref = "1"
 rusttype = { version = "0.6", features = ["gpu_cache"] }
 itertools = "0.7"
@@ -35,7 +35,8 @@ hibitset = "0.5"
 specs-derive = "0.2"
 show_message = { git = "https://github.com/thiolliere/show_message/" }
 heck = "0.3"
-enum-iterator-derive = "0.1"
+enum-iterator = "0.2"
+enum-iterator-derive = "0.2"
 rustneat = "0.2"
 
 [replace]

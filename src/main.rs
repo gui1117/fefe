@@ -34,6 +34,7 @@ extern crate specs_derive;
 extern crate rodio;
 extern crate show_message;
 extern crate heck;
+extern crate enum_iterator;
 #[macro_use]
 extern crate enum_iterator_derive;
 extern crate app_dirs2;

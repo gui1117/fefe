@@ -5,11 +5,12 @@ use std::time::Duration;
 use std::sync::Arc;
 use rodio::decoder::Decoder;
 use rodio::Source;
-use show_message::OkOrShow;
+use show_message::UnwrapOrShow;
 use heck::SnakeCase;
+use enum_iterator::IntoEnumIterator;
 
 #[repr(C)]
-#[derive(Deserialize, Clone, Copy, Debug, EnumIterator)]
+#[derive(Deserialize, Clone, Copy, Debug, IntoEnumIterator)]
 pub enum Sound {
     BongoH,
     BongoL,
@@ -117,7 +118,7 @@ impl Source for SoundSource {
 
 lazy_static! {
     static ref SOUND_BUFFERS: Vec<SoundBuffer> = {
-        let sound_filenames = Sound::iter_variants()
+        let sound_filenames = Sound::into_enum_iter()
             .map(|variant| {
                 let name = format!("{:?}", variant);
                 format!("data/sounds/{}.ogg", name.to_snake_case())
@@ -128,9 +129,9 @@ lazy_static! {
             .map(|s| {
                 let mut buffer = vec![];
                 let mut file = File::open(s)
-                    .ok_or_show(|e| format!("Failed to open sound {}: {}", s, e));
+                    .unwrap_or_else_show(|e| format!("Failed to open sound {}: {}", s, e));
                 file.read_to_end(&mut buffer)
-                    .ok_or_show(|e| format!("Failed to read sound {}: {}", s, e));
+                    .unwrap_or_else_show(|e| format!("Failed to read sound {}: {}", s, e));
                 Cursor::new(buffer)
             })
             .collect::<Vec<_>>();
@@ -138,10 +139,10 @@ lazy_static! {
         let mut sound_buffers = vec![];
         for (file, filename) in sound_files.drain(..).zip(sound_filenames.iter()) {
             let sound = Decoder::new(file)
-                .ok_or_show(|e| format!("Failed to decode sound {}: {}", filename, e));
+                .unwrap_or_else_show(|e| format!("Failed to decode sound {}: {}", filename, e));
 
             let sound = SoundBuffer::new(sound)
-                .ok_or_show(|e| format!("Invalid sound: {}: {}", filename, e));
+                .unwrap_or_else_show(|e| format!("Invalid sound: {}: {}", filename, e));
 
             sound_buffers.push(sound);
         }

@@ -76,7 +76,9 @@ contient
 * [ ] faire les monstres de PEPE
   * [ ] bouncer
   * [ ] avoider (evite aussi les projectiles des tourelles ...
+
 * [ ] la randomization des activated beat peut se faire dans un composant randomisation qui desactive de facon random !!!!! OUI
+* [ ] BUG ? bodies_map pas mis a jour ?
 
 * [ ] check all insertables:
       they must have coherent activators

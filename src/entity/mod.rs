@@ -89,7 +89,7 @@ pub struct FillPosition(Vec<[::na::Point2<f32>; 3]>);
 
 impl ::map::TryFromPath for FillPosition {
     fn try_from_path(value: Path) -> Result<Self, ::failure::Error> {
-        let mut buffers: VertexBuffers<FillVertex> = VertexBuffers::new();
+        let mut buffers: VertexBuffers<FillVertex, _> = VertexBuffers::new();
 
         {
             let mut vertex_builder = simple_builder(&mut buffers);

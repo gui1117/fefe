@@ -2,7 +2,7 @@ use ncollide2d::shape::{Ball, ShapeHandle};
 use rand::distributions::{Distribution, Range};
 use rand::ThreadRng;
 use retained_storage::Retained;
-use specs::{Entity, World};
+use specs::{Entity, World, Builder};
 use std::f32::consts::PI;
 use winit::{
     ElementState, Event, MouseButton, MouseScrollDelta, TouchPhase, VirtualKeyCode, WindowEvent,
